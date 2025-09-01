@@ -148,14 +148,7 @@
 
 	function jcms.prefab_CheckOverlooking(area)
 		--Check function for prefabs meant to overlook large spaces. 
-
-		if ( area:GetSizeX()*area:GetSizeY() ) <= 60000 then
-			return false
-		end
-
-		if #area:GetVisibleAreas() < jcms.mapgen_GetVisData().avg then
-			return false
-		end
+		--This is a really janky way of doing this.
 
 		local c1, c2, c3, c4 = area:GetCorner(1), area:GetCorner(2), area:GetCorner(3), area:GetCorner(0)
 		if math.max(c1.z, c2.z, c3.z, c4.z) - math.min(c1.z, c2.z, c3.z, c4.z) > 34 then

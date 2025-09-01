@@ -252,6 +252,14 @@ local prefabs = jcms.prefabs
 		check = function(area)
 			if not jcms.mapgen_ValidArea(area) then return false end
 
+			if ( area:GetSizeX()*area:GetSizeY() ) <= 60000 then
+				return false
+			end
+
+			if #area:GetVisibleAreas() < jcms.mapgen_GetVisData().avg then
+				return false
+			end
+
 			return jcms.prefab_CheckOverlooking(area)
 		end,
 
