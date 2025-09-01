@@ -1184,8 +1184,10 @@
 						jcms.net_NotifyGeneric(discoveredBy, jcms.NOTIFY_LOCATED, tagname)
 
 						for i, ply in ipairs(players) do
-							local knownKeys = known[ply]
-							knownKeys[ key ] = true
+							if jcms.team_pvpSameTeam(discoveredBy, ply) then
+								local knownKeys = known[ply]
+								knownKeys[ key ] = true
+							end
 						end
 					end
 				end

@@ -144,6 +144,14 @@ if SERVER then
 		end
 	end)
 
+	function jcms.net_BroadcastToTeam(ply)
+		for i, recipient in player.Iterator() do
+			if jcms.team_SameTeam(ply, recipient) then 
+				net.Send(recipient)
+			end
+		end
+	end
+
 	function jcms.net_NotifyDeath(ply, suicide)
 		if IsValid(ply) then
 			local damageType = tonumber(ply.jcms_lastDamageType) or 0
@@ -210,7 +218,7 @@ if SERVER then
 				net.WriteUInt(PLY_NOTIF, bits_ply)
 				net.WriteUInt(activity, 3)
 				net.WriteString(thing)
-			net.Broadcast()
+			jcms.net_BroadcastToTeam(ply)
 		end
 	end
 
@@ -454,7 +462,7 @@ if SERVER then
 		net.Send(ply)
 	end
 
-	function jcms.net_SendLocator(to, id, name, at, locatorType, timeout, landmarkIcon)
+	function jcms.net_SendLocator(to, id, name, at, locatorType, timeout, landmarkIcon, fromPly) --fromPly's for pvpTeam stuff, will usually be nil
 		net.Start("jcms_msg")
 			net.WriteBool(false)
 			net.WriteEntity(game.GetWorld())
@@ -495,7 +503,11 @@ if SERVER then
 				net.WriteBool(false)
 			end
 		if to == "all" then
-			net.Broadcast()
+			if not IsValid(fromPly) then
+				net.Broadcast()
+			else
+				jcms.net_BroadcastToTeam(fromPly)
+			end
 		else
 			net.Send(to)
 		end
