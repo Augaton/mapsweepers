@@ -74,7 +74,7 @@ if SERVER then
 			if self.hackStunEnd < CurTime() or not self:GetHackedByRebels() then 
 				local radius = self:GetChargeRadius()
 				for i, ply in ipairs(jcms.GetAliveSweepers()) do
-					if (ply:Armor() < ply:GetMaxArmor()) and (ply:WorldSpaceCenter():DistToSqr(self:WorldSpaceCenter()) <= radius*radius) then
+					if (ply:Armor() < ply:GetMaxArmor()) and (ply:WorldSpaceCenter():DistToSqr(self:WorldSpaceCenter()) <= radius*radius) and jcms.team_SameTeam(self, ply) then
 						self:ChargeShield(ply)
 						charging = true
 					end
@@ -145,7 +145,7 @@ if CLIENT then
 
 				local radius = self:GetChargeRadius()
 				for i, ply in ipairs(jcms.GetAliveSweepers()) do
-					if ply:Health() > 0 and (ply:Armor() < ply:GetMaxArmor()) and (ply:WorldSpaceCenter():DistToSqr(self:WorldSpaceCenter()) <= radius*radius) then
+					if ply:Health() > 0 and (ply:Armor() < ply:GetMaxArmor()) and (ply:WorldSpaceCenter():DistToSqr(self:WorldSpaceCenter()) <= radius*radius) and jcms.team_SameTeam(self, ply) then
 						local ed = EffectData()
 						ed:SetFlags(0)
 						ed:SetOrigin(self:WorldSpaceCenter())

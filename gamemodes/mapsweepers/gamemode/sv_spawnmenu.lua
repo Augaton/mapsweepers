@@ -703,6 +703,10 @@
 				mine.RequiredTargets = 1
 				mine.Proximity = 120
 				mine.jcms_owner = ply
+				if IsValid(ply) then
+					mine:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
+
 				mine:Spawn()
 				
 				constraint.Weld(mine, attachEnt, 0, 0)
@@ -843,6 +847,10 @@
 				if CPPI then
 					shieldcharger:CPPISetOwner( game.GetWorld() )
 				end
+				
+				if IsValid(ply) then
+					shieldcharger:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
 			end
 		},
 
@@ -859,6 +867,9 @@
 				tesla:SetPos(pos + Vector(0,0,20))
 				tesla:SetAngles(angle)
 				tesla.jcms_owner = ply
+				if IsValid(ply) then
+					tesla:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
 
 				if boosted then
 					tesla.Radius = 550
@@ -905,6 +916,10 @@
 
 				if CPPI then
 					beacon:CPPISetOwner( game.GetWorld() )
+				end
+				
+				if IsValid(ply) then
+					beacon:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
 				end
 			end
 		},
@@ -1356,6 +1371,9 @@
 		mins.z = -mins.z + 2
 		turret:SetPos(pos + mins)
 		turret.jcms_owner = ply
+		if IsValid(ply) then
+			turret:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+		end
 
 		jcms.npc_UpdateRelations(turret)
 		turret:EmitSound("weapons/shotgun/shotgun_cock.wav")

@@ -136,7 +136,7 @@ if SERVER then
 			local goodTargets = 0
 			local mypos = self:GetPos()
 			for i, target in ipairs(ents.FindInSphere(mypos, selfTbl.Proximity)) do
-				if jcms.team_GoodTarget(target) and jcms.team_NPC(target) then
+				if jcms.team_GoodTarget(target) and not jcms.team_SameTeam(self, target) then
 					local tr = util.TraceLine { start = mypos, endpos = target:EyePos(), mask = MASK_SHOT, filter = self }
 					if not tr.Hit or tr.Entity == target then
 						goodTargets = goodTargets + 1

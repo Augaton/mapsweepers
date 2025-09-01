@@ -214,7 +214,7 @@
 			return best, mindist
 		end
 		
-		function jcms.director_FindRespawnBeacon(evenBusyOnes)
+		function jcms.director_FindRespawnBeacon(evenBusyOnes, ply)
 			if not jcms.director then return end
 			if jcms.director_IsSuddenDeath() then return end
 			
@@ -230,7 +230,7 @@
 			if #beacons > 0 then
 				table.Shuffle(jcms.director.respawnBeacons)
 				for i, beacon in ipairs(jcms.director.respawnBeacons) do
-					if (evenBusyOnes or not beacon:GetRespawnBusy()) then
+					if (evenBusyOnes or not beacon:GetRespawnBusy()) and jcms.team_pvpSameTeam(ply, beacon) then
 						return beacon
 					end
 				end
@@ -950,7 +950,7 @@
 					local timeTabbedOut = ply:IsBot() and 0 or (CurTime() - ((jcms.playerAfkPings and jcms.playerAfkPings[ply]) or 0))
 
 					if (timeSinceDeath >= respawnDelay) and (timeSinceRespawnAttempt >= respawnInterval) and timeTabbedOut < 20 then
-						local beacon = jcms.director_FindRespawnBeacon(false)
+						local beacon = jcms.director_FindRespawnBeacon(false, ply)
 						
 						if IsValid(beacon) then
 							ply.jcms_lastRespawnTime = CurTime()

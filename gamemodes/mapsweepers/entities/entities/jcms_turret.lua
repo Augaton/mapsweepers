@@ -43,11 +43,13 @@ if SERVER then
 	end
 	
 	function jcms.turret_IsDifferentTeam(self, ent)
+		return not jcms.team_SameTeam(self, ent)
+		--[[
 		if self:GetHackedByRebels() then
 			return jcms.team_JCorp(ent) and not(ent.GetHackedByRebels and ent:GetHackedByRebels())
 		else
 			return jcms.team_NPC(ent)
-		end
+		end--]]
 	end
 
 	function jcms.turret_IsDifferentTeam_Optimised(isHacked, ent)
@@ -576,7 +578,7 @@ if SERVER then
 		local entIndices = {}
 		for _, ent in ipairs(ents.FindInSphere(origin, radius)) do 
 			--if ent ~= self and ent:Health() > 0 then
-			if jcms.team_GoodTarget(ent) and jcms.turret_IsDifferentTeam_Optimised(isHacked, ent) and self:TurretVisible(ent) then
+			if jcms.team_GoodTarget(ent) and jcms.turret_IsDifferentTeam(self, ent) and self:TurretVisible(ent) then
 				table.insert(selfTbl.targetsCache, ent)
 				entIndices[ent] = ent:EntIndex()
 			end

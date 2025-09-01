@@ -821,6 +821,7 @@ jcms.vectorOne = Vector(1, 1, 1)
 	jcms.team_jCorpClasses = jcms.team_jCorpClasses or {
 		["jcms_turret"] = true,
 		["jcms_turret_smrls"] = true,
+		["jcms_landmine"] = true,
 		["jcms_sapper"] = true
 	}
 
@@ -899,9 +900,15 @@ jcms.vectorOne = Vector(1, 1, 1)
 		return npcCheck or playerCheck or nextbotCheck or entClassCheck --NOTE: Could be optimised more by turning it into a single massive boolean expression, but idk if that's worth it.
 	end
 
+	function jcms.team_pvpSameTeam(e1, e2)
+		local e1Pvp = e1:GetNWInt("jcms_pvpTeam", -1)
+		local e2Pvp = e2:GetNWInt("jcms_pvpTeam", -1)
+		return e1Pvp == -1 or e2Pvp == -1 or e1Pvp == e2Pvp --If either lacks pvp or both on same team
+	end
+
 	function jcms.team_SameTeam(e1, e2)
 		if (e1 == e2) or ( jcms.team_JCorp(e1) and jcms.team_JCorp(e2) ) then
-			return true
+			return jcms.team_pvpSameTeam(e1, e2)
 		else
 			local bothNPCs = jcms.team_NPC(e1) and jcms.team_NPC(e2)
 
