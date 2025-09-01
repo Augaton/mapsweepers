@@ -1,0 +1,17 @@
+"vertexlitgeneric"
+{
+	"$baseTexture" 	"models/jcms/player/PLACEHOLDER_infantry_mafia"
+    "$bumpmap" 		"models/jcms/player/infantry_normal"
+	
+	"$phong" "1"
+	"$phongexponent" "10"
+	"$phongboost" "1"
+	"$phongfresnelranges" "[0.05 0.1 0.5]"
+	
+	"$rimlight" "1"
+	"$rimlightexponent" "8"
+	"$rimlightboost" "2"
+	
+	"$phongexponenttexture" "models/jcms/player/infantry_normal"
+	"$rimmask" "1"
+}

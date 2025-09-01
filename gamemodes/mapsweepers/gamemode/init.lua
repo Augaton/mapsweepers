@@ -2374,7 +2374,14 @@ end
 
 		end
 	end)
-	
+
+	concommand.Add("jcms_jointeam_pvp", function(ply, cmd, args)
+		--TODO: Barebones for testing. Will need work in future.
+
+		ply:SetNWInt("jcms_pvpTeam", tonumber(args[1]))
+		PrintMessage(HUD_PRINTTALK, tostring(ply) .. " joined team " .. tostring(args[1]))
+	end)
+
 	concommand.Add("jcms_setclass", function(ply, cmd, args)
 		if (ply:GetObserverMode() == OBS_MODE_FIXED) or (ply:GetObserverMode() == OBS_MODE_CHASE) then
 			local classData = jcms.classes[ args[1] ]
