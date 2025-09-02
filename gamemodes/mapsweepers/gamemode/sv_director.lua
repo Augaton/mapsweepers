@@ -929,9 +929,11 @@
 							end
 						end
 						
-						if ply:GetNWInt("jcms_desiredteam", 0) == 1 then
+						if ply:GetNWInt("jcms_desiredteam", 0) == 1 or jcms.cvar_pvpMode:GetBool() then
 							table.insert(deadPlayers, ply)
 						end
+					elseif jcms.cvar_pvpMode:GetBool() and jcms.team_NPC(ply) then
+						table.insert(deadPlayers, ply)
 					end
 				end
 			end

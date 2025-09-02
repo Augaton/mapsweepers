@@ -130,6 +130,8 @@ jcms.vectorOne = Vector(1, 1, 1)
 	jcms.cvar_swarm_size = CreateConVar("jcms_swarm_size", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Swarm size multiplier.", 0, 5)
 	jcms.cvar_swarm_warning = CreateConVar("jcms_swarm_warning", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Extra seconds between a portal opening and enemies coming out of it.", 0, 30)
 	
+	jcms.cvar_pvpMode = CreateConVar("jcms_pvpmode", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "Enables / Disables PVP mode")
+	
 	-- Replicated
 	jcms.cvar_announcer_type = CreateConVar("jcms_announcer_type", "default", FCVAR_JCMS_SHARED_SAVED, "Selects the current announcer by name.")
 	jcms.cvar_noepisodes = CreateConVar("jcms_noepisodes", "0", FCVAR_JCMS_SHARED_SAVED, "If set to 1, Half-Life 2: Episode One & Two content will never appear in-game. Useful if you don't want your poor friends to see errors.")
