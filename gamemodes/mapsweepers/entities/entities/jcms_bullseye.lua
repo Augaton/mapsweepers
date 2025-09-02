@@ -31,7 +31,7 @@ ENT.RenderGroup = RENDERGROUP_OPAQUE
 jcms.team_jCorpClasses["jcms_bullseye"] = true
 
 if SERVER then 
-	ENT.DamageTarget = NULL
+	--ENT.DamageTarget = NULL
 
 	function ENT:Initialize()
 		self:SetModel("models/hunter/blocks/cube025x025x025.mdl") --maybe even models/hunter/plates/plate.mdl
@@ -61,6 +61,7 @@ if CLIENT then
 	end
 
 	function ENT:Draw()
+		
 	end
 end
 

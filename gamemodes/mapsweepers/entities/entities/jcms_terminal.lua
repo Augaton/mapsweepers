@@ -38,6 +38,28 @@ jcms.terminal_modelInfos = {
 		fwd = -9,
 		rotateFwd = 40
 	},
+
+	["models/props_combine/combine_interface001.mdl"] = {
+		theme = "combine",
+		width = 600,
+		height = 500,
+		up = 51,
+		right = 11,
+		fwd = -1,
+		rotateRight = -45,
+		rotateUp = 90,
+	},
+	
+	["models/props_combine/masterinterface.mdl"] = {
+		theme = "combine",
+		width = 1300,
+		height = 600,
+		up = 48,
+		right = 21,
+		fwd = -10,
+		rotateRight = -45,
+		rotateUp = 90,
+	},
 	
 	["models/props_combine/combine_emitter01.mdl"] = {
 		theme = "jcorp",

@@ -200,6 +200,173 @@ local prefabs = jcms.prefabs
 	}
 -- // }}}
 
+-- // Refineries {{{
+	prefabs.refinery_main = {
+		check = function(area)
+			local sx, sy = area:GetSizeX(), area:GetSizeY()
+			if sx < 300 or sy < 300 then return false end
+			
+			local center = jcms.mapgen_AreaPointAwayFromEdges(area, 250)
+			local tr = util.TraceHull { start = center, endpos = center + Vector(0, 0, 120), mins = Vector(-24, -24, 0), maxs = Vector(24, 24, 64) }
+			
+			if not tr.Hit then
+				return true, center
+			else
+				return false
+			end
+		end,
+
+		stamp = function(area, center)
+			local ref = ents.Create("jcms_refinery")
+			ref.RefineryType = "main"
+			ref:SetPos(center)
+			local goodFacing, facingAngle = jcms.mapgen_PickBestFacingDirection(center, 300, ref, MASK_PLAYERSOLID_BRUSHONLY)
+			ref:SetAngles(facingAngle)
+			ref:Spawn()
+			return ref
+		end
+	}
+
+	prefabs.refinery_secondary = {
+		check = function(area)
+			if not jcms.mapgen_ValidArea(area) then return false end
+			local c1, c2, c3, c4 = area:GetCorner(1), area:GetCorner(2), area:GetCorner(3), area:GetCorner(0)
+			if math.max(c1.z, c2.z, c3.z, c4.z) - math.min(c1.z, c2.z, c3.z, c4.z) > 34 then
+				return false
+			end
+
+			local wallspots, normals = jcms.prefab_GetWallSpotsFromArea(area, 48, 128)
+			
+			if #wallspots > 0 then
+				local rng = math.random(#wallspots)
+				return true, { pos = wallspots[rng], normal = normals[rng] }
+			else
+				return false
+			end
+		end,
+
+		stamp = function(area, data)
+			local ref = ents.Create("jcms_refinery")
+			data.pos = data.pos + data.normal * 24
+			data.pos.z = data.pos.z - 24
+			ref.RefineryType = "secondary"
+			ref:SetPos(data.pos)
+			ref:SetAngles(data.normal:Angle())
+			ref:Spawn()
+			return ref
+		end
+	}
+-- // }}}
+
+-- // Data Download {{{
+
+	prefabs.datadownload_passwordclue = {
+		check = function(area)
+			if not jcms.mapgen_ValidArea(area) then return false end
+			local wallspots, normals = jcms.prefab_GetWallSpotsFromArea(area, 48, 128)
+			
+			if #wallspots > 0 then
+				local rng = math.random(#wallspots)
+				return true, { pos = wallspots[rng], normal = normals[rng] }
+			else
+				return false
+			end
+		end,
+
+		stamp = function(area, data)
+			local ent = ents.Create("jcms_terminal")
+			if not IsValid(ent) then return end
+
+			local v = Vector(data.pos)
+			v:Add(data.normal*24)
+			v.z = v.z - 48
+			ent:SetPos(v)
+			ent:SetAngles(data.normal:Angle())
+
+			ent:Spawn()
+			ent:InitAsTerminal("models/props_combine/combine_interface001.mdl", "passwordclue")
+			ent:SetSkin(1)
+			return ent
+		end
+	}
+
+	prefabs.datadownload_computer = {
+		check = function(area)
+			if area:GetSizeX() < 350 or area:GetSizeY() < 350 then
+				return false
+			end
+			if not jcms.mapgen_ValidArea(area) then return false end
+			local c1, c2, c3, c4 = area:GetCorner(1), area:GetCorner(2), area:GetCorner(3), area:GetCorner(0)
+			if math.max(c1.z, c2.z, c3.z, c4.z) - math.min(c1.z, c2.z, c3.z, c4.z) > 34 then
+				return false
+			end
+			return true
+		end,
+
+		stamp = function(area)
+			local ent = ents.Create("jcms_terminal")
+			if not IsValid(ent) then return end
+
+			ent:SetPos(area:GetCenter())
+			ent:Spawn()
+			ent:InitAsTerminal("models/props_combine/masterinterface.mdl", "datadownloadcomputer")
+			ent.jcms_hackType = nil
+			if jcms.director and jcms.director.missionData and jcms.director.missionData.password then
+				ent.jcms_password = jcms.director.missionData.password
+			end
+
+			do -- Backbone prop
+				local backbone = ents.Create("prop_physics")
+				local pos = ent:GetPos()
+				local ang = ent:GetAngles()
+				ang:RotateAroundAxis(ang:Up(), 90)
+				ang:RotateAroundAxis(ang:Forward(), -90)
+				pos:Add(ang:Up()*172)
+				pos:Add(ang:Right()*-64)
+				backbone:SetModel("models/props_combine/combine_train02b.mdl")
+				backbone:SetPos(pos)
+				backbone:SetAngles(ang)
+				backbone:Spawn()
+				backbone:PhysicsInitStatic(SOLID_VPHYSICS)
+			end
+
+			do -- Ammo crate
+				local pos = ent:GetPos()
+				local ang = ent:GetAngles()
+
+				ang:RotateAroundAxis(ang:Up(), 180)
+				pos = pos + ang:Forward()*165 + ang:Up()*16
+				local ammocrate = ents.Create("jcms_ammo_crate")
+				ammocrate:SetPos(pos)
+				ammocrate:SetAngles(ang)
+				ammocrate:Spawn()
+			end
+
+			for i=1, 2 do -- Pillars
+				local pos = ent:GetPos()
+				local ang = ent:GetAngles()
+
+				local pillar = ents.Create("jcms_downloadpillar")
+				ang:RotateAroundAxis(ang:Up(), 180 + 45 - 90*(i-1))
+				pos:Add(ang:Forward()*150)
+				pos:Add(ang:Up() * 150)
+				ang:RotateAroundAxis(ang:Forward(), 180)
+				ang:RotateAroundAxis(ang:Up(), 20 * (i==1 and -1 or 1))
+				ang:RotateAroundAxis(ang:Right(), 10)
+
+				pillar:SetAngles(ang)
+				pillar:SetPos(pos)
+				pillar:Spawn()
+				pillar:SetLabelSymbol(i == 1 and "A" or "B")
+
+				ent["pillar"..i] = pillar
+			end
+
+			return ent
+		end
+	}
+
+-- // }}}
 
 -- // Other {{{
 	prefabs.flashpoint = {

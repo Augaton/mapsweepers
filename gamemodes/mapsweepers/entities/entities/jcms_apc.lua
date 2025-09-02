@@ -109,6 +109,32 @@ if SERVER then
 	ENT.ShieldDuration = 8
 	ENT.ShieldRechargeTime = 15
 	
+	function ENT:SpawnMinecart()
+		if IsValid(self.jcms_minecart) then
+			self.jcms_minecart:Remove()
+		end
+
+		if IsValid(self.jcms_minecart_alt) then
+			self.jcms_minecart_alt:Remove()
+		end
+		
+		local mdl = "models/props_wasteland/laundry_cart001.mdl"
+		local off = 80
+
+		for i=1,2 do
+			local mc = ents.Create("prop_physics")
+			mc:SetParent(self)
+			mc:SetModel(mdl)
+			mc:Spawn()
+			mc:SetColor(Color(255, 140, 140))
+			mc:SetPos(Vector(0, i==1 and -off or off, 0))
+			mc:SetAngles(self:GetAngles())
+			mc:SetParent()
+			constraint.Weld(mc, self, 0, 0, 0, true, true)
+			self[i==1 and "jcms_minecart" or "jcms_minecart_alt"] = mc
+		end
+	end
+
 	function ENT:Think()
 		local selfTbl = self:GetTable()
 		if selfTbl.jcms_destroyed then

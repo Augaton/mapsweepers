@@ -2209,6 +2209,26 @@
 			draw.SimpleText(str1, "jcms_hud_medium", 0, y-4, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
 			draw.SimpleText(str2, "jcms_hud_huge", 0, y-4, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 			surface.SetAlphaMultiplier(1)
+		end,
+
+		["jcms_orechunk"] = function(ent, blend)
+			local worth = ent:GetWorth()
+			if worth > 0 then
+				local str = '"' .. language.GetPhrase("jcms.ore_" .. ent:GetOreName()) .. '"'
+				local y = 16 - blend*16
+				surface.SetAlphaMultiplier(blend)
+				draw.SimpleText(str, "jcms_hud_small", 0, y, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText("#jcms.worth", "jcms_hud_small", -4, y, jcms.color_dark, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+				draw.SimpleText(worth .. " J", "jcms_hud_medium", 4, y, jcms.color_dark, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+
+				render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
+					local off = 2
+					draw.SimpleText(str, "jcms_hud_small", 0, y-off, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+					draw.SimpleText("#jcms.worth", "jcms_hud_small", -4-off, y+off, jcms.color_bright, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+					draw.SimpleText(worth .. " J", "jcms_hud_medium", 4+off, y+off, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+				render.OverrideBlend(false)
+				surface.SetAlphaMultiplier(1)
+			end
 		end
 	}
 	jcms.hud_infoTargetFuncs.jcms_turret_smrls = jcms.hud_infoTargetFuncs.jcms_turret
@@ -2218,13 +2238,13 @@
 		local blend = math.min(jcms.hud_targetAnim, 1)
 
 		local pos = ent:WorldSpaceCenter()
-		local angle = ent:EyeAngles()
 
 		local bossType = ent:GetNWString("jcms_boss", "")
 		if bossType == "" then bossType = nil end
 		
 		local eyeAngles = EyeAngles()
 		if bossType then
+			local angle = ent:EyeAngles()
 			angle.p = 0
 			angle:RotateAroundAxis(angle:Forward(), 90)
 			angle.y = eyeAngles.y - 90
@@ -2237,9 +2257,20 @@
 				jcms.hud_infoTargetFuncs_boss(ent, blend, bossType)
 			cam.End3D2D()
 		else
-			angle.p = 0
-			angle:RotateAroundAxis(angle:Forward(), 90)
-			angle.y = ( math.Round(eyeAngles.y/45)*45 - 90 )
+			local angle
+			if ent.jcms_infoStrictAngles then
+				angle = eyeAngles
+				angle:RotateAroundAxis(angle:Forward(), 90)
+				angle:RotateAroundAxis(angle:Right(), 90)
+				angle.p = math.Round(angle.p/45)*45
+				angle.y = math.Round(angle.y/45)*45
+				angle.r = math.Round(angle.r/45)*45
+			else
+				angle = ent:EyeAngles()
+				angle.p = 0
+				angle:RotateAroundAxis(angle:Forward(), 90)
+				angle.y = ( math.Round(eyeAngles.y/45)*45 - 90 )
+			end
 	
 			cam.Start3D2D(pos, angle, 1 / 16)
 				jcms.hud_infoTargetFuncs[ ent:GetClass() ](ent, blend)

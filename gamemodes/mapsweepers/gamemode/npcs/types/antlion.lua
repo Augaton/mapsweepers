@@ -396,6 +396,114 @@ jcms.npc_types.antlion_guard = {
 	end
 }
 
+jcms.npc_types.antlion_mineralguard = {
+	faction = "antlion",
+	missionSpecific = "miningoperations",
+	
+	class = "npc_antlionguard",
+	suppressSwarmPortalEffect = true,
+	bounty = 150,
+	
+	danger = jcms.NPC_DANGER_BOSS,
+	cost = 5,
+	swarmWeight = 0,
+	swarmLimit = 3,
+	portalScale = 3.8,
+	
+	preSpawn = function(npc)
+		if not npc.jcms_fromPortal then
+			npc:SetKeyValue("startburrowed", "1")
+		end
+	end,
+
+	postSpawn = function(npc)
+		if not npc.jcms_oreType then
+			local weights = {}
+			for name, oreData in pairs(jcms.oreTypes) do
+				weights[name] = oreData.weight or 1
+			end
+			
+			npc.jcms_oreType = jcms.util_ChooseByWeight(weights)
+		end
+
+		local oreData = jcms.oreTypes[ npc.jcms_oreType ]
+		if oreData then
+			npc:SetMaterial(oreData.material)
+			npc.jcms_oreValue = oreData.value
+			npc.jcms_oreColourInt = jcms.util_ColorInteger(oreData.color)
+		end
+
+		npc:SetNWString("jcms_boss", "antlion_guard")
+	end,
+
+	takeDamage = function(npc, dmg)
+		timer.Simple(0, function()
+			if IsValid(npc) then
+				npc:SetNWFloat("HealthFraction", npc:Health() / npc:GetMaxHealth())
+			end
+		end)
+
+		local inflictor = dmg:GetInflictor()
+		local isStunstick = IsValid(inflictor) and jcms.util_IsStunstick(inflictor)
+		if (not npc.jcms_nextMine or CurTime() >= npc.jcms_nextMine) and (isStunstick or npc:Health() <= 0) then
+			npc.jcms_nextMine = CurTime() + 0.32
+			local pos = dmg:GetDamagePosition()
+
+			local chunk = ents.Create("jcms_orechunk")
+			chunk.jcms_miner = dmg:GetAttacker()
+			chunk:SetPos(pos)
+			chunk:SetAngles(AngleRand())
+			chunk:Spawn()
+			chunk:SetOreColourInt(npc.jcms_oreColourInt or 0)
+			chunk:SetOreName(npc.jcms_oreType)
+			chunk.jcms_oreValue = npc.jcms_oreValue
+			chunk:SetMaterial(npc:GetMaterial())
+
+			local phys = chunk:GetPhysicsObject()
+			phys:Wake()
+			phys:AddVelocity(VectorRand(-32, 32))
+			
+			if isStunstick then
+				npc:EmitSound("weapons/crowbar/crowbar_impact1.wav", 100, math.Rand(120, 125))
+			end
+
+			npc:EmitSound("Breakable.Concrete")
+
+			local ed = EffectData()
+			ed:SetOrigin(pos)
+			ed:SetColor(npc.jcms_oreColourInt or 0)
+			ed:SetRadius( math.Clamp(dmg:GetDamage() + 5, 10, 120) )
+
+			util.Effect("jcms_oremine", ed)
+		end
+	end,
+
+	timerMin = 0.1,
+	timerMax = 1.2,
+	timedEvent = function(npc)
+		if not npc.jcms_fromPortal then
+			npc:Fire "Unburrow"
+			npc.jcms_shouldUnburrow = true
+
+			timer.Simple(60, function() --fall-back
+				if IsValid(npc) and npc:GetInternalVariable("startburrowed") then 
+					npc:Remove()
+				end
+			end)
+		end
+	end,
+
+	think = function(npc) 
+		if npc:GetInternalVariable("startburrowed") and npc.jcms_shouldUnburrow then 
+			npc:Fire("Unburrow")
+		end
+	end,
+	
+	check = function(director)
+		return jcms.npc_capCheck("npc_antlionguard", 12)
+	end
+}
+
 jcms.npc_types.antlion_cyberguard = {
 	faction = "antlion",
 	

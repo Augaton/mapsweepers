@@ -257,8 +257,8 @@ if SERVER then
 			net.WriteUInt(#objectives, 4)
 			for i, obj in ipairs(objectives) do
 				net.WriteString(obj.type)
-				net.WriteUInt(obj.progress or 0, 10)
-				net.WriteUInt(obj.total or 0, 10)
+				net.WriteUInt(obj.progress or 0, 16)
+				net.WriteUInt(obj.total or 0, 16)
 				net.WriteBool(obj.percent)
 				net.WriteBool(obj.completed)
 				net.WriteUInt(tonumber(obj.style) or 0, 3)
@@ -804,7 +804,7 @@ if CLIENT then
 				local objectives = {}
 				for i=1, objectiveCount do
 					local objectivetype = net.ReadString()
-					local x, n = net.ReadUInt(10), net.ReadUInt(10)
+					local x, n = net.ReadUInt(16), net.ReadUInt(16)
 					local perc = net.ReadBool()
 					local completed = net.ReadBool()
 					local style = net.ReadUInt(3)

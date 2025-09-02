@@ -31,9 +31,19 @@
 			tags = { "hacking" }
 		},
 
+		miningoperations = {
+			faction = "antlion",
+			tags = {}
+		},
+
 		thumpersabotage = {
 			faction = "combine",
 			tags = { "infighting", "extraorders" }
+		},
+
+		datadownload = {
+			faction = "combine",
+			tags = { "hacking" }
 		},
 
 		mainframe = {

@@ -444,9 +444,13 @@
 				if missionTypeData and missionTypeData.npcTypeQueueCheck then
 					passesCheck, weightOverride = missionTypeData.npcTypeQueueCheck(d, totalCost, dangerCap, npcType, data, passesCheck)
 				end
+
+				if data.missionSpecific and data.missionSpecific ~= d.missionType then
+					passesCheck = false
+				end
 				
 				if passesCheck then
-					if weightOverride and not data.secretNPC then
+					if weightOverride and (not data.secretNPC) then
 						validTypes[ npcType ] = weightOverride
 					else
 						validTypes[ npcType ] = jcms.npc_GetScaledSwarmWeight(data)

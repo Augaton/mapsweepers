@@ -511,6 +511,52 @@ jcms.terminal_modeTypes = {
 		end
 	},
 
+	passwordclue = {
+		command = function(ent, cmd, data, ply)
+			if cmd == 0 and ent:GetNWBool("jcms_terminal_locked") then
+				jcms.terminal_ToUnlock(ent)
+				return true
+			end
+		end,
+
+		generate = function(ent)
+			return ent:GetNWBool("jcms_terminal_locked") and "" or tostring(ent.jcms_passwordClue)
+		end
+	},
+
+	datadownloadcomputer = {
+		command = function(ent, cmd, data, ply)
+			if ent:GetNWBool("jcms_terminal_locked") then
+				local n = math.floor(tonumber(cmd) or -1)
+				if n >= 0 and n <= 9 then
+					if #data == 5 then
+						if data..n == ent.jcms_password then
+							ent:EmitSound("buttons/combine_button5.wav")
+							jcms.terminal_Unlock(ent, ply, false)
+							return true, data..n
+						else
+							ent:EmitSound("buttons/button11.wav")
+							jcms.terminal_Punish(ent, ply)
+							return true, ""
+						end
+					else
+						ent:EmitSound("buttons/blip1.wav", 100, 120 + #data*8, 1)
+						return true, data .. n
+					end
+				end
+			else
+				if cmd == 0 then
+					local worked, newdata = ent.jcms_terminal_Callback(ent, cmd, data, ply)
+					return worked, newdata
+				end
+			end
+		end,
+
+		generate = function(ent)
+			return ent:GetNWBool("jcms_terminal_locked") and "" or "prep"
+		end
+	},
+
 	-- Hacking
 	spinners = {
 		weight = 1,

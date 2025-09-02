@@ -87,7 +87,7 @@
 					draw.SimpleText(str, "jcms_hud_small", 32 + off, 2 + off, color, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
 				render.OverrideBlend( false )   
 
-				if objective.percent then
+				if objective.percent or (barw-tw-2)/n < 2 then
 					surface.SetDrawColor(colorDark)
 					surface.DrawRect(24 + tw, 16, barw - tw, 6)
 					render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )

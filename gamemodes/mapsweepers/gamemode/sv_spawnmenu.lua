@@ -1621,7 +1621,7 @@
 			end
 
 			if text then
-				jcms.net_SendLocator("all", "Signal"..ply:EntIndex(), text, at, jcms.LOCATOR_SIGNAL, 10, ply)
+				jcms.net_SendLocator("all", "Signal"..ply:EntIndex(), text, at, jcms.LOCATOR_SIGNAL, 10, nil, ply)
 			end
 			
 			hook.Run("MapSweepersPlayerSignal", ply, signalId, at)
