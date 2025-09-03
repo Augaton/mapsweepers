@@ -695,7 +695,7 @@
 				mine:SetAngles(angle)
 				mine:SetBlinkScale(1.5)
 				mine:SetBlinkPeriod(0.72)
-				mine:SetBlinkColor( Vector(1, 0, 0) )
+				mine:SetBlinkColor( (ply:GetNWInt("jcms_pvpTeam",-1) == 2 and Vector(241/255, 212/255, 14/255)) or Vector(1,0,0) )
 				
 				mine.Radius = 170
 				mine.Damage = 100
@@ -801,7 +801,7 @@
 				mine:SetModel("models/props_combine/combine_mine01.mdl")
 				mine:SetModelScale(0.25)
 				mine:PhysicsInit(SOLID_VPHYSICS)
-				mine:SetColor(Color(255, 0, 0))
+				mine:SetColor((ply:GetNWInt("jcms_pvpTeam",-1) == 2 and Color(241, 212, 14)) or Color(255, 32, 32))
 
 				mine:SetBlinkScale(0.25)
 				mine:SetBlinkPeriod(0.25)
@@ -831,6 +831,10 @@
 				local shieldcharger = ents.Create("jcms_shieldcharger")
 				shieldcharger:SetPos(pos)
 				shieldcharger:SetAngles(angle)
+				if IsValid(ply) then
+					shieldcharger:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
+
 				shieldcharger:Spawn()
 				
 				if boosted then
@@ -847,10 +851,6 @@
 
 				if CPPI then
 					shieldcharger:CPPISetOwner( game.GetWorld() )
-				end
-				
-				if IsValid(ply) then
-					shieldcharger:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
 				end
 			end
 		},

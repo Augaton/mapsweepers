@@ -41,7 +41,9 @@ ENT.BreachDoors = false
 function ENT:Initialize()
 	if SERVER then
 		self:SetModel("models/weapons/w_slam.mdl")
-		self:SetColor(Color(255, 32, 32))
+		self:SetColor((self:GetNWInt("jcms_pvpTeam",-1) == 2 and Color(241, 212, 14)) or Color(255, 32, 32))
+
+
 		self:PhysicsInit(SOLID_VPHYSICS)
 		self.blastTime = CurTime()
 		self.expiration = CurTime() + self.Expires

@@ -419,7 +419,7 @@ jcms.npc_types.antlion_mineralguard = {
 	
 	danger = jcms.NPC_DANGER_BOSS,
 	cost = 5,
-	swarmWeight = 0,
+	swarmWeight = 0.0000000001,
 	swarmLimit = 3,
 	portalScale = 3.8,
 	

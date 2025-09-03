@@ -36,8 +36,10 @@ ENT.SentinelAnchor = true
 function ENT:Initialize()
 	if SERVER then
 		self:SetModel("models/props_combine/combine_light001a.mdl")
-		self:SetColor(Color(32, 230, 255))
 		self:PhysicsInitStatic(SOLID_VPHYSICS)
+		
+		self.jcms_teamColor = (self:GetNWInt("jcms_pvpTeam", -1) == 2 and Color(241, 212, 14)) or Color(32, 230, 255)
+		self:SetColor(self.jcms_teamColor)
 		
 		self:SetMaxHealth(500)
 		self:SetHealth(500)
@@ -62,7 +64,7 @@ function ENT:SetupDataTables()
 			self:SetColor(Color(162, 81, 255))
 			self.hackStunEnd = CurTime() + 2.5
 		else
-			self:SetColor(Color(32, 230, 255))
+			self:SetColor(self.jcms_teamColor)
 		end
 	end)
 end
