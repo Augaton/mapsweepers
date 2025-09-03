@@ -130,11 +130,29 @@
 		-- // }}}
 	end
 
-	function jcms.npc_AntlionFodder_Think(npc)
-		if npc:GetInternalVariable("startburrowed") and npc.jcms_shouldUnburrow then 
-			npc:Fire("Unburrow")
+	function jcms.npc_SetupAntlionBurrowCheck(npc)
+		local npcTbl = npc:GetTable()
+		
+		npcTbl.jcms_lastBurrowCheck = CurTime()
+		local timerName = "jcms_antlion_unburrowThink_" .. tostring(npc:EntIndex())
+
+		local function npc_Antlion_BurrowCheck()			
+			if not IsValid(npc) then
+				timer.Remove(timerName)
+				return
+			end
+
+			local cTime = CurTime()
+			if npcTbl.jcms_shouldUnburrow and cTime - npcTbl.jcms_lastBurrowCheck > 10 and npc:GetInternalVariable("startburrowed") then 
+				npc:Fire("Unburrow")
+				npcTbl.jcms_lastBurrowCheck = cTime
+			end
 		end
 
+		timer.Create(timerName, 10, 6, npc_Antlion_BurrowCheck)
+	end
+
+	function jcms.npc_AntlionFodder_Think(npc)
 		local enemy = npc:GetEnemy()
 		if not IsValid(enemy) or not jcms.npc_NearThumper(enemy) then return end
 
@@ -193,6 +211,8 @@ jcms.npc_types.antlion_worker = {
 			npc:SetMaxHealth(60)
 			npc:SetHealth(60)
 		end
+
+		jcms.npc_SetupAntlionBurrowCheck(npc)
 	end,
 
 	timerMin = 0.2,
@@ -211,10 +231,6 @@ jcms.npc_types.antlion_worker = {
 	end,
 	
 	think = function(npc, state)
-		if npc:GetInternalVariable("startburrowed") and npc.jcms_shouldUnburrow then 
-			npc:Fire("Unburrow")
-		end
-
 		if npc:GetCurrentSchedule() == SCHED_COMBAT_FACE then
 			npc:SetSchedule(SCHED_CHASE_ENEMY)
 		end
@@ -246,6 +262,7 @@ jcms.npc_types.antlion_drone = {
 	postSpawn = function(npc)
 		npc:SetSkin( math.random(0, npc:SkinCount() ))
 		npc.jcms_dmgMult = 3
+		jcms.npc_SetupAntlionBurrowCheck(npc)
 	end,
 
 	timerMin = 0.1,
@@ -308,6 +325,7 @@ jcms.npc_types.antlion_waster = {
 		end)
 
 		npc.jcms_dmgMult = 2
+		jcms.npc_SetupAntlionBurrowCheck(npc)
 	end,
 	
 	takeDamage = function(npc, dmg)
@@ -360,6 +378,7 @@ jcms.npc_types.antlion_guard = {
 		npc:SetHealth(hp)
 		
 		npc:SetNWString("jcms_boss", "antlion_guard")
+		jcms.npc_SetupAntlionBurrowCheck(npc)
 	end,
 
 	takeDamage = function(npc, dmg)
@@ -382,12 +401,6 @@ jcms.npc_types.antlion_guard = {
 					npc:Remove()
 				end
 			end)
-		end
-	end,
-
-	think = function(npc) 
-		if npc:GetInternalVariable("startburrowed") and npc.jcms_shouldUnburrow then 
-			npc:Fire("Unburrow")
 		end
 	end,
 	
@@ -434,6 +447,7 @@ jcms.npc_types.antlion_mineralguard = {
 		end
 
 		npc:SetNWString("jcms_boss", "antlion_guard")
+		jcms.npc_SetupAntlionBurrowCheck(npc)
 	end,
 
 	takeDamage = function(npc, dmg)
@@ -490,12 +504,6 @@ jcms.npc_types.antlion_mineralguard = {
 					npc:Remove()
 				end
 			end)
-		end
-	end,
-
-	think = function(npc) 
-		if npc:GetInternalVariable("startburrowed") and npc.jcms_shouldUnburrow then 
-			npc:Fire("Unburrow")
 		end
 	end,
 	
