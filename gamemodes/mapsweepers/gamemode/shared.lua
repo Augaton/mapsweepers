@@ -27,6 +27,11 @@ jcms.vectorOrigin = Vector(0, 0, 0)
 jcms.vectorUp = Vector(0, 0, 1)
 jcms.vectorOne = Vector(1, 1, 1)
 
+
+local pmt = FindMetaTable("Player")
+local emt = FindMetaTable("Entity")
+local nmt = FindMetaTable("NPC")
+
 -- Generic {{{
 
 	hook.Add("PlayerSwitchWeapon", "jcms_WepSwitchFOVFix", function(ply, oldWep, newWep)
@@ -62,7 +67,6 @@ jcms.vectorOne = Vector(1, 1, 1)
 -- }}}
 
 -- // Compatibility {{{
-	local pmt = FindMetaTable("Player")
 	pmt.CheckLimit = function() return true end --This function only exists in sandbox, but some addons assume it exists always.
 -- // }}
 
@@ -907,6 +911,10 @@ jcms.vectorOne = Vector(1, 1, 1)
 		local e2Pvp = e2:GetNWInt("jcms_pvpTeam", -1)
 		return e1Pvp == -1 or e2Pvp == -1 or e1Pvp == e2Pvp --If either lacks pvp or both on same team
 	end
+	
+	function jcms.team_pvpSameTeam_optimised(e1Pvp, e2Pvp)
+		return e1Pvp == -1 or e2Pvp == -1 or e1Pvp == e2Pvp --If either lacks pvp or both on same team
+	end
 
 	function jcms.team_SameTeam(e1, e2)
 		if (e1 == e2) or ( jcms.team_JCorp(e1) and jcms.team_JCorp(e2) ) then
@@ -946,7 +954,7 @@ jcms.vectorOne = Vector(1, 1, 1)
 		local players = team.GetPlayers(1)
 		for i=#players, 1, -1 do
 			local ply = players[i]
-			if not(IsValid(ply) and ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE) then
+			if not(IsValid(ply) and pmt.Alive(ply) and pmt.GetObserverMode(ply) == OBS_MODE_NONE) then
 				table.remove(players, i)
 			end
 		end

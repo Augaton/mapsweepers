@@ -52,12 +52,13 @@ if SERVER then
 		end--]]
 	end
 
-	function jcms.turret_IsDifferentTeam_Optimised(isHacked, ent)
+	function jcms.turret_IsDifferentTeam_Optimised(isHacked, ent, pvpTeam)
 		if isHacked then 
 			local entTbl = ent:GetTable()
+
 			return jcms.team_JCorp(ent) and not(entTbl.GetHackedByRebels and entTbl:GetHackedByRebels())
 		else
-			return jcms.team_NPC_optimised(ent)
+			return jcms.team_NPC_optimised(ent) or not jcms.team_pvpSameTeam_optimised(pvpTeam, ent:GetNWInt("jcms_pvpTeam", -1))
 		end
 	end
 	
@@ -575,10 +576,11 @@ if SERVER then
 		--Below is at least 50% of the cost of turrets.
 
 		local isHacked = selfTbl:GetHackedByRebels()
+		local selfPvpTeam = self:GetNWInt("jcms_pvpTeam", -1)
 		local entIndices = {}
 		for _, ent in ipairs(ents.FindInSphere(origin, radius)) do 
 			--if ent ~= self and ent:Health() > 0 then
-			if jcms.team_GoodTarget(ent) and jcms.turret_IsDifferentTeam(self, ent) and self:TurretVisible(ent) then
+			if jcms.team_GoodTarget(ent) and jcms.turret_IsDifferentTeam_Optimised(isHacked, ent, selfPvpTeam) and self:TurretVisible(ent) then
 				table.insert(selfTbl.targetsCache, ent)
 				entIndices[ent] = ent:EntIndex()
 			end

@@ -488,6 +488,7 @@
 				beam.beamRadius = rad
 				beam:SetPos(pos)
 				beam:Spawn()
+				beam.jcms_owner = ply
 				
 				beam.deathRay.DPS = 90
 				beam.deathRay.DPS_DIRECT = 160

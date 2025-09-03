@@ -126,13 +126,15 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 		end
 	end
 
+	local v35 = Vector(0,0,20)
 	function jcms.npc_Spawn(enemyType, pos, fromPortal)
 		jcms.blockNPCTracker = true
 		local enemyData = assert(jcms.npc_types[ enemyType ], "invalid enemy type '" .. tostring(enemyType) .. "'")
-		
 		assert( isvector(pos), "supply a vector please" )
+
 		local npc = ents.Create(enemyData.class)
 		if not IsValid(npc) then return NULL end
+
 		local npcTbl = npc:GetTable()
 		npcTbl.jcms_fromPortal = fromPortal
 		
@@ -158,7 +160,6 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 			npc:SetMaxLookDistance( math.max(npc:GetMaxLookDistance(), 4096) )
 		end
 
-		local v35 = Vector(0,0,20)
 		npc:SetPos(pos + v35)
 
 		local hulltrace = util.TraceEntityHull({

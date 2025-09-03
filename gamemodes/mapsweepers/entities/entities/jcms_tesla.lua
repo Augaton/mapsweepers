@@ -83,14 +83,17 @@ if SERVER then
 
 	function ENT:Think()
 		if self:Health() > 0 then
+			local selfTbl = self:GetTable()
 			local cTime = CurTime()
-			if self.nextAttack <= cTime and (self.hackStunEnd < CurTime() or not self:GetHackedByRebels()) then
+			if selfTbl.nextAttack <= cTime and (selfTbl.hackStunEnd < CurTime() or not self:GetHackedByRebels()) then
 				local selfPos = self:GetPos()
 
-				local targets = ents.FindInSphere(selfPos, self.Radius)
+				local isHacked = selfTbl:GetHackedByRebels()
+				local selfPvpTeam = self:GetNWInt("jcms_pvpTeam", -1)
+				local targets = ents.FindInSphere(selfPos, selfTbl.Radius)
 				local finalTargets = {}
 				for i, ent in ipairs(targets) do 
-					if jcms.team_GoodTarget(ent) and jcms.turret_IsDifferentTeam(self, ent) and self:TurretVisible(ent) then
+					if jcms.team_GoodTarget(ent) and jcms.turret_IsDifferentTeam_Optimised(isHacked, ent, selfPvpTeam) and self:TurretVisible(ent) then
 						table.insert(finalTargets, ent)
 					end
 				end
@@ -104,7 +107,7 @@ if SERVER then
 					self:Zap(best)
 				end
 
-				self.nextAttack = cTime + self.FireRate
+				selfTbl.nextAttack = cTime + selfTbl.FireRate
 			end
 		else
 			local pos = self:WorldSpaceCenter()

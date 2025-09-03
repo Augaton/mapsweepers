@@ -230,7 +230,7 @@
 			if #beacons > 0 then
 				table.Shuffle(jcms.director.respawnBeacons)
 				for i, beacon in ipairs(jcms.director.respawnBeacons) do
-					if (evenBusyOnes or not beacon:GetRespawnBusy()) and jcms.team_pvpSameTeam(ply, beacon) then
+					if (evenBusyOnes or not beacon:GetRespawnBusy()) and (not IsValid(ply) or jcms.team_pvpSameTeam(ply, beacon)) then
 						return beacon
 					end
 				end

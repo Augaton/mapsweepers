@@ -104,6 +104,7 @@ if SERVER then
 					beam:Spawn()
 					beam.beamPrepTime = prep
 					beam.beamLifeTime = 20
+					beam.jcms_owner = self
 					
 					beam.deathRay.DPS = 60
 					beam.deathRay.DPS_DIRECT = 60

@@ -1117,7 +1117,7 @@ end
 				end
 
 				if target:Health() > 0 then
-					if target:IsPlayer() and jcms.team_JCorp_player(target) then
+					if target:IsPlayer() and jcms.team_JCorp_player(target) and jcms.team_pvpSameTeam(ent, target) then
 						local time = CurTime()
 						ent.jcms_friendlyFireCounter = (ent.jcms_friendlyFireCounter or 0) + 1
 						
@@ -1415,7 +1415,7 @@ end
 				jcms.director_stats_AddDeathForSweeper(ply)
 
 				if IsValid(attacker) and attacker:IsPlayer() then
-					if jcms.team_JCorp_player(attacker) and attacker ~= ply then
+					if attacker ~= ply and jcms.team_JCorp_player(attacker) and jcms.team_pvpSameTeam(ply, attacker) then
 						jcms.statistics_AddOther(attacker, "ffire", 1)
 						jcms.director_stats_AddKillForSweeper(attacker, 3)
 						if not jcms.playerData_IsPlayerLiability(ply) then
