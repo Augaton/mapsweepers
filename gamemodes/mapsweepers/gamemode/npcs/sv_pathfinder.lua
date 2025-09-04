@@ -159,6 +159,8 @@ jcms.pathfinder = jcms.pathfinder or {}
 -- // }}}
 
 function jcms.pathfinder.getNearestNode( point )
+	if not jcms.pathfinder.airNodes then return end
+
 	local closestDist = math.huge
 	local closestNode
 
@@ -174,6 +176,8 @@ function jcms.pathfinder.getNearestNode( point )
 end
 
 function jcms.pathfinder.getNearestNodePVS( point )
+	if not jcms.pathfinder.airNodes then return end
+	
 	local closestDist = math.huge
 	local closestNode
 
@@ -191,6 +195,10 @@ end
 function jcms.pathfinder.getNodesInPVS( point )
 	local pvs = bspReader.getPVSAtPoint(point)
 	local nodes = {}
+
+	if not jcms.pathfinder.leafAirNodes then
+		return nodes
+	end
 
 	for _, cluster in ipairs(pvs) do 
 		local leaves = bspReader.getClusterVisleaves(cluster) 
