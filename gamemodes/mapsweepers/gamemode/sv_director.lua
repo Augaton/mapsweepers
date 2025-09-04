@@ -147,6 +147,26 @@
 		function jcms.director_IsSuddenDeath()
 			return jcms.director and jcms.director.suddenDeathTime and jcms.director_GetMissionTime() > jcms.director.suddenDeathTime
 		end
+
+		function jcms.director_PvpObjectiveCompleted(ply, pos) --Player who completed, objective position.
+			if not jcms.cvar_pvpMode:GetBool() or not IsValid(ply) then return end --Only PVP uses this function rn.
+
+			local teamId = ply:GetNWInt("jcms_pvpTeam", -1)
+			teamId = not(teamId==-1) and teamId or 1
+
+			local awayAreas = jcms.director_GetAreasAwayFrom(jcms.mapgen_ZoneList()[jcms.mapdata.largestZone], {pos}, 100, 1250)
+			local weightedAreas = {}
+			for i, area in ipairs(awayAreas) do
+				weightedAreas[area] = area:GetSizeX() * area:GetSizeY()
+			end
+
+			local respCount = math.ceil(#team.GetPlayers(1)/2) --half the server in Respawns
+			for i=1, respCount, 1 do
+				local area = jcms.util_ChooseByWeight(weightedAreas) --TODO: account for no areas? Although that should be impossible.
+
+				jcms.director_InsertRespawnVector(area:GetCenter(), teamId) 
+			end
+		end
 		
 		function jcms.director_GetAreasAwayFrom(zoneAreas, origins, minDist, maxDist)
 			local areas = {}

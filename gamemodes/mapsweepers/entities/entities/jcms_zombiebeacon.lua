@@ -82,9 +82,10 @@ if SERVER then
 		end
 	end
 
-	function ENT:jcms_terminal_Callback()
+	function ENT:jcms_terminal_Callback(cmd, data, ply)
 		if self:GetSwpNear() then 
 			self:StartCountdown()
+			self.jcms_activator = ply
 			return true, tostring( CurTime() + 60 )
 		else
 			return false
@@ -219,9 +220,11 @@ if SERVER then
 				self:EmitSound("ambient/explosions/explode_6.wav", 140, 110, 1, CHAN_AUTO)
 				self:EmitSound("ambient/explosions/explode_2.wav", 100, 140, 1, CHAN_AUTO)
 
-				local radSphere = ents.Create("jcms_radsphere")
-				radSphere:SetPos(self:WorldSpaceCenter())
-				radSphere:Spawn()
+				if not jcms.cvar_pvpMode:GetBool() then --We have a different incentive in PVP and keeping the radiation could get aids.
+					local radSphere = ents.Create("jcms_radsphere")
+					radSphere:SetPos(self:WorldSpaceCenter())
+					radSphere:Spawn()
+				end
 
 				self:Remove()
 			end
@@ -243,6 +246,8 @@ if SERVER then
 
 		self:SetNWString("jcms_terminal_modeData", "2")
 		self:SetActive(false)
+
+		jcms.director_PvpObjectiveCompleted(self.jcms_activator, self:GetPos())
 	end
 
 	function ENT:StartCountdown()

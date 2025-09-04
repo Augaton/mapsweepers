@@ -49,6 +49,9 @@ local prefabs = jcms.prefabs
 
 			thumper:Spawn()
 			terminal:InitAsTerminal("models/props_combine/breenconsole.mdl", "thumper_controls", function(ent, cmd, data, ply)
+				if not thumper.jcms_thumperEnabled then
+					jcms.director_PvpObjectiveCompleted(ply, thumper:GetPos())
+				end
 				thumper:Fire("Enable")
 				thumper.jcms_thumperEnabled = true
 				return true, "1"
@@ -160,6 +163,8 @@ local prefabs = jcms.prefabs
 
 				if self:Health() <= 0 then
 					local maxtime = math.Rand(2, 3)
+					
+					jcms.director_PvpObjectiveCompleted(attacker, self:GetPos())
 					
 					self.jcms_PostTakeDamage = nil
 					self:Fire("Disable")
