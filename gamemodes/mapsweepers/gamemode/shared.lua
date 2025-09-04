@@ -1299,8 +1299,8 @@ local nmt = FindMetaTable("NPC")
 		return game.GetWorld():GetNWBool("jcms_ongoing", false)
 	end
 
-	function jcms.util_GetRespawnCount()
-		return game.GetWorld():GetNWInt("jcms_respawncount", 0)
+	function jcms.util_GetRespawnCount(teamId)
+		return game.GetWorld():GetNWInt("jcms_respawncount_" .. tostring(not(teamId==-1) and teamId or 1), 0)
 	end
 
 	function jcms.util_GetMissionType()
