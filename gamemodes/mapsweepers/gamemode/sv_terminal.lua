@@ -458,6 +458,11 @@ jcms.terminal_modeTypes = {
 					nodeEnt:SetEnergyColour(redVector)
 				end
 				ent.isComplete = true
+				
+				if IsValid(ent.jcms_hackedBy) then
+					jcms.director_PvpObjectiveCompleted(ent.jcms_hackedBy, ent:GetPos())
+				end
+					
 				if IsValid(ent.prevTerminal) then --Re-generate our predecessor, so it updates/unlocks.
 					jcms.terminal_ToPurpose(ent.prevTerminal)
 				end
@@ -520,7 +525,11 @@ jcms.terminal_modeTypes = {
 		end,
 
 		generate = function(ent)
-			return ent:GetNWBool("jcms_terminal_locked") and "" or tostring(ent.jcms_passwordClue)
+			local locked = ent:GetNWBool("jcms_terminal_locked")
+			if not locked then
+				jcms.director_PvpObjectiveCompleted(ent.jcms_hackedBy, ent:GetPos())
+			end
+			return locked and "" or tostring(ent.jcms_passwordClue)
 		end
 	},
 
@@ -877,6 +886,9 @@ function jcms.terminal_Unlock(ent, hacker, intrusive)
 	
 	if IsValid(hacker) and hacker:IsPlayer() then
 		jcms.statistics_AddOther(hacker, "hacks", 1)
+		ent.jcms_hackedBy = hacker
+	elseif IsValid(hacker) and IsValid(hacker.jcms_owner) then
+		ent.jcms_hackedBy = hacker.jcms_owner
 	end
 
 	ent.jcms_hackType = nil

@@ -252,10 +252,10 @@
 						if not md.pillar2:GetIsDisrupted() then activePillars = activePillars + 1 end
 
 						if activePillars > 0 then
-							-- If both pillars are active, it takes 4 minutes to charge up
-							-- If only one pillar is active, it takes 12 minutes instead
+							-- If both pillars are active, it takes 1.5 minutes to charge up
+							-- If only one pillar is active, it takes 4 minutes instead
 							
-							local progressPower = (activePillars == 2) and (1 / 240) or (1 / 720)
+							local progressPower = (activePillars == 2) and (1 / 90) or (1 / 240)
 							md.defenseProgress = math.Clamp(md.defenseProgress + progressPower, 0, 1)
 
 							md.timeEstimate = math.ceil( (1 - md.defenseProgress) / progressPower )

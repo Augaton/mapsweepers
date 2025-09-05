@@ -58,7 +58,7 @@ end
 if SERVER then
 	ENT.Radius = 2200
 
-	function ENT:ChargeFlashpoint(npc)
+	function ENT:ChargeFlashpoint(npc, attacker)
 		local addedCharge = math.ceil(npc.jcms_bounty or 0)
 		if npc.jcms_danger == jcms.NPC_DANGER_RAREBOSS then 
 			addedCharge = 0
@@ -77,6 +77,7 @@ if SERVER then
 
 			if self:GetCharge() >= self:GetMaxCharge() then
 				self:ReleaseBoss()
+				jcms.director_PvpObjectiveCompleted(attacker, self:GetPos())
 			end
 		end
 	end
@@ -145,7 +146,7 @@ if SERVER then
 			end
 
 			if IsValid(closest) and mindist2 <= closest.Radius^2 then
-				closest:ChargeFlashpoint(ply_or_npc)
+				closest:ChargeFlashpoint(ply_or_npc, attacker)
 			end
 		end
 	end)

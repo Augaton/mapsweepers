@@ -304,7 +304,7 @@ end
 function ENT:Initialize()
 	if SERVER then
 		self:SetModel("models/props_lab/tpplug.mdl")
-		self:SetColor(Color(255, 64, 64))
+		self:SetColor(IsValid(self.jcms_owner) and (self.jcms_owner:GetNWInt("jcms_pvpTeam", -1)==2) and Color(241, 212, 14) or Color(255, 64, 64))
 		self:PhysicsInit(SOLID_VPHYSICS)
 		self:SetMaxHealth(65)
 		self:SetHealth(self:GetMaxHealth())
