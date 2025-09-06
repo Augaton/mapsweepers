@@ -107,7 +107,7 @@ jcms.vectorOne = Vector(1, 1, 1)
 	jcms.cvar_cash_start = CreateConVar("jcms_cash_start", "600", FCVAR_JCMS_NOTIFY_AND_SAVE, "The amount of cash a new sweeper spawns with.", 0, 10000)
 	jcms.cvar_cash_evac = CreateConVar("jcms_cash_evac", "75", FCVAR_JCMS_NOTIFY_AND_SAVE, "This amount of cash is given to the sweeper a successful evacuation.", 0, 10000)
 	jcms.cvar_cash_victory = CreateConVar("jcms_cash_victory", "75", FCVAR_JCMS_NOTIFY_AND_SAVE, "This much cash is given to players for each consecutive victory.", 0, 10000)
-	jcms.cvar_cash_maxclerks = CreateConVar("jcms_cash_maxclerks", "5", FCVAR_JCMS_NOTIFY_AND_SAVE, "The upper cap on how many clerks (NPCs) can be evacuated for +1 J each.", 0, 10000)
+	jcms.cvar_cash_maxclerks = CreateConVar("jcms_cash_maxclerks", "5", FCVAR_JCMS_SHARED_SAVED, "The upper cap on how many clerks (NPCs) can be evacuated for +1 J each.", 0, 10000)
 
 	jcms.cvar_cash_mul_final = CreateConVar("jcms_cash_mul_final", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Global cash multiplier for kills, applied after every other bonus.", 0, 10)
 	jcms.cvar_cash_mul_base = CreateConVar("jcms_cash_mul_base", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "NPC bounty cash multiplier before any other bonuses are given.", 0, 10)
