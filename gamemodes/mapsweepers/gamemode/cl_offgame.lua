@@ -568,15 +568,24 @@ jcms.offgame = jcms.offgame or NULL
 
 			bMis.BuildFunc(pnl.tabPnl)
 
-			if (not jcms.seenLagPopup) and (BRANCH ~= "x86-64" or not GetConVar("gmod_mcore_test"):GetBool()) then
+			local hasNMNavAddon = false
+			for i, addon in ipairs( engine.GetAddons() ) do
+				if addon.wsid == "2905690962" then
+					hasNMNavAddon = true
+					break
+				end
+			end
+
+			if (not jcms.seenLagPopup) and (BRANCH ~= "x86-64" or not GetConVar("gmod_mcore_test"):GetBool() or hasNMNavAddon) then
 				jcms.seenLagPopup = true
 				local popup = vgui.Create("DFrame")
 				popup:SetBackgroundBlur(true)
-				popup:SetSize(500, 150)
+				popup:SetSize(500, hasNMNavAddon and 200 or 150)
 				popup:Center()
 				popup:MakePopup()
 				popup:SetTitle("")
 				popup:ShowCloseButton(false)
+				popup.hasNMNavAddon = hasNMNavAddon
 				popup.Paint = jcms.paint_ModalGameBranch
 
 				local close = popup:Add("DButton")
@@ -630,6 +639,16 @@ jcms.offgame = jcms.offgame or NULL
 					end
 				end
 				popup.b2.Paint = BLANK_DRAW
+
+				if hasNMNavAddon then
+					popup.b3 = popup:Add("DButton")
+					popup.b3:SetPos(24, 84-9+28*2)
+					popup.b3:SetSize(300, 18)
+					function popup.b3:DoClick()
+						gui.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/?id=2905690962")
+					end
+					popup.b3.Paint = BLANK_DRAW
+				end
 			end
 		end
 
@@ -3564,6 +3583,14 @@ jcms.offgame = jcms.offgame or NULL
 					jcms.modal_classChange_open = false
 				end
 			end
+		end
+
+	-- }}}
+
+	-- Error {{{
+
+		function jcms.offgame_ShowNoNavError()
+			local pnl = makeBasePanel(jcms.offgame_paint_ErrorFrame)
 		end
 
 	-- }}}

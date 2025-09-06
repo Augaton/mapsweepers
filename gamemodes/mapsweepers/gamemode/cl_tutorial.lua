@@ -87,6 +87,20 @@ jcms.tutorPoints = {
 	},
 
 	{
+		v = Vector(2007, -1380, -339),
+		a = Angle(-24, 150, 0),
+
+		box1 = Vector(1874, -1187, -243),
+		box2 = Vector(2053, -1442, -388),
+		width = 1024,
+		
+		color = jcms.color_alert,
+		content = {
+			{ "#jcms.t_nosw_title", "#jcms.t_nosw_desc", color = jcms.color_alert },
+		}
+	},
+
+	{
 		v = Vector(2288, -1243, -305),
 		a = Angle(0, 220, 0),
 

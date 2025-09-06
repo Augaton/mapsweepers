@@ -1349,7 +1349,7 @@ end
 					end
 				end
 			else
-				jcms.playerspawn_Debug(ply)
+				jcms.playerspawn_Error(ply)
 			end
 		end
 	end
@@ -1491,7 +1491,7 @@ end
 							ply:SetNWInt("jcms_cash", 500)
 						end
 					else
-						jcms.playerspawn_Debug(ply)
+						jcms.playerspawn_Error(ply)
 					end
 				end
 			end
@@ -1637,21 +1637,16 @@ end
 		jcms.npc_UpdateRelations(ply)
 	end
 	
-	function jcms.playerspawn_Debug(ply)
+	function jcms.playerspawn_Error(ply)
 		ply:UnSpectate()
-		ply:SetObserverMode(OBS_MODE_NONE)
+		ply:SetObserverMode(OBS_MODE_FIXED)
 		ply:UnLock()
 		ply:GodEnable()
 		
 		jcms.class_Apply(ply, "infantry")
 		ply:SetNWBool("jcms_flashlight", false)
 		
-		ply.jcms_canGetWeapons = true
-		ply:Give("weapon_stunstick")
-		ply:Give("weapon_physcannon")
-		ply.jcms_canGetWeapons = false
-		
-		ply:SetTeam(0)
+		ply:SetTeam(-256)
 		ply:SetupHands()
 		
 		ply:ChatPrint("[Map Sweepers] This map has no NavMesh!")

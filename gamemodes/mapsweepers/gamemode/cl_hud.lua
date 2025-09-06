@@ -747,12 +747,36 @@
 			end
 		else
 			local offset = 4
+			local y = -128
 
-			draw.SimpleText("#jcms.findweapon", "jcms_hud_medium", -48, -16, jcms.color_dark, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
-			draw.SimpleText("#jcms.findweapon_err", "jcms_hud_small", 16, -16, jcms.color_dark, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+			local str1 = language.GetPhrase("#jcms.findweapon")
+			local str2 = language.GetPhrase("#jcms.findweapon_err1")
+			local str4 = language.GetPhrase("#jcms.findweapon_err3")
+			local str5 = language.GetPhrase("#jcms.findweapon_err4")
+			local str6 = language.GetPhrase("#jcms.findweapon_err5")
+
+			local longestWidth = 0
+			surface.SetFont("jcms_hud_medium")
+			longestWidth = math.max(surface.GetTextSize(str1), longestWidth)
+			surface.SetFont("jcms_hud_small")
+			longestWidth = math.max(surface.GetTextSize(str2), longestWidth)
+			longestWidth = math.max(surface.GetTextSize(str4), longestWidth)
+			longestWidth = math.max(surface.GetTextSize(str5), longestWidth)
+			longestWidth = math.max(surface.GetTextSize(str6), longestWidth)
+
+			local x = -64 - longestWidth
+			draw.SimpleText(str1, "jcms_hud_medium", -48, y, jcms.color_dark, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+			draw.SimpleText(str2, "jcms_hud_small", -48, y + 32, jcms.color_dark, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+			draw.SimpleText(str4, "jcms_hud_small", x, y + 32 + 64 + 32, jcms.color_dark, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+			draw.SimpleText(str5, "jcms_hud_small", x, y + 32 + 64 + 32*2, jcms.color_dark, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+			draw.SimpleText(str6, "jcms_hud_small", -48, y + 32 + 32, jcms.color_dark, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+
 			render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
-			draw.SimpleText("#jcms.findweapon", "jcms_hud_medium", -48 - offset, -16 - offset, jcms.color_alert, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
-			draw.SimpleText("#jcms.findweapon_err", "jcms_hud_small", 16 - offset, -16 - offset, jcms.color_alert, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+				draw.SimpleText(str1, "jcms_hud_medium", -48, y - offset, jcms.color_bright, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText(str2, "jcms_hud_small", -48 - offset, y + 32 - offset, jcms.color_bright, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText(str4, "jcms_hud_small", x, y + 32 + 64 + 32 - offset, jcms.color_pulsing, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText(str5, "jcms_hud_small", x, y + 32 + 64 + 32*2 - offset, jcms.color_pulsing, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText(str6, "jcms_hud_small", -48, y + 32 + 32 - offset, jcms.color_alert, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 			render.OverrideBlend( false )
 		end
 	end
@@ -1665,7 +1689,12 @@
 				jcms.hud_DrawDeathBlackout()
 			elseif obs == OBS_MODE_FIXED then
 				if not IsValid(jcms.offgame) then
-					jcms.offgame_ShowPreMission()
+					if ply:Team() == -256 then
+						-- Invalid map
+						jcms.offgame_ShowNoNavError()
+					else
+						jcms.offgame_ShowPreMission()
+					end
 				end
 			elseif obs == OBS_MODE_CHASE then
 				local classData = jcms.class_GetLocPlyData()

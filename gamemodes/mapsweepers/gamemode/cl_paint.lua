@@ -342,6 +342,7 @@
 	end
 
 	function jcms.paint_ModalGameBranch(p, w, h)
+		local hasNMNavAddon = p.hasNMNavAddon
 		Derma_DrawBackgroundBlur(p, 0)
 		jcms_Modal(p, w, h)
 
@@ -349,6 +350,7 @@
 		local str2 = "#jcms.antilag_desc"
 		local str3 = "#jcms.antilag_64bit"
 		local str4 = "#jcms.antilag_mcore"
+		local str5 = "#jcms.antilag_nmnav"
 		draw.SimpleText(str1, "jcms_big", 16, 8, jcms.color_bright)
 		draw.SimpleText(str2, "jcms_small_bolder", 16, 48, jcms.color_bright)
 
@@ -381,6 +383,13 @@
 			surface.SetDrawColor(col)
 			drawHollowPolyButton(24, 84-9+28, 18, 18, 4)
 			draw.SimpleText(str3, "jcms_small_bolder", 48, 84+28, col, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		end
+		
+		if hasNMNavAddon then
+			local col = CurTime()%1.5<0.5 and jcms.color_alert or jcms.color_bright
+			surface.SetDrawColor(col)
+			drawHollowPolyButton(24, 84-9+28*2, 18, 18, 4)
+			draw.SimpleText(str5, "jcms_small_bolder", 48, 84+28*2, col, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 		end
 
 		return true
@@ -2604,6 +2613,61 @@
 				end
 			end
 		end
+	-- }}}
+
+	-- Error {{{
+
+		function jcms.offgame_paint_ErrorFrame(p, w, h)
+			local lowres = not true or jcms.util_IsLowRes()
+
+			surface.SetAlphaMultiplier(0.2)
+			surface.SetDrawColor(jcms.color_bright)
+			jcms.hud_DrawNoiseRect(0, 0, w, h, w)
+			surface.SetAlphaMultiplier(1)
+
+			local basey = lowres and h*0.3 or h*0.24
+			
+			local str1 = language.GetPhrase("jcms.nnv_title")
+			local str2 = game.GetMap()
+			local str3 = language.GetPhrase("jcms.nnv_desc")
+
+			local tw, th = draw.SimpleText(str1, lowres and "jcms_hud_small" or "jcms_hud_medium", w/2, basey, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			draw.SimpleText(str2, lowres and "jcms_medium" or "jcms_big", w/2, basey - th/2 - 16, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+			local y0 = basey + th/2
+			local y1 = basey + th
+			tw, th = draw.SimpleText(str3, lowres and "jcms_medium" or "jcms_hud_small", w/2, y1, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			local y2 = y1 + th + (lowres and 24 or 48)
+
+			p.variants = p.variants or {
+				{ language.GetPhrase("jcms.nnv_a_title"), language.GetPhrase("jcms.nnv_a_desc") },
+				{ language.GetPhrase("jcms.nnv_b_title"), language.GetPhrase("jcms.nnv_b_desc"):format(str2) },
+				{ language.GetPhrase("jcms.nnv_c_title"), language.GetPhrase("jcms.nnv_c_desc") }
+			}
+			
+			local vw = lowres and 300 or 500
+			local pad = lowres and 10 or 32
+			for i,var in ipairs(p.variants) do
+				local vx = w/2 - #p.variants/2*(vw+8) + (vw+8)*(i-0.5)
+				local vtw, vth = draw.SimpleText(var[1], lowres and "jcms_medium" or "jcms_hud_small", vx, y2, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				jcms.hud_DrawHollowPolyButton(vx-vw/2, y2 - 8, vw, lowres and 300 or 400)
+
+				if not var.mup then
+					var.mup = markup.Parse(("<color=%d,%d,%d><font=%s>%s</font></color>"):format(jcms.color_bright.r, jcms.color_bright.g, jcms.color_bright.b, lowres and "jcms_small" or "jcms_medium", var[2]), vw - pad*2)
+				end
+
+				var.mup:Draw(vx - vw/2 + pad, y2 + vth + 8, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 100)
+			end
+
+			surface.SetAlphaMultiplier(0.1)
+			surface.SetDrawColor(jcms.color_pulsing)
+			surface.DrawRect(w*0.25, y0, w*0.5, 1)
+			surface.DrawRect(w*0.3, y0 + 4, w*0.4, 1)
+			surface.DrawCircle(w*0.8, h*0.8, Lerp(math.abs(math.sin(CurTime())), h/2, h))
+			surface.DrawCircle(w*0.8, h*0.8, Lerp(math.abs(math.sin(CurTime()+2)), h*0.4, h*0.8))
+			surface.SetAlphaMultiplier(1)
+		end
+
 	-- }}}
 	
 -- // }}}
