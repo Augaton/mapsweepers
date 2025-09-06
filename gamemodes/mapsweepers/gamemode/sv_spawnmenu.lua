@@ -1383,7 +1383,11 @@
 		turret:SetPos(pos + mins)
 		turret.jcms_owner = ply
 		if IsValid(ply) then
-			turret:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+			local plyTeam = ply:GetNWInt("jcms_pvpTeam", -1)
+			turret:SetNWInt("jcms_pvpTeam", plyTeam)
+			if plyTeam == 2 then --TODO: PLACEHOLDER. Will be changed when we have recolourable turrets.
+				turret:SetSubMaterial(0, "models/jcms/PLACEHOLDER_mafia_turret")
+			end
 		end
 
 		jcms.npc_UpdateRelations(turret)
