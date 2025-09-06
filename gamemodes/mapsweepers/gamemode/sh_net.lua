@@ -290,7 +290,7 @@ if SERVER then
 		net.Send(ply)
 	end
 	
-	function jcms.net_SendOrder(orderId, orderData)
+	function jcms.net_SendOrder(orderId, orderData, onlyToPlayer)
 		net.Start("jcms_msg")
 			net.WriteBool(false)
 			net.WriteEntity(game.GetWorld())
@@ -301,10 +301,15 @@ if SERVER then
 			net.WriteUInt(orderData.cost_override or orderData.cost or 0, 24)
 			net.WriteUInt(orderData.cooldown_override or orderData.cooldown or 0, 12)
 			net.WriteUInt(orderData.slotPos or 1, 4)
-		net.Broadcast()
+
+		if IsValid(onlyToPlayer) and onlyToPlayer:IsPlayer() then
+			net.Send(onlyToPlayer)
+		else
+			net.Broadcast()
+		end
 	end
 	
-	function jcms.net_SendManyOrders(orders)
+	function jcms.net_SendManyOrders(orders, onlyToPlayer)
 		local delay = 0.015
 		local count = table.Count(orders)
 		local i = 0
@@ -312,7 +317,7 @@ if SERVER then
 		for orderId, orderData in pairs(orders) do
 			local _i =  i + 1
 			timer.Simple(i*delay, function()
-				jcms.net_SendOrder(orderId, orderData)
+				jcms.net_SendOrder(orderId, orderData, onlyToPlayer)
 			end)
 			i = i + 1
 		end
@@ -832,12 +837,18 @@ if CLIENT then
 				local cooldown = net.ReadUInt(12)
 				local slotPos = net.ReadUInt(4) --For sorting
 				
+				local nextUse = nil
+				if jcms.orders[ orderId ] then
+					nextUse = jcms.orders[ orderId ].nextUse
+				end
+
 				jcms.orders[ orderId ] = {
 					id = orderId,
 					category = category,
 					cost = cost,
 					cooldown = cooldown,
-					slotPos = slotPos
+					slotPos = slotPos,
+					nextUse = nextUse
 				}
 				
 				jcms.printf("Order '%s' added", orderId)
