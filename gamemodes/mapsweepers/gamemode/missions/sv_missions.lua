@@ -96,6 +96,17 @@
 				jcms.runprogress_SetLastMission()
 				jcms.director.fullyInited = true
 
+				if jcms.cvar_pvpMode:GetBool() then
+					for teamId=1, 2 do
+						for i=1, math.ceil(player.GetCount()/2) do
+							--TODO: Weighted
+							local largest = jcms.mapgen_ZoneList()[jcms.mapdata.largestZone]
+							local area = largest[math.random(#largest)]
+							jcms.director_InsertRespawnVector(area:GetCenter(), teamId) 
+						end
+					end
+				end
+
 				-- // Mission-Specific Orders {{{
 					for k, order in pairs(jcms.orders) do 
 						if order.missionSpecific then 

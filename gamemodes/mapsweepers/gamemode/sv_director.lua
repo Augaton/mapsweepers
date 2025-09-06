@@ -160,7 +160,7 @@
 				weightedAreas[area] = area:GetSizeX() * area:GetSizeY()
 			end
 
-			local respCount = math.ceil(#team.GetPlayers(1)/2) --half the server in Respawns
+			local respCount = math.ceil(player.GetCount()/2) --half the server in Respawns
 			for i=1, respCount, 1 do
 				local area = jcms.util_ChooseByWeight(weightedAreas) --TODO: account for no areas? Although that should be impossible.
 
@@ -267,7 +267,7 @@
 			if jcms.director_IsSuddenDeath() then return end
 			
 			local beacons = d.respawnBeacons
-			if not beacons or #beacons <= 0 then return end
+			if not beacons then return end
 			
 			for i=#beacons, 1, -1 do
 				if not IsValid(beacons[i]) then
@@ -279,7 +279,7 @@
 			if #beacons > 0 then
 				table.Shuffle(d.respawnBeacons)
 				for i, beacon in ipairs(d.respawnBeacons) do
-					if (evenBusyOnes or not beacon:GetRespawnBusy()) and (not teamId or jcms.team_pvpSameTeam_optimised(teamId, beacon:GetNWInt("jcms_pvpTeam"), -1)) then
+					if (evenBusyOnes or not beacon:GetRespawnBusy()) and (not teamId or jcms.team_pvpSameTeam_optimised(teamId, beacon:GetNWInt("jcms_pvpTeam", -1))) then
 						return beacon
 					end
 				end

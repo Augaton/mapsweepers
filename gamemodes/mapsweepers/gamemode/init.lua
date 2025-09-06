@@ -1281,7 +1281,7 @@ end
 			
 			jcms.playerspawn_Sweeper(ply, position, arg) -- arg: No Drop Pod
 		elseif mode == "npc" then
-			ply.jcms_lastLoadout = nil
+			--ply.jcms_lastLoadout = nil
 			ply:SetNWString("jcms_class", arg) -- arg: Player Class
 			jcms.playerspawn_NPC(ply, position)
 			ply.jcms_damageShare = {}
