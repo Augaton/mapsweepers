@@ -995,6 +995,18 @@ end
 			return true
 		end
 	end)
+
+	hook.Add("OnEntityCreated", "jcms_PreventBuggyAbuse", function(ent)
+		if ent:GetClass() == "prop_vehicle_jeep" then
+			ent:SetHitboxSet(1)
+			timer.Simple(0, function()
+				if IsValid(ent) then
+					ent:SetHitboxSet(1)
+					jcms.printf("Removed a buggy's ammo crate to prevent abuse")
+				end
+			end)
+		end
+	end)
 	
 	hook.Add("GetFallDamage", "jcms_FallDamage", function(ply, speed)
 		local dmg = math.min(speed / 24, ply:GetMaxHealth() * 0.75)
