@@ -1,7 +1,0 @@
-"VertexLitGeneric"
-{
-	"$basetexture" "models/jcms/mafia_gunbolter"
-	"$selfillum" 1
-	"$selfillummask" "models/jcms/jcorp_gunbolter_illum"
-}
-
