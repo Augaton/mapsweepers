@@ -38,6 +38,18 @@
 			local tr = ply:GetEyeTrace()
 			return true, tr.HitPos
 		end,
+
+		orbital_fixed_outdoors = function(ply, args)
+			local tr = ply:GetEyeTrace()
+
+			local skyPos, hitSky = jcms.util_GetSky(tr.HitPos)
+			if hitSky then
+				return true, skyPos - jcms.vectorUp
+			else
+				jcms.net_SendOrderMessage(ply, 5)
+				return false
+			end
+		end,
 		
 		orbital_target = function(ply, args)
 			local tr = ply:GetEyeTrace()
@@ -478,7 +490,7 @@
 			cost = 750,
 			cooldown = 120,
 			slotPos = 3,
-			argparser = "orbital_fixed",
+			argparser = "orbital_fixed_outdoors",
 			func = function(ply, pos)
 				local beam = ents.Create("jcms_deathraycontroller")
 
@@ -641,7 +653,7 @@
 			func = function(ply, pos)
 				local col = Color(96, 255, 124)
 				local boosted = jcms.isPlayerEngineer(ply)
-				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_restock", 10, "#jcms.firstaid", col)
+				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_restock", 10, "#jcms.firstaid", col, ply)
 				crate:SetAmmoCashInside( 0 )
 				crate:SetHealthInside( boosted and 125 or 100 )
 				crate:SetOwnerNickname( ply:Nick() )
@@ -666,7 +678,7 @@
 			func = function(ply, pos, angle)
 				local col = Color(255, 0, 0)
 				local boosted = jcms.isPlayerEngineer(ply)
-				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_restock", 10, "#jcms.restock", col)
+				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_restock", 10, "#jcms.restock", col, ply)
 				crate:SetAmmoCashInside( 400 + (boosted and 200 or 0) )
 				crate:SetHealthInside( 0 )
 				crate:SetOwnerNickname( ply:Nick() )
@@ -1407,6 +1419,8 @@
 		local flare = ents.Create("jcms_dropflare")
 		flare:SetPos(pos)
 		flare:Spawn()
+
+		flare.jcms_owner = ply
 
 		if col then
 			flare:SetBeamColour(Vector(col.r/255, col.g/255, col.b/255))

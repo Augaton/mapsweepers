@@ -144,7 +144,7 @@ if SERVER then
 		end
 
 		self.removeTime = CurTime() + delay
-		jcms.net_SendLocator("all", nil, locatorName, self:GetPos() + Vector(0, 0, 16), jcms.LOCATOR_TIMED, delay)
+		jcms.net_SendLocator("all", nil, locatorName, self:GetPos() + Vector(0, 0, 16), jcms.LOCATOR_TIMED, delay, nil, self.jcms_owner)
 		
 		return self.thing
 	end

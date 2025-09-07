@@ -433,7 +433,10 @@
 			surface.SetDrawColor(colAlt)
 			surface.DrawOutlinedRect(ScrW()/2 - armorWidth/2, ScrH() - 78 + 16, armorWidth, 8, 1)
 			surface.DrawRect(ScrW()/2 - armorWidth/2 + 2, ScrH() - 78 + 2 + 16, (armorWidth-4)*armorFrac, 8, 1)
+
+			jcms.hud_SpectatorDraw_ChangeClass(col, colAlt) --TODO: Needs actual proper integration, doesn't render rn.
 		end
+
 
 		local f2 = math.ease.InOutCubic(jcms.hud_dead)
 		cam.Start2D()

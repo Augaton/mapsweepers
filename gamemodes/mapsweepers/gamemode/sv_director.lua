@@ -477,7 +477,7 @@
 							util.Effect("jcms_spawneffect", ed)
 							
 							timer.Simple(delay, function()
-								if IsValid(enemyType.ply) then
+								if IsValid(enemyType.ply) and not enemyType.ply:Alive() or not(enemyType.ply:GetObserverMode() == OBS_MODE_NONE) then
 									jcms.playerspawn_RespawnAs(enemyType.ply, "npc", pos, enemyType.class or "npc_combineelite")
 									local ed2 = EffectData()
 									ed2:SetColor(colorInt)

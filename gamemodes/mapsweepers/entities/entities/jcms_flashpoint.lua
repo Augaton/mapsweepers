@@ -75,7 +75,7 @@ if SERVER then
 			ed:SetEntity(self)
 			util.Effect("jcms_chargebeam", ed)
 
-			if self:GetCharge() >= self:GetMaxCharge() then
+			if self:GetCharge() >= self:GetMaxCharge() and not self:GetIsComplete() then
 				self:ReleaseBoss()
 				jcms.director_PvpObjectiveCompleted(attacker, self:GetPos())
 			end

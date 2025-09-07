@@ -311,7 +311,7 @@
 	end
 
 	local swayVec = Vector(0,0,0)
-	local function setup3d2dDiagonal(top, left)
+	function jcms.setup3d2dDiagonal(top, left)
 		local pos = EyePos()
 		local angles = EyeAngles()
 		local time = CurTime() * 0.56
@@ -334,7 +334,7 @@
 		return pos, angles
 	end
 
-	local function setup3d2dCentral(dir)
+	function jcms.setup3d2dCentral(dir)
 		local pos = EyePos()
 		local angles = EyeAngles()
 		local time = CurTime() * 0.56 + 0.2
@@ -2293,7 +2293,7 @@
 
 	function jcms.hud_RegularDraw()
 		if jcms.disableHUD then return end
-		
+
 		local locPly = jcms.locPly
 
 		render.ClearDepth()
@@ -2335,14 +2335,14 @@
 		local vehTable = vehicle:GetTable()
 		if IsValid(vehicle) then
 			if vehTable.DrawHUDBottom then
-				setup3d2dCentral("bottom")
+				jcms.setup3d2dCentral("bottom")
 					vehTable.DrawHUDBottom(vehicle)
 					jcms.draw_Tips()
 				cam.End3D2D()
 			end
 			
 			if vehTable.DrawHUDCenter then
-				setup3d2dCentral("center")
+				jcms.setup3d2dCentral("center")
 					vehTable.DrawHUDCenter(vehicle)
 				cam.End3D2D()
 			end
@@ -2352,48 +2352,48 @@
 			end
 
 			if vehTable.DoDrawHealthbar then
-				setup3d2dDiagonal(false, true)
+				jcms.setup3d2dDiagonal(false, true)
 					jcms.draw_HUDHealthbar()
 					jcms.draw_DamageIndicators()
 				cam.End3D2D()
 			end
 
 			if vehTable.DoDrawAmmo then
-				setup3d2dDiagonal(false, false)
+				jcms.setup3d2dDiagonal(false, false)
 					jcms.draw_HUDAmmo()
 					jcms.draw_NotifsAmmo()
 				cam.End3D2D()
 			end
 		else
-			setup3d2dDiagonal(false, true)
+			jcms.setup3d2dDiagonal(false, true)
 				jcms.draw_HUDHealthbar()
 				jcms.draw_DamageIndicators()
 			cam.End3D2D()
 
-			setup3d2dDiagonal(false, false)
+			jcms.setup3d2dDiagonal(false, false)
 				jcms.draw_HUDAmmo()
 				jcms.draw_NotifsAmmo()
 			cam.End3D2D()
 			
-			setup3d2dCentral("bottom")
+			jcms.setup3d2dCentral("bottom")
 				jcms.draw_Tips()
 				jcms.draw_SentinelAnchor()
 			cam.End3D2D()
 		end
 
-		setup3d2dCentral("top")
+		jcms.setup3d2dCentral("top")
 			jcms.draw_Compass()
 		cam.End3D2D()
 
-		setup3d2dDiagonal(true, true)
+		jcms.setup3d2dDiagonal(true, true)
 			jcms.draw_Information()
 		cam.End3D2D()
 		
-		setup3d2dDiagonal(true, false)
+		jcms.setup3d2dDiagonal(true, false)
 			jcms.draw_Notifs()
 		cam.End3D2D()
 
-		setup3d2dCentral("center")
+		jcms.setup3d2dCentral("center")
 			if jcms.hud_spawnmenuAnim < 0.05 then
 				if not IsValid(vehicle) then
 					jcms.draw_Crosshair()
@@ -2404,7 +2404,7 @@
 			end
 		cam.End3D2D()
 
-		local s, rtn = pcall(hook.Run, "MapSweepersDrawHUD", setup3d2dCentral, setup3d2dDiagonal)
+		local s, rtn = pcall(hook.Run, "MapSweepersDrawHUD", jcms.setup3d2dCentral, jcms.setup3d2dDiagonal)
 		if not s then
 			ErrorNoHalt(rtn)
 		end
@@ -2423,7 +2423,7 @@
 				jcms.hud_myclassMat = Material("jcms/classes/"..tgclass..".png")
 			end
 			
-			setup3d2dCentral("bottom")
+			jcms.setup3d2dCentral("bottom")
 				draw.SimpleText("#jcms.spectating", "jcms_hud_medium", 0, -256, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
 				local nickwidth = draw.SimpleText(tg:Nick(), "jcms_hud_huge", 32, -256, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 				surface.SetDrawColor(jcms.color_dark)
@@ -2474,7 +2474,7 @@
 				local canSwitch = (restriction == 0) or (restriction == 1 and evacuated)
 
 				if canSwitch then
-					setup3d2dDiagonal(false, true)
+					jcms.setup3d2dDiagonal(false, true)
 					local binding = input.LookupBinding("+reload", true)
 					if binding then
 						binding = binding:upper()
@@ -2508,41 +2508,16 @@
 				end
 			end
 
-			if jcms.locPly:GetNWInt("jcms_desiredteam", 0) == 1 and jcms.vm_evacd <= 0 then
-				setup3d2dDiagonal(false, false)
-				local binding = input.LookupBinding("+jump", true)
-				if binding then
-					binding = binding:upper()
-					local font = #binding >= 3 and "jcms_hud_medium" or "jcms_hud_big"
-					local str = language.GetPhrase("jcms.changeclass")
-
-					surface.SetFont(font)
-					local tw = surface.GetTextSize(binding)
-
-					surface.SetDrawColor(jcms.color_dark)
-					surface.DrawRect(-tw, -200, tw, 6)
-					draw.SimpleText(binding, font, 0, -200, jcms.color_dark, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
-					draw.SimpleText(str, "jcms_hud_small", -24, -172, jcms.color_dark, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
-
-					surface.SetDrawColor(jcms.color_bright)
-					surface.DrawRect(-tw, -200-off, tw, 6)
-					draw.SimpleText(binding, font, 0, -200-off, jcms.color_bright, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
-					draw.SimpleText(str, "jcms_hud_small", -24, -172-off, jcms.color_bright, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
-					
-					if jcms.locPly:KeyPressed(IN_JUMP) or jcms.locPly:KeyDown(IN_JUMP) and not jcms.modal_classChange_open then
-						jcms.offgame_ModalChangeClass()
-						jcms.modal_classChange_open = true
-					end
-				end
-				cam.End3D2D()
-			end
+			jcms.setup3d2dDiagonal(false, false)
+				jcms.hud_SpectatorDraw_ChangeClass()
+			cam.End3D2D()
 		end
 		
-		setup3d2dDiagonal(true, true)
+		jcms.setup3d2dDiagonal(true, true)
 			jcms.draw_Information()
 		cam.End3D2D()
 		
-		setup3d2dDiagonal(true, false)
+		jcms.setup3d2dDiagonal(true, false)
 			jcms.draw_Notifs()
 		cam.End3D2D()
 
@@ -2551,6 +2526,36 @@
 			surface.SetDrawColor(0, 0, 0, 255*f2)
 			surface.DrawRect(-2,-2,jcms.scrW+4,jcms.scrH+4)
 		cam.End2D()
+	end
+
+	function jcms.hud_SpectatorDraw_ChangeClass(col, colAlt) --TODO: Better visual integeration w/ npc hud
+		local off = 4
+		if (jcms.locPly:GetNWInt("jcms_desiredteam", 0) == 1 or jcms.cvar_pvpMode:GetBool()) and jcms.vm_evacd <= 0 then
+			local binding = input.LookupBinding("+jump", true)
+			if binding then
+				binding = binding:upper()
+				local font = #binding >= 3 and "jcms_hud_medium" or "jcms_hud_big"
+				local str = language.GetPhrase("jcms.changeclass")
+
+				surface.SetFont(font)
+				local tw = surface.GetTextSize(binding)
+
+				surface.SetDrawColor(jcms.color_dark)
+				surface.DrawRect(-tw, -200, tw, 6)
+				draw.SimpleText(binding, font, 0, -200, jcms.color_dark, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText(str, "jcms_hud_small", -24, -172, jcms.color_dark, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+
+				surface.SetDrawColor(jcms.color_bright)
+				surface.DrawRect(-tw, -200-off, tw, 6)
+				draw.SimpleText(binding, font, 0, -200-off, jcms.color_bright, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText(str, "jcms_hud_small", -24, -172-off, jcms.color_bright, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+				
+				if jcms.locPly:KeyPressed(IN_JUMP) or jcms.locPly:KeyDown(IN_JUMP) and not jcms.modal_classChange_open then
+					jcms.offgame_ModalChangeClass()
+					jcms.modal_classChange_open = true
+				end
+			end
+		end
 	end
 
 	function jcms.hud_DrawDeathBlackout()
@@ -2631,36 +2636,36 @@
 				render.ClearDepth()
 				cam.IgnoreZ(true)
 				
-				setup3d2dCentral("center")
+				jcms.setup3d2dCentral("center")
 					drawSeq(1, 0.5, 1.2, "npc/scanner/combat_scan5.wav", jcms.draw_Crosshair)
 				cam.End3D2D()
 				
-				setup3d2dCentral("top")
+				jcms.setup3d2dCentral("top")
 					drawSeq(2, 0.7, 1.4, nil, jcms.draw_Compass)
 				cam.End3D2D()
 				
-				setup3d2dDiagonal(false, true)
+				jcms.setup3d2dDiagonal(false, true)
 					drawSeq(3, 1.1, 1.6, "npc/scanner/scanner_scan2.wav", jcms.draw_HUDHealthbar)
 				cam.End3D2D()
 
-				setup3d2dDiagonal(false, false)
+				jcms.setup3d2dDiagonal(false, false)
 					drawSeq(4, 1.2, 1.6, nil, jcms.draw_HUDAmmo)
 					drawSeq(4, 1.3, 1.7, nil, jcms.draw_NotifsAmmo)
 				cam.End3D2D()
 				
-				local pos1, ang1 = setup3d2dCentral("center") cam.End3D2D()
-				local pos2, ang2 = setup3d2dDiagonal(true, true) cam.End3D2D()
+				local pos1, ang1 = jcms.setup3d2dCentral("center") cam.End3D2D()
+				local pos2, ang2 = jcms.setup3d2dDiagonal(true, true) cam.End3D2D()
 				local a = math.ease.InOutQuint( math.Clamp(math.Remap(t, 1.7, 3.5, 0, 1), 0, 1) )
 				
 				cam.Start3D2D(LerpVector(a,pos1,pos2), LerpAngle(a,ang1,ang2), Lerp(a, 1/20, 1/64))
 					drawSeq(5, 1.7, 3.5, "npc/scanner/combat_scan3.wav", jcms.draw_Information)
 				cam.End3D2D()
 
-				setup3d2dCentral("bottom")
+				jcms.setup3d2dCentral("bottom")
 					drawSeq(6, 1.8, 2.4, nil, jcms.draw_Tips)
 				cam.End3D2D()
 
-				local s, rtn = pcall(hook.Run, "MapSweepersDrawHUD", setup3d2dCentral, setup3d2dDiagonal)
+				local s, rtn = pcall(hook.Run, "MapSweepersDrawHUD", jcms.setup3d2dCentral, jcms.setup3d2dDiagonal)
 				if not s then
 					ErrorNoHalt(rtn)
 				end
@@ -2693,26 +2698,26 @@
 				cam.IgnoreZ(true)
 
 				if (t > 0.9 and t < 2.5) or (t < 3.4 and CurTime()%(1/4)<(1/8)) then
-					setup3d2dCentral("center")
+					jcms.setup3d2dCentral("center")
 						local n1, n2 = 0.9, 1.5
 						drawSeq(1, n1, n2, "npc/scanner/combat_scan5.wav", jcms.draw_Crosshair)
 					cam.End3D2D()
 				end
 				
-				setup3d2dCentral("top")
+				jcms.setup3d2dCentral("top")
 					drawSeq(2, 1.7, 2.3, "npc/scanner/scanner_alert1.wav", jcms.draw_Compass)
 				cam.End3D2D()
 				
-				setup3d2dDiagonal(false, true)
+				jcms.setup3d2dDiagonal(false, true)
 					drawSeq(3, 2.4, 2.7, "npc/scanner/scanner_scan2.wav", jcms.draw_HUDHealthbar)
 				cam.End3D2D()
 
-				setup3d2dDiagonal(false, false)
+				jcms.setup3d2dDiagonal(false, false)
 					drawSeq(4, 2.8, 3.1, "npc/scanner/scanner_scan4.wav", jcms.draw_HUDAmmo)
 				cam.End3D2D()
 				
-				local pos1, ang1 = setup3d2dCentral("center") cam.End3D2D()
-				local pos2, ang2 = setup3d2dDiagonal(true, true) cam.End3D2D()
+				local pos1, ang1 = jcms.setup3d2dCentral("center") cam.End3D2D()
+				local pos2, ang2 = jcms.setup3d2dDiagonal(true, true) cam.End3D2D()
 				local a = math.ease.InOutQuint( math.Clamp(math.Remap(t, 3.4, 5.5, 0, 1), 0, 1) )
 				
 				cam.Start3D2D(LerpVector(a,pos1,pos2), LerpAngle(a,ang1,ang2), Lerp(a, 1/20, 1/64))
@@ -2726,7 +2731,7 @@
 					end
 					
 					local off = 16
-					setup3d2dCentral("center")
+					jcms.setup3d2dCentral("center")
 						local w, h = 1100, 180
 						surface.SetDrawColor(jcms.color_dark_alt)
 						surface.DrawRect(-w/2, -h/3, w, h)
@@ -2745,7 +2750,7 @@
 					jcms.hud_beginsequenceBlip = false
 				end
 
-				local s, rtn = pcall(hook.Run, "MapSweepersDrawHUD", setup3d2dCentral, setup3d2dDiagonal)
+				local s, rtn = pcall(hook.Run, "MapSweepersDrawHUD", jcms.setup3d2dCentral, jcms.setup3d2dDiagonal)
 				if not s then
 					ErrorNoHalt(rtn)
 				end
