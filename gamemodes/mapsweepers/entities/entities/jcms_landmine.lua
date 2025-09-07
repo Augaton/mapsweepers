@@ -66,6 +66,14 @@ function ENT:SetupDataTables()
 	--self:SetBlinkColor( Vector(1, 0, 0) )
 end
 
+function ENT:UpdateForFaction(faction)
+	local col = Vector(1, 0, 0)
+	if faction == "mafia" then
+		col:SetUnpacked(241/255, 212/255, 14/255)
+	end
+	self:SetBlinkColor(col)
+end
+
 if SERVER then
 	hook.Add("InitPostEntity", "jcms_LinkPortalsToDoors", function()
 		local namedDoors = {}
@@ -99,7 +107,12 @@ if SERVER then
 		local removed = constraint.RemoveAll(self)
 		if removed then
 			self:EmitSound("physics/metal/metal_computer_impact_bullet3.wav", 75, 110)
-			util.SpriteTrail(self, 0, Color(255, 64, 64), true, 10, 0, 0.5, 0.1, "trails/laser")
+
+			local col = Color(255, 64, 64)
+			if self:GetNWInt("jcms_pvpTeam", -1) == 2 then
+				col:SetUnpacked(255, 255, 0)
+			end
+			util.SpriteTrail(self, 0, col, true, 10, 0, 0.5, 0.1, "trails/laser")
 		end
 	end
 
@@ -224,6 +237,7 @@ if SERVER then
 		
 		local weldedTo = self.jcms_weldedTo
 		if IsValid(weldedTo) and IsValid( weldedTo:GetPhysicsObject() ) then
+			local colorInt = jcms.util_GetColorIntegerPvP(self)
 			if self.BreachDoors then
 				if weldedTo:GetClass() == "prop_door_rotating" then
 					weldedTo:PhysicsInit(SOLID_VPHYSICS)
@@ -238,7 +252,7 @@ if SERVER then
 					timer.Simple(despawnAfter, function()
 						if IsValid(weldedTo) then
 							local ed = EffectData()
-							ed:SetColor(jcms.util_colorIntegerJCorp)
+							ed:SetColor(colorInt)
 							ed:SetFlags(2)
 							ed:SetEntity(weldedTo)
 							util.Effect("jcms_spawneffect", ed)

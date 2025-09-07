@@ -424,14 +424,15 @@ function ENT:SetupDataTables()
 
 	self:NetworkVarNotify("HackedByRebels", function(ent, name, old, new )
 		if new ~= old then 
-			local isRebel = new
-
-			for i, matname in ipairs(ent:GetMaterials()) do
-				ent:SetSubMaterial(i-1, isRebel and matname:gsub("jcorp_", "rgg_") or "")
-			end
+			self:UpdateForFaction(new and "rgg" or jcms.util_GetFactionNamePVP(ent))
 		end
 	end)
-	--:SetSubMaterial(0, "models/jcms/rgg_turret")
+end
+
+function ENT:UpdateForFaction(faction)
+	for i, matname in ipairs(self:GetMaterials()) do
+		self:SetSubMaterial(i-1, matname:gsub("jcorp_", tostring(faction) .. "_"))
+	end
 end
 
 function ENT:SetupBoosted() --For engineer

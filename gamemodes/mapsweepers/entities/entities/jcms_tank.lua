@@ -101,7 +101,9 @@ function ENT:Initialize()
 				tower:SetTankOtherPart(self)
 				tower:SetPos(self:GetPos())
 				tower:SetAngles(self:GetAngles())
+				tower:SetNWInt("jcms_pvpTeam", self:GetNWInt("jcms_pvpTeam", -1))
 				tower:Spawn()
+				jcms.util_TryUpdateForPVP(tower)
 				
 				local axis = constraint.Axis(self, tower, 0, 0, Vector(0, 0, 1), Vector(0, 0, -1), 0, 0, 50, 1)
 				self:SetTankOtherPart(tower)
@@ -110,7 +112,7 @@ function ENT:Initialize()
 				tower.tankAxis = axis
 				
 				local ed = EffectData()
-				ed:SetColor(jcms.util_colorIntegerJCorp)
+				ed:SetColor(jcms.util_GetColorIntegerPvP(self))
 				ed:SetFlags(0)
 				ed:SetEntity(tower)
 				util.Effect("jcms_spawneffect", ed)
@@ -132,6 +134,16 @@ function ENT:Initialize()
 	
 	if SERVER then
 		self:AddEFlags(EFL_DONTBLOCKLOS)
+	end
+end
+
+function ENT:UpdateForFaction(faction)
+	if self:Health() <= 0 then
+		self:SetMaterial("models/jcms/"..faction.."_tank_destroyed")
+	else
+		for i, matname in ipairs(self:GetMaterials()) do
+			self:SetSubMaterial(i-1, matname:gsub("jcorp_", tostring(faction) .. "_"))
+		end
 	end
 end
 
@@ -679,7 +691,7 @@ if SERVER then
 		if self:Health() <= 0 then
 			self.jcms_destroyed = true
 			if not self:GetTankIsTower() then
-				self:SetMaterial("models/jcms/jcorp_tank_destroyed")
+				jcms.util_TryUpdateForPVP(self)
 				self:Ignite(math.Rand(15, 45))
 				
 				timer.Simple(math.Rand(0.5, 2.5), function()
@@ -698,7 +710,7 @@ if SERVER then
 				util.Effect("jcms_blast", ed)
 				util.Effect("Explosion", ed)
 			elseif self:GetTankIsTower() then
-				self:SetMaterial("models/jcms/jcorp_tank_destroyed")
+				jcms.util_TryUpdateForPVP(self)
 				self:Ignite(math.Rand(10, 30))
 				
 				if IsValid(self.tankAxis) then

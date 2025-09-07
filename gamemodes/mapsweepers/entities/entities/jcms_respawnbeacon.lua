@@ -46,6 +46,12 @@ function ENT:SetupDataTables()
 	self:SetRespawnBusy(false)
 end
 
+function ENT:UpdateForFaction(faction)
+	for i, matname in ipairs(self:GetMaterials()) do
+		self:SetSubMaterial(i-1, matname:gsub("jcorp_", tostring(faction) .. "_"))
+	end
+end
+
 if SERVER then
 	function ENT:DoPreRespawnEffect(ply, duration)
 		self:SetRespawnTarget(ply)
@@ -53,7 +59,7 @@ if SERVER then
 	
 	function ENT:DoPostRespawnEffect(ply)
 		local ed = EffectData()
-		ed:SetColor(jcms.util_colorIntegerJCorp)
+		ed:SetColor(jcms.util_GetColorIntegerPvP(ply))
 		ed:SetFlags(0)
 		ed:SetEntity(ply)
 		util.Effect("jcms_spawneffect", ed)

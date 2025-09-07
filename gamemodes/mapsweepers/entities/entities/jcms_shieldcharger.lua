@@ -38,9 +38,6 @@ function ENT:Initialize()
 		self:SetModel("models/props_combine/combine_light001a.mdl")
 		self:PhysicsInitStatic(SOLID_VPHYSICS)
 		
-		self.jcms_teamColor = (self:GetNWInt("jcms_pvpTeam", -1) == 2 and Color(241, 212, 14)) or Color(32, 230, 255)
-		self:SetColor(self.jcms_teamColor)
-		
 		self:SetMaxHealth(500)
 		self:SetHealth(500)
 	end
@@ -52,6 +49,16 @@ function ENT:Initialize()
 	self.hackStunEnd = CurTime()
 end
 
+function ENT:UpdateForFaction(faction)
+	if faction == "rgg" then
+		self:SetColor( Color(162, 81, 255) )
+	elseif faction == "mafia" then
+		self:SetColor( Color(241, 212, 14) )
+	else
+		self:SetColor( Color(32, 230, 255) )
+	end
+end
+
 function ENT:SetupDataTables()
 	self:NetworkVar("Float", 0, "HealthFraction")
 	self:NetworkVar("Int", 0, "ChargeRadius")
@@ -60,12 +67,11 @@ function ENT:SetupDataTables()
 	self:SetChargeRadius(600)
 
 	self:NetworkVarNotify("HackedByRebels", function(ent, name, old, new )
-		if new then 
-			self:SetColor(Color(162, 81, 255))
+		if new then
 			self.hackStunEnd = CurTime() + 2.5
-		else
-			self:SetColor(self.jcms_teamColor)
 		end
+
+		self:UpdateForFaction(new and "rgg" or jcms.util_GetFactionNamePVP(ent))
 	end)
 end
 

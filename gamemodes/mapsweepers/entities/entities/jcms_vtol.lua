@@ -87,6 +87,12 @@ function ENT:SetupDataTables()
 	end
 end
 
+function ENT:UpdateForFaction(faction)
+	for i, matname in ipairs(self:GetMaterials()) do
+		self:SetSubMaterial(i-1, matname:gsub("jcorp_", tostring(faction) .. "_"))
+	end
+end
+
 if SERVER then
 	function ENT:SpawnMinecart()
 		if IsValid(self.jcms_minecart) then
@@ -135,7 +141,7 @@ if SERVER then
 				timer.Simple(despawnAfter, function()
 					if IsValid(self) then
 						local ed = EffectData()
-						ed:SetColor(jcms.util_colorIntegerJCorp)
+						ed:SetColor(jcms.util_GetColorIntegerPvP(self))
 						ed:SetFlags(2)
 						ed:SetEntity(self)
 						util.Effect("jcms_spawneffect", ed)

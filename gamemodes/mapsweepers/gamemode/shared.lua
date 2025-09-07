@@ -1198,7 +1198,30 @@ local nmt = FindMetaTable("NPC")
 		return r * (8/7) * 32, g * (8/7) * 32, b * (4/3) * 64
 	end
 
+	function jcms.util_GetColorIntegerPvP(ent)
+		if IsValid(ent) and ent:GetNWInt("jcms_pvpTeam", -1) == 2 then
+			return jcms.util_colorIntegerMafia
+		else
+			return jcms.util_colorIntegerJCorp
+		end
+	end
+
+	function jcms.util_GetFactionNamePVP(ent)
+		if IsValid(ent) and ent:GetNWInt("jcms_pvpTeam", -1) == 2 then
+			return "mafia"
+		else
+			return "jcorp"
+		end
+	end
+
+	function jcms.util_TryUpdateForPVP(ent)
+		if IsValid(ent) and ent.UpdateForFaction then
+			ent:UpdateForFaction( jcms.util_GetFactionNamePVP(ent) )
+		end
+	end
+
 	jcms.util_colorIntegerJCorp = jcms.util_ColorInteger( Color(255, 0, 0) )
+	jcms.util_colorIntegerMafia = jcms.util_ColorInteger( Color(255, 217, 0) )
 	jcms.util_colorIntegerSweeperShield = jcms.util_ColorInteger( Color(32, 200, 255) )
 
 	jcms.util_dmgTypesCompression = { DMG_ACID, DMG_FALL, DMG_DROWN, DMG_NERVEGAS, DMG_RADIATION, DMG_BURN }

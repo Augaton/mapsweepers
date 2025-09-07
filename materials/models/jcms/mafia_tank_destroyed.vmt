@@ -1,0 +1,10 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/jcms/mafia_tank"
+	"$bumpmap" "models/jcms/jcorp_tank_destroyed_normal"
+
+	"$phong" 1
+	"$phongexponenttexture" "models/jcms/jcorp_tank_destroyed_metallic"
+	"$phongboost" 1.0
+	"$phongfresnelranges"		"[0 0.5 1]"
+}

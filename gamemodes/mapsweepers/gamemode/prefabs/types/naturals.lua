@@ -441,7 +441,7 @@ local prefabs = jcms.prefabs
 
 			function ent:DoPostRespawnEffect(ply)
 				local ed = EffectData()
-				ed:SetColor(jcms.util_colorIntegerJCorp)
+				ed:SetColor(jcms.util_GetColorIntegerPvP(ply))
 				ed:SetFlags(0)
 				ed:SetEntity(ply)
 				util.Effect("jcms_spawneffect", ed)

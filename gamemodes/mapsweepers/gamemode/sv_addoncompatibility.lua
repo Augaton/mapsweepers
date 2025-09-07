@@ -369,7 +369,7 @@ hook.Add("InitPostEntity", "jcms_addonCompatibility", function()
 		hook.Add("PlayerSpawn", "jcms_TFGrap_SetCol", function(ply, transition)
 			local isGrey = ply:GetNWString("jcms_class", "infantry") == "recon"
 
-			local col = (isGrey and Color(100,100,100)) or jcms.util_ColorFromInteger(jcms.util_colorIntegerJCorp)
+			local col = (isGrey and Color(100,100,100)) or jcms.util_ColorFromInteger( jcms.util_GetColorIntegerPvP(ply) )
 			ply:SetWeaponColor(Vector(col.r/255, col.g/255, col.b/255))
 		end)
 	end

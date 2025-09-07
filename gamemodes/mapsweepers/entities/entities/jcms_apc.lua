@@ -97,6 +97,16 @@ function ENT:SetupDataTables()
 	end
 end
 
+function ENT:UpdateForFaction(faction)
+	if self:Health() <= 0 then
+		self:SetMaterial("models/jcms/"..faction.."_apc_destroyed")
+	else
+		for i, matname in ipairs(self:GetMaterials()) do
+			self:SetSubMaterial(i-1, matname:gsub("jcorp_", tostring(faction) .. "_"))
+		end
+	end
+end
+
 if SERVER then
 	ENT.HoverDistance = 92
 	ENT.Speed = 485
@@ -164,7 +174,7 @@ if SERVER then
 				timer.Simple(despawnAfter, function()
 					if IsValid(self) then
 						local ed = EffectData()
-						ed:SetColor(jcms.util_colorIntegerJCorp)
+						ed:SetColor(jcms.util_GetColorIntegerPvP(self))
 						ed:SetFlags(2)
 						ed:SetEntity(self)
 						util.Effect("jcms_spawneffect", ed)
@@ -664,7 +674,7 @@ if SERVER then
 			util.Effect("jcms_blast", ed)
 			util.Effect("Explosion", ed)
 
-			self:SetMaterial("models/jcms/jcorp_apc_destroyed")
+			jcms.util_TryUpdateForPVP(self)
 			self:SetBodygroup(0, 1)
 		end
 	end

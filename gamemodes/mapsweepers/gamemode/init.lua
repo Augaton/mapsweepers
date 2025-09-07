@@ -1460,7 +1460,11 @@ end
 	function GM:PlayerSetHandsModel(ply, ent)
 		if ply:Team() == 1 then
 			ent:SetModel("models/weapons/c_arms_combine.mdl")
-			ent:SetSubMaterial(0, "models/jcms/c_arms_jcorp")
+			if ply:GetNWInt("jcms_pvpTeam", -1) == 2 then
+				ent:SetSubMaterial(0, "models/jcms/c_arms_mafia")
+			else
+				ent:SetSubMaterial(0, "models/jcms/c_arms_jcorp")
+			end
 		else
 			local classData = jcms.class_GetData(ply)
 
@@ -1619,6 +1623,7 @@ end
 		if skyPos and skyClear and (not noDropPod) then
 			local dropPod = ents.Create("jcms_droppod")
 			dropPod:Drop(ply, spawnPos, skyPos)
+			dropPod:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
 			ply.jcms_dropTime = CurTime()
 		else
 			ply:SetPos(spawnPos)

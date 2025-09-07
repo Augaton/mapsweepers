@@ -34,6 +34,12 @@ function ENT:Initialize()
 	end
 end
 
+function ENT:UpdateForFaction(faction)
+	for i, matname in ipairs(self:GetMaterials()) do
+		self:SetSubMaterial(i-1, matname:gsub("jcorp_", tostring(faction) .. "_"))
+	end
+end
+
 function ENT:JumpEffect()
     if SERVER then
         self:EmitSound("weapons/physcannon/superphys_launch"..math.random(1,4)..".wav")

@@ -39,7 +39,7 @@ function ENT:Initialize()
 
 	if CLIENT then
 		local ed = EffectData()
-		ed:SetColor(jcms.util_colorIntegerJCorp)
+		ed:SetColor(jcms.util_GetColorIntegerPvP(self))
 		ed:SetFlags(0)
 		ed:SetEntity(self)
 		util.Effect("jcms_spawneffect", ed)	

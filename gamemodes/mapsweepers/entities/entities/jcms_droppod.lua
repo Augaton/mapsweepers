@@ -68,6 +68,10 @@ function ENT:Initialize()
 	end
 end
 
+function ENT:SetupDataTables()
+	self:NetworkVar("String", 0, "NicknameInside")
+end
+
 if SERVER then
 	function ENT:FixatePod(static)
 		local player_pod = self._pod
@@ -85,9 +89,15 @@ if SERVER then
 	end
 
 	function ENT:Drop(ply, destination, from)
-		self:SetNWString("jcms_nickname", ply:Nick())
+		self:SetNicknameInside(ply:Nick())
 
-		local color = Color(100, 10, 10)
+		local color
+		if ply:GetNWInt("jcms_pvpTeam", -1) == 2 then
+			color = Color(255, 238, 0)
+		else
+			color = Color(100, 10, 10)
+		end
+
 		self._dropping = true
 
 		self:PhysicsInit(SOLID_VPHYSICS)
@@ -238,6 +248,15 @@ if CLIENT then
 		render.SetBlend(1)
 
 		if bit.band(flags, STUDIO_RENDER) and distToEyes<2000*2000 then
+			local colDark = Color(32, 0, 0)
+			local colBright = Color(255, 0, 0)
+
+			if self:GetNWInt("jcms_pvpTeam", -1) == 2 then
+				colBright:SetUnpacked(255, 230, 0)
+			else
+				colBright:SetUnpacked(255, 0, 0)
+			end
+
 			local pos = self:GetPos()
 			local ang = self:GetAngles()
 			ang:RotateAroundAxis(ang:Right(), 180)
@@ -247,13 +266,13 @@ if CLIENT then
 			local matrix = Matrix()
 			matrix:Translate(Vector(0,0,0.25))
 			cam.Start3D2D(pos, ang, 1/32)
-				draw.SimpleText("#jcms.pod_text", "jcms_hud_small", 0, -32, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-				draw.SimpleText(self:GetNWString("jcms_nickname"), "jcms_hud_huge", 0, 48, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-				
+				draw.SimpleText("#jcms.pod_text", "jcms_hud_small", 0, -32, colDark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText(self:GetNicknameInside(), "jcms_hud_huge", 0, 48, colDark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
 				render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
 				cam.PushModelMatrix(matrix, true)
-					draw.SimpleText("#jcms.pod_text", "jcms_hud_small", 0, -32, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-					draw.SimpleText(self:GetNWString("jcms_nickname"), "jcms_hud_huge", 0, 48, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+					draw.SimpleText("#jcms.pod_text", "jcms_hud_small", 0, -32, colBright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+					draw.SimpleText(self:GetNicknameInside(), "jcms_hud_huge", 0, 48, colBright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 				cam.PopModelMatrix()
 				render.OverrideBlend(false)
 			cam.End3D2D()
@@ -265,7 +284,7 @@ if CLIENT then
 			for i=1,2 do
 				cam.Start3D2D(pos + ang:Up()*5 + ang:Forward()*(i==1 and 1 or -1)*15, ang, 1)
 					for j=0, 4 do
-						surface.SetDrawColor(lerpColor(TimedCos(1, 0.5, 1, j), jcms.color_dark, jcms.color_bright))
+						surface.SetDrawColor(lerpColor(TimedCos(1, 0.5, 1, j), colDark, colBright))
 						surface.DrawRect(-1, -7 + j*(bw+1), 2, bw)
 					end
 				cam.End3D2D()
@@ -287,12 +306,17 @@ if CLIENT then
 
 		local distToEyes = EyePos():Distance( self:GetPos() )
 		local f = math.ease.OutCubic( math.Clamp(math.Remap(distToEyes, 5000, 300, 1, 0), 0, 1 ) )
-
+		
 		if f > 0 then
 			normal:Mul(Lerp(f, 0.0001, 0.0003))
 
-			local col = Color(255, 30, 30)
-			local colBrighter = Color(255, 130, 120)
+			if self:GetNWInt("jcms_pvpTeam", -1) == 2 then
+				col = Color(255, 195, 30)
+				colBrighter = Color(235, 255, 120)
+			else
+				col = Color(255, 30, 30)
+				colBrighter = Color(255, 130, 120)
+			end
 
 			local scale = 16 * f
 			render.SetMaterial(mat_beam)

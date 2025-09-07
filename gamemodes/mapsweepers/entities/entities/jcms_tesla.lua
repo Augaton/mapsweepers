@@ -41,9 +41,6 @@ function ENT:Initialize()
 		self:SetModel("models/props_c17/utilityconnecter006c.mdl")
 		self:SetMaterial("models/props_combine/metal_combinebridge001")
 		self:PhysicsInitStatic(SOLID_VPHYSICS)
-
-		self.jcms_teamColor = (self:GetNWInt("jcms_pvpTeam",-1) == 2 and Color(241, 212, 14)) or Color(255, 32, 32)
-		self:SetColor(self.jcms_teamColor) --Would use Color(255, 120, 19) but teslas are already dark
 		
 		self:SetMaxHealth(35)
 		self:SetHealth(35)
@@ -54,17 +51,26 @@ function ENT:Initialize()
 	self.hackStunEnd = CurTime()
 end
 
+function ENT:UpdateForFaction(faction)
+	if faction == "rgg" then
+		self:SetColor( Color(162, 81, 255) )
+	elseif faction == "mafia" then
+		self:SetColor( Color(241, 212, 14) )
+	else
+		self:SetColor( Color(255, 32, 32) )
+	end
+end
+
 function ENT:SetupDataTables()
 	self:NetworkVar("Float", 0, "HealthFraction")
 	self:NetworkVar("Bool", 0, "HackedByRebels")
 	self:SetHealthFraction(1)
 	self:NetworkVarNotify("HackedByRebels", function(ent, name, old, new )
-		if new then 
-			self:SetColor(Color(162, 81, 255))
+		if new then
 			self.hackStunEnd = CurTime() + 2.5
-		else
-			self:SetColor(self.jcms_teamColor)
 		end
+
+		self:UpdateForFaction(new and "rgg" or jcms.util_GetFactionNamePVP(ent))
 	end)
 end
 

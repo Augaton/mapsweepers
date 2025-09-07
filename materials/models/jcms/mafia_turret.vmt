@@ -1,6 +1,6 @@
 "VertexLitGeneric"
 {
-	"$basetexture" "models/jcms/PLACEHOLDER_mafia_turret"
+	"$basetexture" "models/jcms/mafia_turret"
 	"$bumpmap" "models/jcms/jcorp_turret_normal"
 
 	"$phong" 1

@@ -333,8 +333,13 @@
 					turret:SetupBoosted()
 				end
 
+				if IsValid(ply) then
+					turret:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
+				jcms.util_TryUpdateForPVP(turret)
+
 				local ed = EffectData()
-				ed:SetColor(jcms.util_colorIntegerJCorp)
+				ed:SetColor(jcms.util_GetColorIntegerPvP(ply))
 				ed:SetFlags(0)
 				ed:SetEntity(turret)
 				util.Effect("jcms_spawneffect", ed)
@@ -532,8 +537,13 @@
 				pad:SetPos(pos + mins)
 				pad.jcms_owner = ply
 
+				if IsValid(ply) then
+					pad:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
+				jcms.util_TryUpdateForPVP(pad)
+
 				local ed = EffectData()
-				ed:SetColor(jcms.util_colorIntegerJCorp)
+				ed:SetColor(jcms.util_GetColorIntegerPvP(ply))
 				ed:SetFlags(0)
 				ed:SetEntity(pad)
 				util.Effect("jcms_spawneffect", ed)
@@ -566,8 +576,13 @@
 				vtol:SetPos(pos + mins)
 				vtol.jcms_owner = ply
 
+				if IsValid(ply) then
+					vtol:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
+				jcms.util_TryUpdateForPVP(vtol)
+
 				local ed = EffectData()
-				ed:SetColor(jcms.util_colorIntegerJCorp)
+				ed:SetColor(jcms.util_GetColorIntegerPvP(ply))
 				ed:SetFlags(0)
 				ed:SetEntity(vtol)
 				util.Effect("jcms_spawneffect", ed)
@@ -598,8 +613,13 @@
 				apc:SetPos(pos + mins)
 				apc.jcms_owner = ply
 
+				if IsValid(ply) then
+					apc:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
+				jcms.util_TryUpdateForPVP(apc)
+
 				local ed = EffectData()
-				ed:SetColor(jcms.util_colorIntegerJCorp)
+				ed:SetColor(jcms.util_GetColorIntegerPvP(ply))
 				ed:SetFlags(0)
 				ed:SetEntity(apc)
 				util.Effect("jcms_spawneffect", ed)
@@ -620,7 +640,11 @@
 			func = function(ply, pos, angle)
 				local tank = ents.Create("jcms_tank")
 				tank:SetPos(pos)
+				if IsValid(ply) then
+					tank:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
 				tank:Spawn()
+				jcms.util_TryUpdateForPVP(tank)
 				
 				tank:SetAngles(angle)
 				local mins = tank:OBBMins()
@@ -631,7 +655,7 @@
 				tank.jcms_owner = ply
 
 				local ed = EffectData()
-				ed:SetColor(jcms.util_colorIntegerJCorp)
+				ed:SetColor(jcms.util_GetColorIntegerPvP(ply))
 				ed:SetFlags(0)
 				ed:SetEntity(tank)
 				util.Effect("jcms_spawneffect", ed)
@@ -651,15 +675,30 @@
 			argparser = "orbital_fixed",
 			
 			func = function(ply, pos)
-				local col = Color(96, 255, 124)
+				local teamInt = -1
+				local faction = "jcorp"
+				if IsValid(ply) then
+					teamInt = ply:GetNWInt("jcms_pvpTeam", -1)
+					faction = jcms.util_GetFactionNamePVP(ply)
+				end
+
+				local col
+				if faction == "mafia" then
+					col = Color(193, 255, 79)
+				else
+					col = Color(96, 255, 124)
+				end
+
 				local boosted = jcms.isPlayerEngineer(ply)
 				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_restock", 10, "#jcms.firstaid", col, ply)
 				crate:SetAmmoCashInside( 0 )
 				crate:SetHealthInside( boosted and 125 or 100 )
 				crate:SetOwnerNickname( ply:Nick() )
 				crate:SetLocalAngularVelocity( AngleRand(48, 128) )
+				crate:SetMaterial("models/jcms/"..faction.."_crate_heal")
 				crate:SetColor(col)
-				crate:SetMaterial("models/jcms/jcorp_crate_heal")
+				crate:SetNWInt("jcms_pvpTeam", teamInt)
+
 				jcms.announcer_SpeakChance(0.4, jcms.ANNOUNCER_SUPPLIES)
 				jcms.net_NotifyGeneric(ply, jcms.NOTIFY_ORDERED, "#jcms.firstaid")
 				if CPPI then
@@ -676,15 +715,30 @@
 			argparser = "orbital_fixed",
 			
 			func = function(ply, pos, angle)
-				local col = Color(255, 0, 0)
+				local teamInt = -1
+				local faction = "jcorp"
+				if IsValid(ply) then
+					teamInt = ply:GetNWInt("jcms_pvpTeam", -1)
+					faction = jcms.util_GetFactionNamePVP(ply)
+				end
+
+				local col
+				if faction == "mafia" then
+					col = Color(238, 255, 0)
+				else
+					col = Color(255, 0, 0)
+				end
+
 				local boosted = jcms.isPlayerEngineer(ply)
 				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_restock", 10, "#jcms.restock", col, ply)
 				crate:SetAmmoCashInside( 400 + (boosted and 200 or 0) )
 				crate:SetHealthInside( 0 )
 				crate:SetOwnerNickname( ply:Nick() )
 				crate:SetLocalAngularVelocity( AngleRand(48, 128) )
+				crate:SetMaterial("models/jcms/"..faction.."_crate_ammo")
 				crate:SetColor(col)
-				crate:SetMaterial("models/jcms/jcorp_crate_ammo")
+				crate:SetNWInt("jcms_pvpTeam", teamInt)
+
 				jcms.announcer_SpeakChance(0.4, jcms.ANNOUNCER_SUPPLIES_AMMO)
 				jcms.net_NotifyGeneric(ply, jcms.NOTIFY_ORDERED, "#jcms.restock")
 				if CPPI then
@@ -707,7 +761,6 @@
 				mine:SetAngles(angle)
 				mine:SetBlinkScale(1.5)
 				mine:SetBlinkPeriod(0.72)
-				mine:SetBlinkColor( (IsValid(ply) and ply:GetNWInt("jcms_pvpTeam",-1) == 2 and Vector(241/255, 212/255, 14/255)) or Vector(1,0,0) )
 				
 				mine.Radius = 170
 				mine.Damage = 100
@@ -719,6 +772,7 @@
 				if IsValid(ply) then
 					mine:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
 				end
+				jcms.util_TryUpdateForPVP(mine)
 
 				mine:Spawn()
 				
@@ -760,10 +814,14 @@
 				mine:SetColor(Color(255, 255, 255))
 				constraint.Weld(mine, attachEnt, 0, 0)
 
+				if IsValid(ply) then
+					mine:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
+				jcms.util_TryUpdateForPVP(mine)
+
 				mine:SetAngles(angle)
 				mine:SetBlinkScale(1.5)
 				mine:SetBlinkPeriod(1)
-				mine:SetBlinkColor( Vector(1, 0.5, 0.5) )
 
 				timer.Simple(mine.Expires/2, function() -- Flash faster
 					if IsValid(mine) then 
@@ -815,9 +873,13 @@
 				mine:PhysicsInit(SOLID_VPHYSICS)
 				mine:SetColor( ((IsValid(ply) and ply:GetNWInt("jcms_pvpTeam",-1) == 2) and Color(241, 212, 14)) or Color(255, 32, 32) )
 
+				if IsValid(ply) then
+					mine:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
+				jcms.util_TryUpdateForPVP(mine)
+
 				mine:SetBlinkScale(0.25)
 				mine:SetBlinkPeriod(0.25)
-				mine:SetBlinkColor( Vector(1, 0, 0) )
 
 				mine.jcms_weldedTo = attachEnt
 				constraint.Weld(mine, attachEnt, 0, 0, 0, true)
@@ -846,7 +908,7 @@
 				if IsValid(ply) then
 					shieldcharger:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
 				end
-
+				jcms.util_TryUpdateForPVP(shieldcharger)
 				shieldcharger:Spawn()
 				
 				if boosted then
@@ -856,7 +918,7 @@
 				end
 				
 				local ed = EffectData()
-				ed:SetColor(jcms.util_colorIntegerJCorp)
+				ed:SetColor(jcms.util_GetColorIntegerPvP(ply))
 				ed:SetFlags(0)
 				ed:SetEntity(shieldcharger)
 				util.Effect("jcms_spawneffect", ed)
@@ -883,6 +945,7 @@
 				if IsValid(ply) then
 					tesla:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
 				end
+				jcms.util_TryUpdateForPVP(tesla)
 
 				if boosted then
 					tesla.Radius = 550
@@ -894,7 +957,7 @@
 				tesla:Spawn()
 				
 				local ed = EffectData()
-				ed:SetColor(jcms.util_colorIntegerJCorp)
+				ed:SetColor(jcms.util_GetColorIntegerPvP(ply))
 				ed:SetFlags(0)
 				ed:SetEntity(tesla)
 				util.Effect("jcms_spawneffect", ed)
@@ -920,7 +983,7 @@
 				beacon:Spawn()
 				
 				local ed = EffectData()
-				ed:SetColor(jcms.util_colorIntegerJCorp)
+				ed:SetColor(jcms.util_GetColorIntegerPvP(ply))
 				ed:SetFlags(0)
 				ed:SetEntity(beacon)
 				util.Effect("jcms_spawneffect", ed)
@@ -934,6 +997,7 @@
 				if IsValid(ply) then
 					beacon:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
 				end
+				jcms.util_TryUpdateForPVP(beacon)
 			end
 		},
 		
@@ -958,6 +1022,7 @@
 				if IsValid(ply) then
 					device:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
 				end
+				jcms.util_TryUpdateForPVP(device)
 				
 				if CPPI then
 					device:CPPISetOwner( game.GetWorld() )
@@ -987,6 +1052,7 @@
 				if IsValid(ply) then
 					device:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
 				end
+				jcms.util_TryUpdateForPVP(device)
 
 				if CPPI then
 					device:CPPISetOwner( game.GetWorld() )
@@ -1382,8 +1448,13 @@
 			turret:SetupBoosted()
 		end
 
+		if IsValid(ply) then
+			turret:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+		end
+		jcms.util_TryUpdateForPVP(turret)
+
 		local ed = EffectData()
-		ed:SetColor(jcms.util_colorIntegerJCorp)
+		ed:SetColor(jcms.util_GetColorIntegerPvP(ply))
 		ed:SetFlags(0)
 		ed:SetEntity(turret)
 		util.Effect("jcms_spawneffect", ed)
@@ -1394,13 +1465,6 @@
 		mins.z = -mins.z + 2
 		turret:SetPos(pos + mins)
 		turret.jcms_owner = ply
-		if IsValid(ply) then
-			local plyTeam = ply:GetNWInt("jcms_pvpTeam", -1)
-			turret:SetNWInt("jcms_pvpTeam", plyTeam)
-			if plyTeam == 2 then --TODO: PLACEHOLDER. Will be changed when we have recolourable turrets.
-				turret:SetSubMaterial(0, "models/jcms/PLACEHOLDER_mafia_turret")
-			end
-		end
 
 		jcms.npc_UpdateRelations(turret)
 		turret:EmitSound("weapons/shotgun/shotgun_cock.wav")
