@@ -916,8 +916,8 @@ if SERVER then
 					self:EmitSound("npc/scanner/scanner_pain"..math.random(1,2)..".wav")
 				end
 				
-				if bit.band(dmgtype, bit.bor(DMG_ACID, DMG_SHOCK)) > 0 then
-					dmg:ScaleDamage(1.5)
+				if bit.band(dmgtype, DMG_ACID) > 0 then
+					dmg:ScaleDamage(1.25)
 				elseif bit.band(dmgtype, bit.bor(DMG_NERVEGAS, DMG_SLOWBURN, DMG_DROWN)) > 0 then
 					dmg:ScaleDamage(0)
 				else
