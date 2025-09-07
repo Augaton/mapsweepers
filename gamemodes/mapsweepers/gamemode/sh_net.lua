@@ -40,6 +40,8 @@ local bits_ply, bits_ent, bits_wld = 2, 2, 4
 		local WLD_FOG = 8
 		local WLD_ANNOUNCER_UPDATE = 9
 		local WLD_WEAPON_PRICES = 10
+		local WLD_NUKE = 11
+
 	-- // }}}
 
 	-- // CLIENT {{{
@@ -742,6 +744,15 @@ if SERVER then
 			net.WriteString(name)
 		net.Broadcast()
 	end
+	
+	function jcms.net_SendNuke(pos)
+		net.Start("jcms_msg")
+			net.WriteBool(false)
+			net.WriteEntity(game.GetWorld())
+			net.WriteUInt(WLD_NUKE, bits_wld)
+			net.WriteVector(pos)
+		net.Broadcast()
+	end
 end
 
 if CLIENT then
@@ -1135,6 +1146,10 @@ if CLIENT then
 
 		[ WLD_ANNOUNCER_UPDATE ] = function()
 			jcms.announcer_Set(net.ReadString())
+		end,
+
+		[WLD_NUKE] = function()
+			jcms.effect_skyNuke(net.ReadVector(), 3)
 		end
 	}
 

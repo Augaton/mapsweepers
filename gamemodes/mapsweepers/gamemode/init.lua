@@ -2894,6 +2894,78 @@ end
 		util.Effect("jcms_shieldeffect", ed)
 	end
 
+	function jcms.util_skyNuke(pos)
+		local filter = RecipientFilter()
+		filter:AddAllPlayers()
+
+		local alarm = CreateSound(game.GetWorld(), "ambient/levels/outland/basealarmloop.wav", filter)
+		alarm:SetSoundLevel(0)
+		alarm:Play()
+
+		timer.Simple(7.5, function()
+			alarm:Stop()
+		end)
+
+		timer.Simple(5, function()
+			-- // Incoming sounds{{{
+				local dummy = ents.Create("prop_physics") --This is fucking stupid but I can't put csoundpatches in arbitrary locations without an ent.
+				dummy:SetPos(jcms.util_GetSky(pos))
+				dummy:SetModel("models/hunter/plates/plate.mdl")
+				dummy:Spawn()
+				dummy:PhysicsInitStatic(SOLID_NONE)
+
+				local incoming1 = CreateSound(dummy, "ambient/levels/outland/forklift_down_up_loop.wav", filter)
+				incoming1:SetSoundLevel(140)
+				incoming1:PlayEx(0,150)
+				timer.Simple(1.5, function()
+					incoming1:ChangeVolume(0.2, 6)
+					incoming1:ChangePitch(250, 8)
+				end)
+
+				local incoming2 = CreateSound(dummy, "ambient/levels/labs/teleport_mechanism_windup5.wav", filter)
+				incoming2:SetSoundLevel(140)
+				incoming2:PlayEx(0,100)
+				incoming2:ChangeVolume(1, 3)
+				timer.Simple(SoundDuration("ambient/levels/labs/teleport_mechanism_windup5.wav"), function()
+					incoming1:Stop()
+					incoming2:Stop()
+
+					dummy:Remove()
+				end)
+			-- // }}}
+
+
+			timer.Simple(6.5, function()		--VFX
+				jcms.net_SendNuke(pos)
+			end)
+
+			timer.Simple(9.5, function()		--BLAST
+				EmitSound( "ambient/explosions/explode_1.wav", Vector(0,0,0),0, CHAN_AUTO, 1, 0, 0, 100, 0, filter )
+
+				local ed = EffectData()
+				ed:SetOrigin(pos)
+				ed:SetFlags(6)
+				util.Effect("jcms_blast", ed)
+
+				local radSphere = ents.Create("jcms_radsphere")
+				radSphere:SetPos(pos)
+				radSphere:Spawn()
+				
+				local world = game.GetWorld()
+				util.BlastDamage(world, world, pos + jcms.vectorUp, 1500, 100)
+			end)
+			timer.Simple(9.55, function()		--POST / Ear-Ring
+				for i, ply in player.Iterator() do
+					ply:SetDSP(35)
+				end
+				game.GetWorld():StopSound( "ambient/explosions/explode_1.wav" ) --we don't want the rumble after
+				EmitSound( "ambient/explosions/citadel_end_explosion1.wav", Vector(0,0,0),0, CHAN_AUTO, 1, 0, 0, 100, 0, filter )
+
+				util.ScreenShake( pos, 300, 40, 4.5, 32000, true, filter )
+			end)
+		end)
+	end
+
 -- // }}}
 
 -- // Filesystem {{{

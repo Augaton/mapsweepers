@@ -1269,6 +1269,67 @@ end)
 
 -- // }}}
 
+-- // Sky Nukes {{{
+	do
+		local skyNukes = {}
+
+		function jcms.effect_skyNuke(pos, dur)
+			table.insert(skyNukes, {
+				targetPos = pos,
+				startPos = pos + Vector(0,0,100000),
+				tout = CurTime() + dur,
+				dur = dur
+			})
+		end
+
+		local mat_beam = Material "sprites/physbeama.vmt"
+		local mat_lamp = Material "effects/lamp_beam.vmt"
+		local mat_glow = Material "sprites/light_glow02_add"
+		hook.Add("PostDrawTranslucentRenderables", "jcms_SkyNukes", function(bDrawingDepth, bDrawingSkybox, isDraw3DSkybox )
+			if bDrawingDepth or bDrawingSkybox or isDraw3DSkybox then return end
+
+			for i=#skyNukes, 1, -1 do
+				local effect  = skyNukes[i]
+				if effect.tout < CurTime() then
+					table.remove(skyNukes, i)
+					continue
+				end
+
+				--Based on droppod effect
+				local pos = LerpVector((effect.tout - CurTime()-effect.dur/16)/effect.dur, effect.targetPos, effect.startPos)
+				local normal = Vector(0,0,-1) --PLACEHOLDER/TODO
+			
+				local col = Color(30, 255, 30)
+				local colBrighter = Color(130, 255, 120)
+			
+				local scale = 64 
+				render.SetMaterial(mat_beam)
+				render.StartBeam(2)
+					render.AddBeam(pos, math.Rand(3, 7)*scale, 0, colBrighter)
+					render.AddBeam(pos - normal*math.random(64, 100)*scale, 0, 1, col)
+				render.EndBeam()
+			
+				render.SetMaterial(mat_lamp)
+				render.StartBeam(2)
+					local width = math.Rand(12, 24)*scale
+					render.AddBeam(pos, width, 0, colBrighter)
+					render.AddBeam(pos - normal*math.random(64, 100)*scale, width, 1, col)
+				render.EndBeam()
+			
+				local ff = 1
+				col.r = Lerp(ff, col.r, colBrighter.r)
+				col.g = Lerp(ff, col.g, colBrighter.g)
+				col.b = Lerp(ff, col.b, colBrighter.b)
+			
+				scale = 16 * ff
+				render.SetMaterial(mat_glow)
+				render.DrawSprite(pos, math.Rand(32, 48)*scale, math.Rand(16, 24)*scale, col)
+			end
+		end)
+	end
+
+-- // }}}
+
 -- // Chat {{{
 
 	jcms.chatHistory = jcms.chatHistory or {}
