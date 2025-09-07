@@ -101,7 +101,7 @@
 		if npc.jcms_gunship_hits <= 0 and not npc.jcms_GunshipDead then 
 			npc.jcms_GunshipDead = true
 			npc:SetHealth(0)
-			hook.Call("OnNPCKilled", GAMEMODE, npc, dmg:GetAttacker(), dmg:GetInflictor())
+			--hook.Call("OnNPCKilled", GAMEMODE, npc, dmg:GetAttacker(), dmg:GetInflictor())
 		end
 
 		if not jcms.npc_gunship_onFire and npc.jcms_gunship_hits <= npc.jcms_gunship_maxHits/2 then 			
