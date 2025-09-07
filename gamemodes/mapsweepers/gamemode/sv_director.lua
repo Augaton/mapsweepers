@@ -1197,6 +1197,31 @@
 			end
 		end
 
+		function jcms.director_ThinkPvp(d)
+			if jcms.cvar_pvpMode:GetBool() and d.missionData.evacuating then 
+				--DESTROY EVERYTHING
+				local cTime = CurTime()
+
+				d.nukeStart = d.nukeStart or cTime
+				d.nextNuke = d.nextNuke or cTime + 60
+
+				if d.nextNuke < cTime then
+					local weightedAreas = jcms.mapgen_BorderWeights( jcms.mapdata.validAreas )
+
+					local timeNuking = cTime - d.nukeStart
+					local exp = 1/math.sqrt(timeNuking/240)
+					for area, weight in pairs(weightedAreas) do 
+						weightedAreas[area] = weight ^ exp --Flatten as time goes on.
+					end
+					
+					local targetArea = jcms.util_ChooseByWeight(weightedAreas)
+					jcms.util_skyNuke(targetArea:GetCenter())
+
+					d.nextNuke = cTime + 60
+				end
+			end
+		end
+
 		function jcms.director_ThinkTags(d)
 			local data = assert(jcms.missions[ d.missionType ], "invalid mission type: " .. tostring(arg))
 			local players = jcms.GetAliveSweepers()
@@ -1582,6 +1607,7 @@
 					jcms.director_ThinkEncounters(d)
 					jcms.director_ThinkSwarm(d)
 					jcms.director_ThinkTags(d)
+					jcms.director_ThinkPvp(d) --Doesn't do anything unless pvpMode is on
 
 					jcms.director_DebrisClear(d)
 				end

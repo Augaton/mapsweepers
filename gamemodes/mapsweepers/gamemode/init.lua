@@ -2950,6 +2950,7 @@ end
 				local radSphere = ents.Create("jcms_radsphere")
 				radSphere:SetPos(pos)
 				radSphere:Spawn()
+				radSphere.Damage = 4
 				
 				local world = game.GetWorld()
 				util.BlastDamage(world, world, pos + jcms.vectorUp, 1500, 100)

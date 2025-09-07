@@ -471,6 +471,13 @@
 	end
 	
 	function jcms.mission_GenerateEvacObjective()
+		if jcms.cvar_pvpMode:GetBool() then
+			return {
+				{type = "j", 0,0},
+				{type = "die", 0,0}
+			}
+		end
+
 		local d = jcms.director
 		local totalCount = 0
 		local evacCount = 0
@@ -557,7 +564,7 @@
 
 	function jcms.mission_DropEvac(pos, timeToWaitOverride)
 		local d = jcms.director
-		if d then
+		if d and not jcms.cvar_pvpMode:GetBool() then
 			if IsValid(d.evacEnt) then
 				d.evacEnt:Remove()
 			end

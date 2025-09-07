@@ -28,6 +28,8 @@ ENT.Category = "Map Sweepers"
 ENT.Spawnable = false
 ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 
+ENT.Damage = 2
+
 function ENT:SetupDataTables()
 	self:NetworkVar("Float", 0, "CloudRange")
 
@@ -54,7 +56,7 @@ if SERVER then
 		dmg:SetAttacker(self)
 		dmg:SetInflictor(self)
 		dmg:SetDamageType( bit.bor(DMG_GENERIC, DMG_DIRECT, DMG_RADIATION) )
-		dmg:SetDamage(2)
+		dmg:SetDamage(self.Damage)
 
 		local cloudRange = self:GetCloudRange() 
 		for i, ent in ipairs(ents.FindInSphere(selfPos , cloudRange)) do
