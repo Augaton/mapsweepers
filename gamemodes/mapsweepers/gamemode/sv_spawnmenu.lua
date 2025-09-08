@@ -837,7 +837,7 @@
 					end
 				end)
 				
-				jcms.net_SendLocator("all", nil, "#jcms.mine_c4", mine, jcms.LOCATOR_TIMED, 10)
+				jcms.net_SendLocator("all", nil, "#jcms.mine_c4", mine, jcms.LOCATOR_TIMED, 10, nil, ply)
 
 				if CPPI then
 					mine:CPPISetOwner( game.GetWorld() )
@@ -1479,7 +1479,7 @@
 		end
 	end
 	
-	function jcms.spawnmenu_Airdrop(pos, class, delay, locatorName, col)
+	function jcms.spawnmenu_Airdrop(pos, class, delay, locatorName, col, ply)
 		local flare = ents.Create("jcms_dropflare")
 		flare:SetPos(pos)
 		flare:Spawn()
