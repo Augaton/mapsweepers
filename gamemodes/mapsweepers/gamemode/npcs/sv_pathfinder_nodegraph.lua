@@ -96,3 +96,78 @@ function jcms.pathfinder.ain_nearestNode(pos)
 
 	return closest
 end
+
+function jcms.pathfinder.ain_nearestNodeInView(pos)
+	ainReader.readNodeData()
+
+	local closest = nil 
+	local closestDist = math.huge
+
+	local trRes = {}
+	local trData = {mask = MASK_NPCSOLID_BRUSHONLY, start = pos, output = trRes}
+
+	for i, nPos in ipairs(ainReader.nodePositions) do
+		local dist = nPos:DistToSqr(pos)
+		if dist < closestDist and nPos then
+			trData.endpos = nPos + jcms.vectorUp
+			util.TraceLine(trData)
+			
+			if not trRes.Hit then 
+				closest = i
+				closestDist = dist
+			end
+		end
+	end
+
+	return closest
+end
+
+function jcms.pathfinder.ain_nearbyNodes(pos, range)
+	ainReader.readNodeData()
+
+	local nodes = {}
+	local r2 = range^2
+
+	for i, nPos in ipairs(ainReader.nodePositions) do
+		if nPos:DistToSqr(pos) < r2 then 
+			table.insert(nodes, i) --Node ID so that we can access more data later
+		end
+	end
+
+	return nodes
+end
+
+function jcms.pathfinder.ain_nodeSplat(pos, range, hull, cap)
+	ainReader.readNodeData()
+	ainReader.readLinkData()
+	--[[ DESCRIPTION:
+		Gets the nearest node in view of pos, then gets all other node within <range> of the given pos,
+		respecting hull / capabilities limitations
+
+		This will **not** explore the entire graph. Meaning it will not get in-range nodes if the route to our initial node
+		goes outside of that range.
+	--]]
+
+	local startNode = jcms.pathfinder.ain_nearestNodeInView(pos)
+	local finalNodeList = {startNode}
+
+	local openNodes = {startNode}
+	local checkedNodes = {[startNode] = true}
+
+	while #openNodes > 0 do
+		local chosenNode = table.remove(openNodes) --pop
+
+		for i, otherNode in pairs(ainReader.nodeConnections[chosenNode]) do
+			if not checkedNodes[otherNode] then
+				checkedNodes[otherNode] = true
+
+				if not(bit.band(ainReader.nodeConnectionMoves[chosenNode][i][hull+1], cap) == 0) and pos:DistToSqr(ainReader.nodePositions[otherNode]) < range^2 then
+					table.insert(openNodes, otherNode)
+					table.insert(finalNodeList, otherNode)
+				end
+			end
+		end
+	end
+
+	return finalNodeList
+end

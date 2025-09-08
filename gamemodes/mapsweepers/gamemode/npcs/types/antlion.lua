@@ -409,6 +409,113 @@ jcms.npc_types.antlion_guard = {
 	end
 }
 
+jcms.npc_types.antlion_burrowerguard = {
+	faction = "antlion",
+	
+	class = "npc_antlionguard",
+	suppressSwarmPortalEffect = true,
+	bounty = 300,
+	
+	danger = jcms.NPC_DANGER_BOSS,
+	cost = 5,
+	swarmWeight = 1,
+	swarmLimit = 3,
+	portalScale = 4,
+	
+	preSpawn = function(npc)
+		if not npc.jcms_fromPortal then
+			npc:SetKeyValue("startburrowed", "1")
+			npc:SetKeyValue("incavern", "1")
+			npc:SetKeyValue("cavernbreed", "1")
+		end
+	end,
+
+	postSpawn = function(npc)
+		--todo: Guards seem to like getting stuck in doorways/trying to nav to people they can't reach.
+		--It would be better if we detected that and made them hide or patrol instead.
+		--Will need to apply to all guards (default, cyber, ultracyber)
+		jcms.npc_GetRowdy(npc)
+		
+		local hp = math.ceil(npc:GetMaxHealth()*0.5)
+		npc:SetMaxHealth(hp)
+		npc:SetHealth(hp)
+		
+		npc:SetNWString("jcms_boss", "antlion_guard")
+		jcms.npc_SetupAntlionBurrowCheck(npc)
+
+		npc:SetModelScale(0.75, 0)
+		npc:SetHullType(HULL_MEDIUM_TALL)
+	end,
+
+	think = function(npc)
+		--Allows us to unburrow 
+			--npc:SetSaveValue("m_bIsBurrowed", true)
+			--npc:Fire "Unburrow"
+		
+		--If we can't reach an enemy, search for nodes near them that we can fit in and teleport/burrow there.
+
+		local enemy = npc:GetEnemy()
+		if IsValid(enemy) and npc:IsUnreachable(enemy) and not npc.jcms_burrowerGuard_isburrowing then
+			local nodes = jcms.pathfinder.ain_nodeSplat(enemy:WorldSpaceCenter(), 500, npc:GetHullType(), CAP_MOVE_GROUND)
+			table.Shuffle(nodes) 
+
+			for i, node in ipairs(nodes) do
+				local nodePos = ainReader.nodePositions[node] + jcms.vectorUp
+
+				local tr = util.TraceEntityHull({
+					start = nodePos,
+					endpos = nodePos,
+					mask = MASK_NPCSOLID
+				}, npc)
+
+				if not tr.Hit then --Put us in a free spot
+					npc:SetPos(nodePos)
+					
+					npc:SetSaveValue("m_bIsBurrowed", true)
+					npc:Fire "Unburrow"
+
+					npc.jcms_burrowerGuard_isburrowing = true
+					timer.Simple(3.5, function() 
+						npc.jcms_burrowerGuard_isburrowing = false
+					end)
+
+					break
+				end
+			end
+		end
+	end,
+
+	takeDamage = function(npc, dmg)
+		dmg:SetDamageType(bit.bor(dmg:GetDamageType(), DMG_ALWAYSGIB))
+		timer.Simple(0, function()
+			if IsValid(npc) then
+				npc:SetNWFloat("HealthFraction", npc:Health() / npc:GetMaxHealth())
+
+				if npc:Health() <= 0 then 
+					--TODO: doesn't work right
+					--TODO: I want to try giving them the worker-style acid-blast too. Although that'll need testing as it could easily be annoying/frustrating.
+					local ed = EffectData()
+						ed:SetOrigin(npc:WorldSpaceCenter())
+					util.Effect("antlion_gib_02", ed)
+				end
+			end
+		end)
+	end,
+
+	timerMin = 0.1,
+	timerMax = 1.2,
+	timedEvent = function(npc) --Not replicated for cyberguards because they're teleported in by mafia.
+		if not npc.jcms_fromPortal then
+			npc:Fire "Unburrow"
+			npc.jcms_shouldUnburrow = true
+		end
+	end,
+	
+	check = function(director)
+		return jcms.npc_capCheck("npc_antlionguard", 12)
+	end
+}
+
 jcms.npc_types.antlion_mineralguard = {
 	faction = "antlion",
 	missionSpecific = "miningoperations",
