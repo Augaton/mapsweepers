@@ -134,6 +134,7 @@ function ENT:Initialize()
 	
 	if SERVER then
 		self:AddEFlags(EFL_DONTBLOCKLOS)
+		--self:AddFlags(FL_NOTARGET)
 	end
 end
 

@@ -622,7 +622,7 @@ end)
 			end
 		end
 
-		for i, ent in ipairs( player.GetAll() ) do
+		for i, ent in player.Iterator() do
 			if IsValid(ent) and not emt.GetNoDraw(ent) and not emt.IsDormant(ent) and ent:GetObserverMode() == OBS_MODE_NONE then
 				drawBulletShield(ent, i)
 			else

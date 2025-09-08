@@ -20,8 +20,6 @@
 --]]
 AddCSLuaFile()
 
---todo: Vehicle system issue, player's view will be flipped when leaving a vehicle if the vehicle is flipped.
-
 ENT.Type = "anim"
 ENT.Base = "base_anim"
 ENT.PrintName = "J Corp JAPC0 "
@@ -61,6 +59,7 @@ function ENT:Initialize()
 		self:SetHealth(1250)
 
 		self:AddEFlags(EFL_DONTBLOCKLOS)
+		--self:AddFlags(FL_NOTARGET)
 
 		self.nextInteract = 0
 		self:SetUseType(SIMPLE_USE)

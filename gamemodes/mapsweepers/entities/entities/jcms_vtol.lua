@@ -41,6 +41,7 @@ function ENT:Initialize()
 		self:GetPhysicsObject():Wake()
 		self:StartMotionController()
 		self:AddEFlags(EFL_DONTBLOCKLOS)
+		--self:AddFlags(FL_NOTARGET)
 		
 		self.soundEngine = CreateSound(self, "^thrusters/rocket00.wav")
 		self.soundEngine:SetSoundLevel(150)

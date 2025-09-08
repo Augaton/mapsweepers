@@ -78,7 +78,7 @@
 
 			local best, bestHP, bestDist = nil, -1, math.huge
 			for _, ent in ents.Iterator() do
-				if jcms.team_GoodTarget(ent) and jcms.team_NPC(ent) then
+				if jcms.team_GoodTarget(ent) and not(ent:IsPlayer() or jcms.team_SameTeam(ply, ent)) then --Still doesn't target vtols due to GoodTarget
 					local hp = ent:Health()
 					
 					if hp > bestHP then
