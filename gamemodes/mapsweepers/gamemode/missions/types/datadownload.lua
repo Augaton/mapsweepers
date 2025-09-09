@@ -107,7 +107,7 @@
 							end
 							
 							if not(closestDist == math.huge) then  
-								weightedAreas[area] = weightedAreas[area] * math.sqrt(closestDist)
+								weightedAreas[area] = weightedAreas[area] * math.sqrt( math.min(closestDist, 1250) ) --doesn't matter after 1250u
 							end
 						end
 
@@ -208,6 +208,18 @@
 				if md.defenseOngoing then
 					pillarsShouldBeActive = true
 
+					if #d.npcs < 30 then 
+						d.swarmNext = (d.swarmNext or jcms.director_GetMissionTime()) - 1
+					end
+
+					for i, npc in ipairs(d.npcs) do
+						if not IsValid(npc) or not npc.GetEnemy or IsValid(npc:GetEnemy()) then continue end
+						
+						local target = md.pillars[math.random(#md.pillars)]
+						npc:SetEnemy(target)
+						npc:UpdateEnemyMemory(target, target:GetPos())
+					end
+
 					local totalPillars = 0
 					local activePillars = 0
 					for i, pillar in ipairs(md.pillars) do 
@@ -267,10 +279,7 @@
 				return baseCost
 			else
 				local phase = md.phase
-
 				if phase == 2 then
-					return math.min(5, baseCost / 2) -- Severely reduce spawnrates during prep
-				elseif phase == 3 then
 					return baseCost > 0 and baseCost + 4 or 0 -- More shit during the defense phase
 				end
 			end
@@ -279,28 +288,27 @@
 		swarmCalcDanger = function(d, swarmCost)
 			local phase = d.missionData.phase
 			if phase == 2 then
-				return math.min(d.swarmDanger, jcms.NPC_DANGER_STRONG) -- No bosses during prep
-			elseif phase == 3 then
 				return math.max(d.swarmDanger, jcms.NPC_DANGER_STRONG) -- Always strongs during defense
 			end
 		end,
 
+		--[[
 		swarmCalcBossCount = function(d, swarmCost)
-			if d.missionData.phase == 2 then
+			if d.missionData.phase == 1 then
 				return 0 -- No bosses during preparation phase
 			end
-		end,
+		end,--]]
 
 		npcTypeQueueCheck = function(d, swarmCost, dangerCap, npcType, npcData, basePassesCheck)
 			local phase = d.missionData.phase
 			local weightMul
 
-			if phase == 2 then
+			if phase == 1 then
 				-- More snipers during prep.
 				weightMul = ({
 					["combine_sniper"] = 2.5
 				})[npcType]
-			elseif phase == 3 then
+			elseif phase == 2 then
 				-- More hunters, less BS enemies during the defense
 				weightMul = ({
 					["combine_metrocop"] = 1.66,

@@ -2935,7 +2935,9 @@ end
 					incoming1:Stop()
 					incoming2:Stop()
 
-					dummy:Remove()
+					if IsValid(dummy) then
+						dummy:Remove()
+					end
 				end)
 			-- // }}}
 
