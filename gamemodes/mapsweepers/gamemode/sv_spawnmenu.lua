@@ -1080,7 +1080,7 @@
 		if orderData then
 			local costMult, coolDownMult = jcms.class_GetCostMultipliers(jcms.class_GetData(ply), orderData)
 			local cost = orderData.cost_override or orderData.cost
-			if cost <= 0 then
+			if cost <= 0 or (jcms.cvar_pvpMode:GetBool() and orderData.pvpBlacklisted) then
 				return false, 0
 			end
 

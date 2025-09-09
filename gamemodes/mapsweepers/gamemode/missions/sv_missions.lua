@@ -105,6 +105,14 @@
 							jcms.director_InsertRespawnVector(area:GetCenter(), teamId) 
 						end
 					end
+
+					if jcms.cvar_pvpNoBeacons:GetBool() then
+						jcms.orders.respawnbeacon.pvpBlacklisted = true
+						jcms.net_RemoveOrder("respawnbeacon")
+					else
+						jcms.orders.respawnbeacon.pvpBlacklisted = false
+						jcms.net_SendOrder("respawnbeacon", jcms.orders.respawnbeacon)
+					end
 				end
 
 				-- // Mission-Specific Orders {{{
@@ -347,13 +355,15 @@
 		-- }}}
 
 		-- Announcer {{{
-			timer.Simple(2, function()
-				if victory then 
-					jcms.announcer_Speak(jcms.ANNOUNCER_VICTORY)
-				else
-					jcms.announcer_Speak(jcms.ANNOUNCER_FAILED)
-				end
-			end)
+			if not jcms.cvar_pvpMode:GetBool() then
+				timer.Simple(2, function()
+					if victory then 
+						jcms.announcer_Speak(jcms.ANNOUNCER_VICTORY)
+					else
+						jcms.announcer_Speak(jcms.ANNOUNCER_FAILED)
+					end
+				end)
+			end
 		-- }}}
 		
 		jcms.serverExtension_forcedEvac = false

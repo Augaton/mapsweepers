@@ -61,7 +61,7 @@ prefabs.combine_floorturrets = {
 		local timerName = "jcms_"..tostring(ent).."beep"
 		local function ping()
 			if not IsValid(ent) then
-				timer.Remove(timername)
+				timer.Remove(timerName)
 				return
 			end
 	

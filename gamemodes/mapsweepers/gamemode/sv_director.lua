@@ -259,6 +259,8 @@
 				local count = teamCounts[i] or 0
 				game.GetWorld():SetNWInt("jcms_respawncount_"..tostring(i), count)
 			end
+
+			return teamCounts
 		end
 		
 		function jcms.director_FindRespawnBeacon(evenBusyOnes, teamId)
@@ -960,6 +962,7 @@
 		
 			local zoneDict = jcms.mapgen_ZoneDict()
 			local livingCount, evacCount = 0, 0
+			local teamAlivePlayers = {} --dict for pvp teams
 			local deadPlayers = {}
 
 			for i, ply in player.Iterator() do
@@ -975,6 +978,9 @@
 				else
 					if ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE and jcms.team_JCorp_player(ply) then
 						livingCount = livingCount + 1
+						local pvpTeam = ply:GetNWInt("jcms_pvpTeam", 1) --Default 1 to work with normal mode.
+						teamAlivePlayers[pvpTeam] = (teamAlivePlayers[pvpTeam] or 0) + 1
+
 						local area = navmesh.GetNavArea(ply:GetPos(), 200)
 
 						if area then
@@ -1078,12 +1084,15 @@
 							jcms.playerspawn_RespawnAs(ply, "sweeper", beacon) 
 							
 							jcms.director_InvalidateRespawnVector(beacon, teamId)
+							livingCount = livingCount + 1 --Needed because otherwise we check this on the same frame and think everyone's dead. 
+							local pvpTeam = ply:GetNWInt("jcms_pvpTeam", 1) --Default 1 to work with normal mode.
+							teamAlivePlayers[pvpTeam] = (teamAlivePlayers[pvpTeam] or 0) + 1
 						end
 					end
 				end
 			end
 
-			return livingCount, #deadPlayers, evacCount
+			return livingCount, #deadPlayers, evacCount, teamAlivePlayers
 		end
 
 		function jcms.director_AnalyzeNPCs(d)
@@ -1569,12 +1578,19 @@
 
 			if d and d.fullyInited then
 				if d.gameover then return end
-				local livingPlayers, deadPlayers, evacCount = jcms.director_PlayersAnalyze(d)
+				local livingPlayers, deadPlayers, evacCount, teamAlivePlayers = jcms.director_PlayersAnalyze(d)
 				jcms.director.livingPlayers = livingPlayers
 				jcms.director.deadPlayers = deadPlayers
-				jcms.director_RecalculateRespawnCounts() --Set the NW integer for each team's respawn count
+				local teamRespawns = jcms.director_RecalculateRespawnCounts() --Set the NW integer for each team's respawn count
 
-				if (not d.debug) and (livingPlayers == 0) and (deadPlayers == 0 or not IsValid(jcms.director_FindRespawnBeacon(true))) then
+				local aliveTeams = 0
+				for pvpTeam=1, 8, 1 do
+					if (teamRespawns[pvpTeam] or 0) + (teamAlivePlayers[pvpTeam] or 0) > 0 then 
+						aliveTeams = aliveTeams + 1
+					end
+				end
+
+				if (not d.debug) and (aliveTeams <= ( (jcms.cvar_pvpMode:GetBool() and not jcms.cvar_pvpDebug:GetBool()) and 1 or 0)) then
 					local victory = evacCount > 0
 
 					local missionTime = jcms.director_GetMissionTime()
