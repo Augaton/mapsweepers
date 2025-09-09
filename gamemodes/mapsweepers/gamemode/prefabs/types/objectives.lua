@@ -234,11 +234,7 @@ local prefabs = jcms.prefabs
 
 	prefabs.refinery_secondary = {
 		check = function(area)
-			if not jcms.mapgen_ValidArea(area) then return false end
-			local c1, c2, c3, c4 = area:GetCorner(1), area:GetCorner(2), area:GetCorner(3), area:GetCorner(0)
-			if math.max(c1.z, c2.z, c3.z, c4.z) - math.min(c1.z, c2.z, c3.z, c4.z) > 34 then
-				return false
-			end
+			if not jcms.mapgen_ValidArea(area) or not jcms.mapgen_AreaFlat(area) then return false end
 
 			local wallspots, normals = jcms.prefab_GetWallSpotsFromArea(area, 48, 128)
 			
@@ -296,15 +292,7 @@ local prefabs = jcms.prefabs
 	}
 
 	prefabs.datadownload_computer = {
-		check = function(area)
-			if area:GetSizeX() < 350 or area:GetSizeY() < 350 then
-				return false
-			end
-			if not jcms.mapgen_ValidArea(area) then return false end
-			local c1, c2, c3, c4 = area:GetCorner(1), area:GetCorner(2), area:GetCorner(3), area:GetCorner(0)
-			if math.max(c1.z, c2.z, c3.z, c4.z) - math.min(c1.z, c2.z, c3.z, c4.z) > 34 then
-				return false
-			end
+		check = function(area) --Handled by mission gen
 			return true
 		end,
 
@@ -316,9 +304,6 @@ local prefabs = jcms.prefabs
 			ent:Spawn()
 			ent:InitAsTerminal("models/props_combine/masterinterface.mdl", "datadownloadcomputer")
 			ent.jcms_hackType = nil
-			if jcms.director and jcms.director.missionData and jcms.director.missionData.password then
-				ent.jcms_password = jcms.director.missionData.password
-			end
 
 			do -- Backbone prop
 				local backbone = ents.Create("prop_physics")
@@ -347,27 +332,23 @@ local prefabs = jcms.prefabs
 				ammocrate:Spawn()
 			end
 
-			for i=1, 2 do -- Pillars
-				local pos = ent:GetPos()
-				local ang = ent:GetAngles()
-
-				local pillar = ents.Create("jcms_downloadpillar")
-				ang:RotateAroundAxis(ang:Up(), 180 + 45 - 90*(i-1))
-				pos:Add(ang:Forward()*150)
-				pos:Add(ang:Up() * 150)
-				ang:RotateAroundAxis(ang:Forward(), 180)
-				ang:RotateAroundAxis(ang:Up(), 20 * (i==1 and -1 or 1))
-				ang:RotateAroundAxis(ang:Right(), 10)
-
-				pillar:SetAngles(ang)
-				pillar:SetPos(pos)
-				pillar:Spawn()
-				pillar:SetLabelSymbol(i == 1 and "A" or "B")
-
-				ent["pillar"..i] = pillar
-			end
-
 			return ent
+		end
+	}
+
+	prefabs.datadownload_pillar = {
+		check = function(area)
+			return true
+		end,
+
+		stamp = function(area)
+			local pos = area:GetCenter()
+
+			local pillar = ents.Create("jcms_downloadpillar")
+			pillar:SetPos(pos)
+			pillar:Spawn()
+			
+			return pillar 
 		end
 	}
 

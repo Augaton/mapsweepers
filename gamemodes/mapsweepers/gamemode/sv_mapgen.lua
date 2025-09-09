@@ -1291,6 +1291,15 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		if not IsValid(nearestArea) then return end
 		ent:SetPos( nearestArea:GetClosestPointOnArea(pos) )
 	end
+	
+	function jcms.mapgen_AreaFlat(area)
+		local c1, c2, c3, c4 = area:GetCorner(1), area:GetCorner(2), area:GetCorner(3), area:GetCorner(0)
+		if math.max(c1.z, c2.z, c3.z, c4.z) - math.min(c1.z, c2.z, c3.z, c4.z) > 34 then --TODO: Not hardcoded >34
+			return true
+		end
+		return false
+	end
+
 
 -- // }}}
 
@@ -1541,6 +1550,10 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		end
 		
 		return jcms.mapdata.zoneDict
+	end
+
+	function jcms.mapgen_MainZone()
+		return jcms.mapgen_ZoneList()[jcms.mapdata.largestZone]
 	end
 
 -- // }}}

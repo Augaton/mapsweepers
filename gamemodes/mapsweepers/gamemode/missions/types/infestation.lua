@@ -114,7 +114,7 @@
 				if not IsValid(missionData.evacEnt) then
 					local areaWeights = {}
 					local areaCentres = {}
-					local mainZone = jcms.mapgen_ZoneList()[jcms.mapdata.largestZone]
+					local mainZone = jcms.mapgen_MainZone()
 					for i, area in ipairs(mainZone) do 
 						local sizeX, sizeY = area:GetSizeX(), area:GetSizeY()
 						areaWeights[area] = math.sqrt(jcms.mapdata.areaAreas[area] or (sizeX * sizeY))

@@ -38,6 +38,10 @@ prefabs.combine_floorturrets = {
 
 		--Only indoors
 		if indoorTrace.HitSky then return false end 
+		
+		if not jcms.mapgen_AreaFlat(area) then 
+			return false 
+		end
 
 		return jcms.prefab_CheckOverlooking(area)
 	end,

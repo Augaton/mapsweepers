@@ -100,7 +100,7 @@
 					for teamId=1, 2 do
 						for i=1, math.ceil(player.GetCount()/2) do
 							--TODO: Weighted
-							local largest = jcms.mapgen_ZoneList()[jcms.mapdata.largestZone]
+							local largest = jcms.mapgen_MainZone()
 							local area = largest[math.random(#largest)]
 							jcms.director_InsertRespawnVector(area:GetCenter(), teamId) 
 						end

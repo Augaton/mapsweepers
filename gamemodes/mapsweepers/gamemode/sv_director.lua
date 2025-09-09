@@ -154,7 +154,7 @@
 			local teamId = ply:GetNWInt("jcms_pvpTeam", -1)
 			teamId = not(teamId==-1) and teamId or 1
 
-			local awayAreas = jcms.director_GetAreasAwayFrom(jcms.mapgen_ZoneList()[jcms.mapdata.largestZone], {pos}, 100, 1250)
+			local awayAreas = jcms.director_GetAreasAwayFrom(jcms.mapgen_MainZone(), {pos}, 100, 1250)
 			local weightedAreas = {}
 			for i, area in ipairs(awayAreas) do
 				weightedAreas[area] = area:GetSizeX() * area:GetSizeY()
