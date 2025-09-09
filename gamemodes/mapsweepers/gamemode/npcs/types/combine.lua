@@ -141,7 +141,16 @@
 	jcms.NPC_STATE_GUNSHIPCHARGE = 5
 -- // }}}
 
+--jcms.mapgen_PlaceFactionPrefabs(maxcount, faction )
 
+
+jcms.npc_commanders["combine"] = {
+	placePrefabs = function(c, data)
+		--Faction prefabs
+		local count = math.ceil(jcms.mapgen_AdjustCountForMapSize( 2 ) * jcms.runprogress_GetDifficulty())
+		jcms.mapgen_PlaceFactionPrefabs(count, "combine")
+	end
+}
 
 jcms.npc_types.combine_scanner = {
 	faction = "combine",

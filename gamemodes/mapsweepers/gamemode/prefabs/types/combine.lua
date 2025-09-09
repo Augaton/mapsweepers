@@ -23,11 +23,13 @@ local prefabs = jcms.prefabs
 
 
 prefabs.combine_floorturrets = {
-	natural = true, --TODO: Remove
+	faction = "combine",
 	weight = 0.12,
+	onlyMainZone = true,
 
 	check = function(area)
 		if not jcms.mapgen_ValidArea(area) then return false end
+		if area:GetSizeX() < 30 or area:GetSizeY() < 30 then return false end
 
 		local centre = area:GetCenter() 
 		local indoorTrace = util.TraceLine({
@@ -51,8 +53,35 @@ prefabs.combine_floorturrets = {
 		if not IsValid(ent) then return end
 
 		ent:SetAngles(data.ang)
-		ent:SetPos(data.pos + Vector(0,0,10) - data.ang:Forward() * 30)
+		ent:SetPos(data.pos + Vector(0,0,12.5) - data.ang:Forward() * 30)
+		
 		ent:Spawn()
+		ent:Fire("Disable")
+
+		local timerName = "jcms_"..tostring(ent).."beep"
+		local function ping()
+			if not IsValid(ent) then
+				timer.Remove(timername)
+				return
+			end
+	
+			ent:EmitSound("NPC_FloorTurret.Ping")
+		end
+
+		timer.Create(timerName, 2, 13, ping)
+
+		timer.Simple(26, function()
+			timer.Create(timerName, 1, 2, ping)
+		end)
+
+		timer.Simple(28, function()
+			timer.Create(timerName, 0.25, 8, ping)
+		end)
+
+		timer.Simple(30, function()
+			ent:EmitSound("NPC_FloorTurret.Deploy")
+			ent:Fire("Enable")
+		end)
 
 		return ent
 	end

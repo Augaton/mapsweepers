@@ -1295,9 +1295,9 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 	function jcms.mapgen_AreaFlat(area)
 		local c1, c2, c3, c4 = area:GetCorner(1), area:GetCorner(2), area:GetCorner(3), area:GetCorner(0)
 		if math.max(c1.z, c2.z, c3.z, c4.z) - math.min(c1.z, c2.z, c3.z, c4.z) > 34 then --TODO: Not hardcoded >34
-			return true
+			return false
 		end
-		return false
+		return true
 	end
 
 
@@ -1369,16 +1369,8 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 
 -- // Map Gen {{{
 
-	function jcms.mapgen_PlaceNaturals(maxcount, weightOverride)
-		local naturalWeights = jcms.prefab_GetNaturalTypesWithWeights()
-
-		if isfunction(weightOverride) then
-			for name, weight in pairs(naturalWeights) do 
-				naturalWeights[name] = weightOverride(name, weight)
-			end
-		end
-
-		local naturalCounts = {}
+	function jcms.mapgen_PlacePrefabs(maxcount, weightedTypes) --TODO: terrible name, because we have spreadprefabs
+		local prefabCounts = {}
 		local allAreas = {}
 		for i, area in ipairs( jcms.mapdata.validAreas ) do
 			if not ( area:GetSizeX() < 48 or area:GetSizeY() < 48 or area:IsDamaging() or bit.band( area:GetAttributes(), bit.bor(NAV_MESH_AVOID, NAV_MESH_OBSTACLE_TOP) ) > 0 ) then
@@ -1392,7 +1384,7 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		for i, area in ipairs(allAreas) do
 			canHouse[area] = {}
 
-			for naturaltype in pairs(naturalWeights) do
+			for naturaltype in pairs(weightedTypes) do
 				local prefabData = jcms.prefabs[naturaltype]
 				if not(prefabData.onlyMainZone and not(zoneDict[area] == jcms.mapdata.largestZone)) then 
 					local can, bonusData = jcms.prefab_Check(naturaltype, area)
@@ -1418,11 +1410,11 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		for i=1, maxcount do
 			local prefabType
 			while true do
-				prefabType = jcms.util_ChooseByWeight(naturalWeights)
+				prefabType = jcms.util_ChooseByWeight(weightedTypes)
 
 				local prefabData = jcms.prefabs[prefabType]
-				if prefabData.limit and (naturalCounts[prefabType] or 0) >= (isfunction(prefabData.limit) and prefabData.limit() or prefabData.limit) * math.Round(prefabData.limitMulBySize and mapSizeMul or 1) then
-					naturalWeights[prefabType] = nil
+				if prefabData.limit and (prefabCounts[prefabType] or 0) >= (isfunction(prefabData.limit) and prefabData.limit() or prefabData.limit) * math.Round(prefabData.limitMulBySize and mapSizeMul or 1) then
+					weightedTypes[prefabType] = nil
 				else
 					break
 				end
@@ -1447,7 +1439,7 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 						jcms.prefab_ForceStamp(prefabType, chosenArea, tuple[2])
 						stamped = stamped + 1
 						
-						naturalCounts[prefabType] = (naturalCounts[prefabType] or 0) + 1
+						prefabCounts[prefabType] = (prefabCounts[prefabType] or 0) + 1
  						break
 					end
 				end
@@ -1457,6 +1449,24 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		end
 
 		jcms.printf("Stamped prefabs: %d", stamped)
+	end
+
+	function jcms.mapgen_PlaceNaturals(maxcount, weightOverride)
+		local naturalWeights = jcms.prefab_GetNaturalTypesWithWeights()
+
+		if isfunction(weightOverride) then
+			for name, weight in pairs(naturalWeights) do 
+				naturalWeights[name] = weightOverride(name, weight)
+			end
+		end
+
+		jcms.mapgen_PlacePrefabs(maxcount, naturalWeights)
+	end
+
+	function jcms.mapgen_PlaceFactionPrefabs(maxcount, faction )
+		local facWeights = jcms.prefab_GetFactionTypesWithWeights(faction)
+		
+		jcms.mapgen_PlacePrefabs(maxcount, facWeights)
 	end
 	
 	function jcms.mapgen_PlaceEncounters()

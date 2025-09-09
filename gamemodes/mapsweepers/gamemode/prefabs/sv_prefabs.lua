@@ -64,6 +64,18 @@
 
 		return t
 	end
+	
+	function jcms.prefab_GetFactionTypesWithWeights(faction)
+		local t = {}
+
+		for name, data in pairs(jcms.prefabs) do
+			if data.faction == faction then
+				t[name] = data.weight or 1.0
+			end
+		end
+
+		return t
+	end
 
 	function jcms.prefab_GetWallSpotsFromArea(area, elevation, injectionDistance, subdivisionByUnits, conicDivergence, conicSubdivision)
 		local wallspots = {}

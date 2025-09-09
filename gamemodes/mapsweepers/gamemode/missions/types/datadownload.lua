@@ -174,15 +174,6 @@
 					table.insert(objectives, { type = isDisrupted and "repairpillarx" or "defendpillarx", format = { pillar:GetLabelSymbol() } })
 					table.insert(objectives, { type = "defendpillarx", style = 2, progress = math.ceil(pillar:Health() / pillar:GetMaxHealth() * 100), total = 100 })
 				end
-				--[[
-				local disrupted1 = missionData.pillar1:GetIsDisrupted()
-				local disrupted2 = missionData.pillar2:GetIsDisrupted()
-				return {
-					{ type = disrupted1 and "repairpillarx" or "defendpillarx", format = { "A" } },
-					{ type = "defendpillarx", style = 2, progress = math.ceil(missionData.pillar1:Health() / missionData.pillar1:GetMaxHealth() * 100), total = 100 },
-					{ type = disrupted2 and "repairpillarx" or "defendpillarx", format = { "B" } },
-					{ type = "defendpillarx", style = 2, progress = math.ceil(missionData.pillar2:Health() / missionData.pillar2:GetMaxHealth() * 100), total = 100 }
-				}--]]
 
 				return objectives
 			else
