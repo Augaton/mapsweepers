@@ -345,9 +345,16 @@ local prefabs = jcms.prefabs
 			local pos = area:GetCenter()
 
 			local pillar = ents.Create("jcms_downloadpillar")
+
+			local ang = pillar:GetAngles()
+			ang:RotateAroundAxis(ang:Forward(), 180)
+			pillar:SetAngles(ang + AngleRand(-10,10))
+
+			pos = pos - ang:Up() * 140
 			pillar:SetPos(pos)
+
 			pillar:Spawn()
-			
+
 			return pillar 
 		end
 	}

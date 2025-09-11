@@ -142,6 +142,12 @@
 			if IsValid(missionData.computer) then
 				tags[missionData.computer] = { name = "#jcms.obj_datadownloadcomputer", moving = false, active = true, landmarkIcon = "computer" }
 			end
+
+			for i, pillar in ipairs(missionData.pillars) do
+				if IsValid(pillar) then
+					tags[pillar] = { name = [=[Server Pillar]=], moving = false, active = true }
+				end
+			end
 		end,
 
 		getObjectives = function(missionData)

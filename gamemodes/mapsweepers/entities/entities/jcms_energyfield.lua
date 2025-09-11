@@ -47,54 +47,21 @@ if SERVER then
 		local vStart = self:WorldToLocal(self:GetStart())
 		local vEnd = self:WorldToLocal(self:GetEnd())
 
-		--local vStart = self:GetStart()
-		--local vEnd = self:GetEnd()
-
-		--Other 2 corners
-		local sx, sy, sz = vStart:Unpack()
-		local ex, ey, ez = vEnd:Unpack()
-
-		local vSE = Vector(sx, sy, ez) -- top left
-		local vES = Vector(ex, ey, sz) -- bottom right
-
-		local points = {
-			--Bottom Left
-			vStart + fw/2,
-			vStart - fw/2,
-
-			--Top left
-			vSE + fw/2,
-			vSE - fw/2,
-
-			--Top Right
-			vEnd + fw/2,
-			vEnd - fw/2,
-
-			--Bottom right
-			vES + fw/2,
-			vES - fw/2,
-		}
-
-		--[[
-		print(fw)
-		print(vStart)
-		print(vEnd)
-
-		for i, point in ipairs(points) do 
-			debugoverlay.Cross(point, 30, 1, Color(255,0,0), true)
-		end--]]
-
 		self:SetMoveType( MOVETYPE_NONE )
 		self:SetSolid( SOLID_CUSTOM )
 
-		self:PhysicsInitConvex( points )
+		self:PhysicsInitBox( vStart - fw, vEnd + fw)
 
 		self:EnableCustomCollisions( true )
+		self:SetMoveType(MOVETYPE_NONE)
+		self:SetSolid(SOLID_VPHYSICS)
+		--todo custom physics check flag
 	end
 end
 
 if CLIENT then 
 	ENT.ShieldMat = Material("effects/combineshield/comshieldwall3")
+	--TODO: Maybe we could tile by using CreateMaterial for each entity, and scaling its matrices?
 
 	function ENT:DrawTranslucent()
 		self:DestroyShadow()
@@ -103,6 +70,11 @@ if CLIENT then
 
 		local vStart = self:GetStart()
 		local vEnd = self:GetEnd()
+
+		self:SetRenderBoundsWS( vStart - self:GetAngles():Forward(), vEnd + self:GetAngles():Forward())
+
+		local diff = self:WorldToLocal(vEnd) - self:WorldToLocal(vStart)
+		local ang = self:GetAngles()
 
 		--Other 2 corners
 		local sx, sy, sz = vStart:Unpack()
@@ -114,8 +86,18 @@ if CLIENT then
 		render.SetMaterial(self.ShieldMat)
 		render.DrawQuad( vStart, vSE, vEnd, vES, color_white )
 
-		--TODO: Use 3D2D and drawTexturedRectUV instead. Quad stretches the texture which we don't want.
+		render.DrawQuad( vEnd, vSE, vStart, vES, color_white )
+		
+
+		--[[
+		cam.Start3D2D(vStart, Angle(180,180,90), 1)
+			surface.SetMaterial(self.ShieldMat)
+			
+			surface.DrawTexturedRectUV( 0, 0, diff.x, diff.z, 0, 0, diff.x/25, diff.z/25 )
+
+			--surface.DrawRect(0,0,1000,1000)
+		cam.End3D2D()
+		--]]
 
 	end
-	--TODO: DrawTranslucent
 end
