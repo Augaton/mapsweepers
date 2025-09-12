@@ -129,9 +129,10 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 	local v35 = Vector(0,0,20)
 	function jcms.npc_Spawn(enemyType, pos, fromPortal)
 		jcms.blockNPCTracker = true
+
 		local enemyData = assert(jcms.npc_types[ enemyType ], "invalid enemy type '" .. tostring(enemyType) .. "'")
 		assert( isvector(pos), "supply a vector please" )
-
+		
 		local npc = ents.Create(enemyData.class)
 		if not IsValid(npc) then return NULL end
 
@@ -139,7 +140,8 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 		npcTbl.jcms_fromPortal = fromPortal
 		
 		npc:SetAngles( Angle(0, math.random() * 360, 0) )
-		
+		npc:SetPos(pos + v35)
+
 		if enemyData.preSpawn then 
 			enemyData.preSpawn(npc, pos, enemyData) 
 		end
@@ -160,14 +162,14 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 			npc:SetMaxLookDistance( math.max(npc:GetMaxLookDistance(), 4096) )
 		end
 
-		npc:SetPos(pos + v35)
-
-		local hulltrace = util.TraceEntityHull({
-			start = npc:EyePos(),
-			endpos = pos + ((enemyData.isStatic and jcms.vectorOrigin) or v35),
-			mask = MASK_NPCSOLID_BRUSHONLY
-		}, npc)
-		npc:SetPos(hulltrace.HitPos)
+		if not enemyData.isStatic then
+			local hulltrace = util.TraceEntityHull({
+				start = npc:EyePos(),
+				endpos = pos + v35,
+				mask = MASK_NPCSOLID_BRUSHONLY
+			}, npc)
+			npc:SetPos(hulltrace.HitPos)
+		end
 		
 		--debugoverlay.Line(hulltrace.StartPos, hulltrace.HitPos, 1, Color(255, 0, 0), true)
 		--debugoverlay.Box(hulltrace.HitPos, npc:OBBMins(), npc:OBBMaxs(), 1, Color(255, 0, 0), true)

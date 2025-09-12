@@ -275,6 +275,10 @@ jcms.npc_commanders["zombie"] = {
 		end
 
 		jcms.mapgen_PlaceNaturals(jcms.mapgen_AdjustCountForMapSize( 2 + math.ceil(1.5 * #jcms.GetLobbySweepers())), weightOverride)
+
+		--Faction prefabs
+		local count = math.ceil(jcms.mapgen_AdjustCountForMapSize( 4 ) * jcms.runprogress_GetDifficulty())
+		jcms.mapgen_PlaceFactionPrefabs(count, "zombie")
 	end
 }
 
@@ -805,6 +809,8 @@ jcms.npc_types.zombie_spawner = {
 
 	class = "npc_jcms_zombiespawner",
 	bounty = 250,
+	
+	isStatic = true, 
 
 	postSpawn = function(npc)
 		-- // If our space is clear return early {{{
@@ -847,8 +853,8 @@ jcms.npc_types.zombie_charple = {
 	faction = "zombie",
 
 	danger = jcms.NPC_DANGER_FODDER,
-    cost = 0.2,
-    swarmWeight = 0.0000001,
+	cost = 0.2,
+	swarmWeight = 0.0000001,
 
 	class = "npc_fastzombie",
 	bounty = 20,
@@ -943,4 +949,44 @@ jcms.npc_types.zombie_charple = {
 			end
 		end)
 	end
+}
+
+jcms.npc_types.zombie_barnacle = {
+	faction = "zombie",
+
+	danger = jcms.NPC_DANGER_FODDER,
+	cost = 0.2,
+	swarmWeight = 0.0000001,
+
+	class = "npc_barnacle",
+	bounty = 20,
+
+	anonymous = true,
+	isStatic = true, 
+
+	preSpawn = function(npc)
+		-- Stick us to the ceiling
+		local tr = util.TraceEntityHull({
+			start = npc:GetPos(),
+			endpos = npc:GetPos() + Vector(0,0,32768)
+		}, npc)
+		if not tr.Hit or tr.HitSky then
+			npc:Remove()
+			return
+		end
+
+		npc:SetPos(tr.HitPos - jcms.vectorUp * 2)
+	end,
+
+	postSpawn = function(npc)
+		--Technically unnecessary because anonymous already means we don't have director logic applied to us.
+		npc.jcms_ignoreStraggling = true
+
+		local hp = npc:GetMaxHealth() * 10
+		npc:SetMaxHealth(hp)
+		npc:SetHealth(hp)
+
+	end,
+
+	check = function() return false end --Stop us from spawning naturally
 }

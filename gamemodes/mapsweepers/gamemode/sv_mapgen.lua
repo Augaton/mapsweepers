@@ -1373,7 +1373,7 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		local prefabCounts = {}
 		local allAreas = {}
 		for i, area in ipairs( jcms.mapdata.validAreas ) do
-			if not ( area:GetSizeX() < 48 or area:GetSizeY() < 48 or area:IsDamaging() or bit.band( area:GetAttributes(), bit.bor(NAV_MESH_AVOID, NAV_MESH_OBSTACLE_TOP) ) > 0 ) then
+			if not ( area:GetSizeX() < 48 or area:GetSizeY() < 48 or bit.band( area:GetAttributes(), bit.bor(NAV_MESH_AVOID, NAV_MESH_OBSTACLE_TOP) ) > 0 ) then
 				table.insert( allAreas, area )
 			end
 		end
