@@ -141,9 +141,6 @@
 	jcms.NPC_STATE_GUNSHIPCHARGE = 5
 -- // }}}
 
---jcms.mapgen_PlaceFactionPrefabs(maxcount, faction )
-
-
 jcms.npc_commanders["combine"] = {
 	placePrefabs = function(c, data)
 		--Faction prefabs

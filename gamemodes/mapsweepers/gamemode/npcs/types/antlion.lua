@@ -180,6 +180,14 @@
 	--todo: Maybe playbackrate scaling could be used to scale up the threat of fodder lategame?
 -- // }}}
 
+jcms.npc_commanders["antlion"] = {
+	placePrefabs = function(c, data)
+		--Faction prefabs
+		local count = math.ceil(jcms.mapgen_AdjustCountForMapSize( 4 ) * jcms.runprogress_GetDifficulty())
+		jcms.mapgen_PlaceFactionPrefabs(count, "antlion")
+	end
+}
+
 jcms.npc_types.antlion_worker = {
 	portalSpawnWeight = 0.25,
 	faction = "antlion",
@@ -848,4 +856,53 @@ jcms.npc_types.antlion_reaper = {
 		
 		npc.jcms_maxScaledDmg = 65
 	end
+}
+
+jcms.npc_types.antlion_grubbomb = {
+	faction = "antlion",
+
+	danger = jcms.NPC_DANGER_FODDER,
+	cost = 0.2,
+	swarmWeight = 0.0000001,
+
+	class = "npc_antlion_grub",
+	bounty = 20,
+
+	anonymous = true,
+	isStatic = true,
+
+	preSpawn  = function(npc)
+		jcms.mapgen_DropEntToNav(npc, npc:GetPos(), 800) --TODO: Maybe comment this out, I think this is only needed for debugspawn
+	end,
+	
+	postSpawn = function(npc)
+		--Technically unnecessary because anonymous already means we don't have director logic applied to us.
+		npc.jcms_ignoreStraggling = true
+	end,
+	
+	takeDamage = function(npc, dmg)
+		timer.Simple(0, function()
+			if IsValid(npc) and npc:Health() <= 0 then
+				local pos = npc:WorldSpaceCenter()
+
+				ParticleEffect( "antlion_gib_02", pos, angle_zero )
+				
+				EmitSound( "NPC_Antlion.PoisonBurstExplode", pos );
+				
+				local blstDmg = DamageInfo()
+
+				blstDmg:SetAttacker(npc)
+				blstDmg:SetInflictor(npc)
+				
+				blstDmg:SetDamage(50)
+				blstDmg:SetReportedPosition(pos)
+				blstDmg:SetDamageForce(jcms.vectorOrigin)
+				blstDmg:SetDamageType( bit.bor(DMG_POISON, DMG_BLAST_SURFACE, DMG_ACID) )
+
+				util.BlastDamageInfo(blstDmg, pos, 100)
+			end
+		end)
+	end,
+
+	check = function() return false end --Stop us from spawning naturally
 }

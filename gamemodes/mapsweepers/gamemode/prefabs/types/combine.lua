@@ -24,7 +24,7 @@ local prefabs = jcms.prefabs
 
 prefabs.combine_floorturrets = {
 	faction = "combine",
-	weight = 0.12,
+	weight = 1,
 	onlyMainZone = true,
 
 	check = function(area)
@@ -87,6 +87,7 @@ prefabs.combine_floorturrets = {
 	end
 }
 
+--[[
 prefabs.combine_shieldwall = {
 	
 	natural = true, --TODO: Remove
@@ -110,3 +111,4 @@ prefabs.combine_shieldwall = {
 		--combine.sheild_touch
 	end	
 }
+--]]

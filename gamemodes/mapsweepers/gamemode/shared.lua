@@ -154,6 +154,7 @@ local nmt = FindMetaTable("NPC")
 	hook.Add("InitPostEntity", "jcms_matOverride", function()
 		Material("models/humans/male/group03/citizen_sheet"):SetTexture("$basetexture", "models/jcms/rgg_male")
 		Material("models/humans/female/group03/citizen_sheet"):SetTexture("$basetexture", "models/jcms/rgg_female")
+		Material("models/antlion_grub/antlion_grub"):SetTexture("$basetexture", "models/jcms/antlion_bombgrub")
 
 		for classname, data in pairs(jcms.classes) do
 			if data.matOverrides then

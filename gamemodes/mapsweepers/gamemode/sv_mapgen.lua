@@ -1285,9 +1285,9 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		return (c1 + c2)/2 
 	end
 
-	function jcms.mapgen_DropEntToNav(ent, pos) --More reliable :DropToFloor. Don't use on npcs/non-statics as they could fall through a displacement.
+	function jcms.mapgen_DropEntToNav(ent, pos, range) --More reliable :DropToFloor. Don't use on npcs/non-statics as they could fall through a displacement.
 		pos = pos or ent:GetPos()
-		local nearestArea = navmesh.GetNearestNavArea(pos, false, 250, true, true)
+		local nearestArea = navmesh.GetNearestNavArea(pos, false, range or 250, true, true)
 		if not IsValid(nearestArea) then return end
 		ent:SetPos( nearestArea:GetClosestPointOnArea(pos) )
 	end

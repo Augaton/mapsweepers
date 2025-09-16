@@ -21,24 +21,16 @@
 
 local prefabs = jcms.prefabs
 
-
-prefabs.zombie_barnacles = {
-	faction = "zombie",
+prefabs.antlion_grubbombs = {
+	faction = "antlion",
 	weight = 1,
 	onlyMainZone = true,
 
 	check = function(area)
-		local centre = area:GetCenter()
-
-		local tr = util.TraceLine({
-			start = centre,
-			endpos = centre + Vector(0,0,1000)
-		})
-
-		return tr.Hit and not tr.HitSky and math.acos(tr.HitNormal:Dot(-jcms.vectorUp)) < math.pi/4
+		return area:GetSizeX() > 20 and area:GetSizeY() > 20
 	end,
 
 	stamp = function(area, data)
-		return jcms.npc_Spawn("zombie_barnacle", area:GetCenter())
+		return jcms.npc_Spawn("antlion_grubbomb", area:GetCenter())
 	end
 }
