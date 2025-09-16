@@ -306,7 +306,7 @@ end
 
 				if attacker.jcms_dmgMult then
 					dmg:ScaleDamage(attacker.jcms_dmgMult)
-				end				
+				end			
 
 				if data then
 					if data.OnDealDamage then
@@ -314,16 +314,18 @@ end
 					end
 					
 					if not data.jcorp then
-						dmg:ScaleDamage(jcms.npc_GetScaledDamage(jcms.director and jcms.director.livingPlayers))
+						dmg:ScaleDamage(jcms.npc_GetScaledDamage())
 					end
 				end
 			else
 				dmg:ScaleDamage(attacker.jcms_dmgMult or 1)
-				if not attacker.jcms_dontScaleDmg then
-					dmg:ScaleDamage(jcms.npc_GetScaledDamage(jcms.director and jcms.director.livingPlayers))
-				end
-				if attacker.jcms_maxScaledDmg then 
-					dmg:SetDamage( math.min(attacker.jcms_maxScaledDmg, dmg:GetDamage()) )
+				if attacker:IsNPC() then
+					if not attacker.jcms_dontScaleDmg then
+						dmg:ScaleDamage(jcms.npc_GetScaledDamage())
+					end
+					if attacker.jcms_maxScaledDmg then 
+						dmg:SetDamage( math.min(attacker.jcms_maxScaledDmg, dmg:GetDamage()) )
+					end
 				end
 			end
 			

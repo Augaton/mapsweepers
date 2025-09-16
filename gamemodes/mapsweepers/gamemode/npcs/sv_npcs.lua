@@ -39,7 +39,7 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 	function jcms.npc_GetScaledCost(data) --Spam more fodder enemies when there are more players.
 		local cost = data.cost or 1
 		if data.danger == jcms.NPC_DANGER_FODDER or data.danger == jcms.NPC_DANGER_STRONG then
-			local plyCount = (jcms.director and jcms.director.livingPlayers) or #team.GetPlayers(1)
+			local plyCount = #team.GetPlayers(1)
 
 			cost = cost / math.sqrt(plyCount)
 			cost = cost / jcms.runprogress_GetDifficulty()
@@ -183,15 +183,15 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 
 		if enemyData.danger == jcms.NPC_DANGER_BOSS or enemyData.danger == jcms.NPC_DANGER_RAREBOSS then --Make bosses stronger the more players there are
 			local npcHP, npcMHP = npc:Health(), npc:GetMaxHealth()
-			local plyCount = jcms.director and jcms.director.livingPlayers or 1
+			local plyCount = jcms.director and jcms.director.livingPlayers or 1 --NOTE: Should be reconsidered. Unsure if it's worth changing to total players. I don't think tankier bosses would actually help end rounds faster, and this is dependent more on player firepower.
 
 			--Add 50% of the boss's base HP to its pool for each player over 1.
 			local mult = 0.55 * math.Max(plyCount-1, 0)
-			local scalar = ((1 + mult) * jcms.runprogress_GetDifficulty()) ^ (1/2) --Starts to taper off if it gets too ridiculously high.
+			local scalar = ((1 + mult) * jcms.runprogress_GetDifficulty()) ^ (5/8) --Starts to taper off if it gets too ridiculously high.
 			npc:SetMaxHealth(npcMHP * scalar)
 			npc:SetHealth(npcHP * scalar)
 
-			npcTbl.jcms_bounty = npcTbl.jcms_bounty * (1 + mult/2) --25% increase in bounty per player to keep the economy vaguely similar.
+			npcTbl.jcms_bounty = npcTbl.jcms_bounty * (1 + (mult^(5/8))/2) --25% increase in bounty per player to keep the economy vaguely similar.
 		end
 
 		if enemyData.weapon then
