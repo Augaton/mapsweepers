@@ -310,7 +310,7 @@ jcms.npc_types.antlion_waster = {
 		npc:SetMaxHealth( npc:Health() / 2 )
 		npc:SetHealth( npc:GetMaxHealth() )
 
-		local timerName = "jcms_anltion_fastThink_" .. tostring(npc:EntIndex())
+		local timerName = "jcms_antlion_fastThink_" .. tostring(npc:EntIndex())
 		timer.Create(timerName, 0.05, 0, function() 
 			if not IsValid(npc) then 
 				timer.Remove(timerName)
@@ -373,7 +373,7 @@ jcms.npc_types.antlion_guard = {
 		--Will need to apply to all guards (default, cyber, ultracyber)
 		jcms.npc_GetRowdy(npc)
 		
-		local hp = math.ceil(npc:GetMaxHealth()*1.5)
+		local hp = math.ceil(npc:GetMaxHealth()*0.85)
 		npc:SetMaxHealth(hp)
 		npc:SetHealth(hp)
 		
@@ -387,6 +387,36 @@ jcms.npc_types.antlion_guard = {
 				npc:SetNWFloat("HealthFraction", npc:Health() / npc:GetMaxHealth())
 			end
 		end)
+	end,
+	scaleDamage = function(npc, hitGroup, dmgInfo)
+		if bit.band(dmgInfo:GetDamageType(), bit.bor(DMG_BLAST,DMG_BLAST_SURFACE)) ~= 0 then return end
+		local inflictor = dmgInfo:GetInflictor() 
+		if not IsValid(inflictor) then return end 
+
+		local attkVec = npc:GetPos() - inflictor:GetPos()
+		local attkNorm = attkVec:GetNormalized()
+		local npcAng = npc:GetAngles():Forward()
+
+		local dot = attkNorm:Dot(-npcAng)
+		local angDiff = math.acos(dot)
+
+		if angDiff < math.pi/4 then --Heavy damage resist from the front, weak from behind.
+			npc:EmitSound("SolidMetal.BulletImpact", 100, 100, 1)
+
+			local effectdata = EffectData()
+			effectdata:SetEntity(npc)
+			effectdata:SetOrigin(dmgInfo:GetDamagePosition() - attkNorm)
+			effectdata:SetStart(dmgInfo:GetDamagePosition() + attkNorm )
+			effectdata:SetSurfaceProp(2)
+			effectdata:SetDamageType(dmgInfo:GetDamageType())
+
+			util.Effect("impact", effectdata)
+
+			effectdata:SetNormal(attkNorm)
+			util.Effect("MetalSpark", effectdata)
+
+			dmgInfo:ScaleDamage(0.25) --Slightly more forgiving than 0 damage.
+		end
 	end,
 
 	timerMin = 0.1,
@@ -436,7 +466,7 @@ jcms.npc_types.antlion_burrowerguard = {
 		--Will need to apply to all guards (default, cyber, ultracyber)
 		jcms.npc_GetRowdy(npc)
 		
-		local hp = math.ceil(npc:GetMaxHealth()*0.5)
+		local hp = math.ceil(npc:GetMaxHealth()*0.75)
 		npc:SetMaxHealth(hp)
 		npc:SetHealth(hp)
 		

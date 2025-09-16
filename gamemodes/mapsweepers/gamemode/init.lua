@@ -2914,7 +2914,7 @@ end
 		timer.Simple(5, function()
 			-- // Incoming sounds{{{
 				local dummy = ents.Create("prop_physics") --This is fucking stupid but I can't put csoundpatches in arbitrary locations without an ent.
-				dummy:SetPos(jcms.util_GetSky(pos))
+				dummy:SetPos(jcms.util_GetSky(pos) or pos)
 				dummy:SetModel("models/hunter/plates/plate.mdl")
 				dummy:Spawn()
 				dummy:PhysicsInitStatic(SOLID_NONE)

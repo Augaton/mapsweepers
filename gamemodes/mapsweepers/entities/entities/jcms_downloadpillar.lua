@@ -211,6 +211,8 @@ if CLIENT then
                 local blip = t%0.5<0.25
                 render.SetMaterial(self.mat_lamp)
                 local col = Color(blip and 255 or 0, blip and 30 or 255, blip and 32 or 255, 128)
+                if not self.beamShape[1] then return end --Lua-error fix
+
                 render.DrawBeam(self.beamShape[1], self.beamShape[#self.beamShape], 64, 0, 1, col)
             else
                 render.SetMaterial(self.mat_beam)

@@ -707,7 +707,7 @@ if CLIENT then
 			local speed = self:GetVelocity():Length()
 
 			local p = e:Add("particle/smokesprites_0001", exhaustPos)
-			if p then
+			if IsValid(p) then
 				local fadefactor = math.sqrt(speed/300)
 				p:SetVelocity(ang:Forward()*-128)
 				p:SetAirResistance(150)
@@ -750,7 +750,7 @@ if CLIENT then
 	end
 
 	function ENT:OnRemove()
-		if self.emitter then
+		if IsValid(self.emitter) then
 			self.emitter:Finish()
 		end
 	end
