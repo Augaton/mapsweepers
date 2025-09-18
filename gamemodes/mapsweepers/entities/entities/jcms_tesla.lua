@@ -35,6 +35,7 @@ ENT.ChainSteps = 14
 ENT.FireRate = 0.4
 
 ENT.SentinelAnchor = true
+ENT.JCMS_Stunnable = true
 
 function ENT:Initialize()
 	if SERVER then
@@ -48,7 +49,7 @@ function ENT:Initialize()
 		self.nextAttack = CurTime()
 	end
 
-	self.hackStunEnd = CurTime()
+	self.jcms_stunEnd = CurTime()
 end
 
 function ENT:UpdateForFaction(faction)
@@ -67,7 +68,7 @@ function ENT:SetupDataTables()
 	self:SetHealthFraction(1)
 	self:NetworkVarNotify("HackedByRebels", function(ent, name, old, new )
 		if new then
-			self.hackStunEnd = CurTime() + 2.5
+			self.jcms_stunEnd = CurTime() + 2.5
 		end
 
 		self:UpdateForFaction(new and "rgg" or jcms.util_GetFactionNamePVP(ent))
@@ -88,12 +89,12 @@ if SERVER then
 		effectdata:SetEntity(target)
 		util.Effect("TeslaHitboxes", effectdata)
 	end
-
+	
 	function ENT:Think()
 		if self:Health() > 0 then
 			local selfTbl = self:GetTable()
 			local cTime = CurTime()
-			if selfTbl.nextAttack <= cTime and (selfTbl.hackStunEnd < CurTime() or not self:GetHackedByRebels()) then
+			if selfTbl.nextAttack <= cTime and (selfTbl.jcms_stunEnd < CurTime() or not self:GetHackedByRebels()) then
 				local selfPos = self:GetPos()
 
 				local isHacked = selfTbl:GetHackedByRebels()

@@ -32,6 +32,7 @@ ENT.ChargePerSecond = 5
 ENT.ChargeInterval = 0.5
 
 ENT.SentinelAnchor = true
+ENT.JCMS_Stunnable = true
 
 function ENT:Initialize()
 	if SERVER then
@@ -46,7 +47,7 @@ function ENT:Initialize()
 		self.chargeEffectX = 0
 	end
 
-	self.hackStunEnd = CurTime()
+	self.jcms_stunEnd = CurTime()
 end
 
 function ENT:UpdateForFaction(faction)
@@ -68,7 +69,7 @@ function ENT:SetupDataTables()
 
 	self:NetworkVarNotify("HackedByRebels", function(ent, name, old, new )
 		if new then
-			self.hackStunEnd = CurTime() + 2.5
+			self.jcms_stunEnd = CurTime() + 2.5
 		end
 
 		self:UpdateForFaction(new and "rgg" or jcms.util_GetFactionNamePVP(ent))
@@ -79,7 +80,7 @@ if SERVER then
 	function ENT:Think()
 		local charging = false
 		if self:Health() > 0 then
-			if self.hackStunEnd < CurTime() or not self:GetHackedByRebels() then 
+			if self.jcms_stunEnd < CurTime() or not self:GetHackedByRebels() then 
 				local radius = self:GetChargeRadius()
 				for i, ply in ipairs(jcms.GetAliveSweepers()) do
 					if (ply:Armor() < ply:GetMaxArmor()) and (ply:WorldSpaceCenter():DistToSqr(self:WorldSpaceCenter()) <= radius*radius) and jcms.team_SameTeam(self, ply) then
@@ -143,7 +144,7 @@ if CLIENT then
 	end
 	
 	function ENT:Think()
-		if self:GetHackedByRebels() and self.hackStunEnd > CurTime() then return end
+		if self:GetHackedByRebels() and self.jcms_stunEnd > CurTime() then return end
 
 		if FrameTime() > 0 then
 			self.chargeEffectX = (self.chargeEffectX + 1) % 3

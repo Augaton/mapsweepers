@@ -29,6 +29,7 @@ ENT.Spawnable = false
 ENT.RenderGroup = RENDERGROUP_BOTH
 
 ENT.SentinelAnchor = true
+ENT.JCMS_Stunnable = true
 
 if SERVER then
 	function jcms.turret_GetTargetPos(self, target, origin)
@@ -374,7 +375,6 @@ if CLIENT then
 end
 
 function ENT:Initialize()
-	
 	if SERVER then
 		local health = 125
 		self:SetHealth(health)
@@ -392,6 +392,8 @@ function ENT:Initialize()
 		self:AddCallback("PhysicsCollide", self.PhysicsCollide)
 		self:GetPhysicsObject():Wake()
 		self:SetUseType(SIMPLE_USE)
+
+		self.jcms_stunEnd = CurTime()
 	end
 	
 	if CLIENT then
@@ -629,6 +631,10 @@ if SERVER then
 
 	function ENT:TurretThink(delta) 
 		local selfTbl = self:GetTable()
+		if selfTbl.jcms_stunEnd > CurTime() then
+			--TODO: Aim down & Make a looping idle noise
+			return 
+		end
 
 		selfTbl.TurretSlowThink(self)
 		local best = selfTbl.CurrentTarget 

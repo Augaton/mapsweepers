@@ -546,6 +546,14 @@
 	} )
 -- // }}}
 
+jcms.npc_commanders["rebel"] = {
+	placePrefabs = function(c, data)
+		--Faction prefabs
+		local count = math.ceil(jcms.mapgen_AdjustCountForMapSize( 2 ) * jcms.runprogress_GetDifficulty())
+		jcms.mapgen_PlaceFactionPrefabs(count, "rebel")
+	end
+}
+
 jcms.npc_types.rebel_rgg = {
 	portalSpawnWeight = 0.5,
 	faction = "rebel",
