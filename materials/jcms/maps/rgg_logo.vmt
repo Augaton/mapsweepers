@@ -1,0 +1,8 @@
+"LightmappedGeneric"
+{
+	"$basetexture" "jcms/maps/rgg_logo"
+	"$nofog" "1"
+	"$decal" "1"
+	"$decalscale" "0.5"
+	"$translucent" "1"
+}

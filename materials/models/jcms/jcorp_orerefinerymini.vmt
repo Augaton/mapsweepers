@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/jcms/jcorp_orerefinerymini"
+	"$selfillum" 1
+	"$selfillummask" "models/jcms/jcorp_orerefinerymini_illum"
+}

@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/jcms/rgg_dish"
+	"$selfillum" 1
+	"$selfillummask" "models/jcms/rgg_dish_illum"
+}
+
