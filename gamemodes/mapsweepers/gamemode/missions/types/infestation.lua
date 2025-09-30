@@ -100,8 +100,9 @@
 							type = "defendbomb", percent = true, progress = beacon:GetCharge() * 100, total = 100 
 						})
 
+						local hpFrac = beacon:Health()/beacon:GetMaxHealth()
 						table.insert(objectives, {
-							type = "defendbomb", style = 2, progress = beacon:Health()/beacon:GetMaxHealth()*100, total = 100
+							type = "defendbomb", style = 2, progress = hpFrac*100, total = 100, completed = hpFrac < 0.4
 						})
 					end
 				end

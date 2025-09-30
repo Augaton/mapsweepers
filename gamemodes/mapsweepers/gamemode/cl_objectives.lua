@@ -143,13 +143,13 @@
 			return doDiamond, 120, color
 		end,
 
-		[2] = function(i, objective) -- Healthbar
+		[2] = function(i, objective) -- Healthbar (Normal)
 			local x = objective.progress
 			local n = objective.n
 
 			local off = 2
 			local frac = math.Clamp(x/n, 0, 1)
-			local color, colorDark = frac <= 0.4 and jcms.color_alert or jcms.color_bright_alt, frac <= 0.5 and jcms.color_dark or jcms.color_dark_alt
+			local color, colorDark = objective.completed and jcms.color_alert or jcms.color_bright_alt, frac <= 0.5 and jcms.color_dark or jcms.color_dark_alt
 
 			surface.SetDrawColor(colorDark)
 			surface.DrawRect(0, -32, 200, 24)

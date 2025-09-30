@@ -38,7 +38,7 @@
 					local weightedAreas = {}
 					for i, area in ipairs(jcms.mapgen_MainZone()) do --Prioritise outdoor areas, ignore too small ones.
 						weightedAreas[area] = #area:GetVisibleAreas()
-						if area:GetSizeX() < 350 or area:GetSizeY() < 350 then
+						if area:GetSizeX() < 250 or area:GetSizeY() < 250 then
 							weightedAreas[area] = nil
 						elseif not jcms.mapgen_AreaFlat(area) then
 							weightedAreas[area] = nil
@@ -178,7 +178,7 @@
 
 					local isDisrupted = pillar:GetIsDisrupted()
 					table.insert(objectives, { type = isDisrupted and "repairpillarx" or "defendpillarx", format = { pillar:GetLabelSymbol() } })
-					table.insert(objectives, { type = "defendpillarx", style = 2, progress = math.ceil(pillar:Health() / pillar:GetMaxHealth() * 100), total = 100 })
+					table.insert(objectives, { type = "defendpillarx", style = 2, progress = math.ceil(pillar:Health() / pillar:GetMaxHealth() * 100), total = 100, completed = isDisrupted })
 				end
 
 				return objectives
