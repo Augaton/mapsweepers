@@ -79,6 +79,7 @@ prefabs.combine_floorturrets = {
 		end)
 
 		timer.Simple(30, function()
+			if not IsValid(ent) then return end
 			ent:EmitSound("NPC_FloorTurret.Deploy")
 			ent:Fire("Enable")
 		end)

@@ -143,7 +143,7 @@
 			return doDiamond, 120, color
 		end,
 
-		[2] = function(i, objective) -- Healthbar (Normal)
+		[2] = function(i, objective) -- Healthbar
 			local x = objective.progress
 			local n = objective.n
 

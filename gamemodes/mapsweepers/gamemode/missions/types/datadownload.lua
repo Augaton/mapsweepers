@@ -52,6 +52,8 @@
 
 				computer:SetNWBool("jcms_terminal_locked", false)
 				jcms.terminal_ToPurpose(computer)
+
+				computer.jcms_datadownload_cost = 500
 				
 				function computer:jcms_terminal_Callback(cmd, data, ply)
 					if data == "prep" and not missionData.defenseOngoing and not missionData.defenseCompleted then
@@ -227,11 +229,11 @@
 					end
 
 					if activePillars > 0 then
-						--4 Minutes at max power, scaling with difficulty
+						--5 Minutes at max power, scaling with difficulty
 						--Fewer pillars exponentially slows it.
 
 						local progressPower = (activePillars / totalPillars)^2
-						progressPower = progressPower * 1/(240 * jcms.runprogress_GetDifficulty())
+						progressPower = progressPower * 1/((60*5) * jcms.runprogress_GetDifficulty())
 
 						md.defenseProgress = math.Clamp(md.defenseProgress + progressPower, 0, 1)
 						md.timeEstimate = math.ceil( (1 - md.defenseProgress) / progressPower )--]]
@@ -250,10 +252,10 @@
 						end
 
 						md.defenseOngoing = false
-						md.defenseProgress = 0
+						--md.defenseProgress = 0
 					end
-				else
-					md.defenseProgress = 0
+				--else
+					--md.defenseProgress = 0
 				end
 
 				for i, pillar in ipairs(md.pillars) do 

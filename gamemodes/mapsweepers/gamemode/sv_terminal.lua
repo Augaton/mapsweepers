@@ -535,6 +535,7 @@ jcms.terminal_modeTypes = {
 
 	datadownloadcomputer = {
 		command = function(ent, cmd, data, ply)
+			--[[
 			if ent:GetNWBool("jcms_terminal_locked") then
 				local n = math.floor(tonumber(cmd) or -1)
 				if n >= 0 and n <= 9 then
@@ -553,12 +554,19 @@ jcms.terminal_modeTypes = {
 						return true, data .. n
 					end
 				end
-			else
-				if cmd == 0 then
+			else--]]
+
+			if cmd == 0 then
+				local cash = ply:GetNWInt("jcms_cash")
+				if cash >= ent.jcms_datadownload_cost then
+					ply:SetNWInt("jcms_cash", cash - ent.jcms_datadownload_cost)
 					local worked, newdata = ent.jcms_terminal_Callback(ent, cmd, data, ply)
 					return worked, newdata
 				end
+				return false
 			end
+
+			--end
 		end,
 
 		generate = function(ent)
