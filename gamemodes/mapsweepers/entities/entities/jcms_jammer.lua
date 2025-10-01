@@ -33,14 +33,11 @@ ENT.JammingTime = 2
 
 if SERVER then
 	function ENT:Initialize()
-		self:SetModel("models/props_explosive/explosive_butane_can02.mdl")
-		self:SetMaterial("models/props_combine/metal_combinebridge001")
+		self:SetModel("models/jcms/rgg_dish.mdl")
 		self:PhysicsInitStatic(SOLID_VPHYSICS)
 
 		self:SetMaxHealth(100)
 		self:SetHealth(100)
-
-		self:SetColor(Color(162, 81, 255))
 
 		local filter = RecipientFilter()
 		filter:AddAllPlayers()
