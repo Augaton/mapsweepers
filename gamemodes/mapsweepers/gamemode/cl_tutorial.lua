@@ -97,7 +97,12 @@ jcms.tutorPoints = {
 		color = jcms.color_alert,
 		content = {
 			{ "#jcms.t_nosw_title", "#jcms.t_nosw_desc", color = jcms.color_alert },
-		}
+		},
+		cond = function()
+			local wep = LocalPlayer():GetActiveWeapon()
+
+			return not IsValid(wep)
+		end
 	},
 
 	{
