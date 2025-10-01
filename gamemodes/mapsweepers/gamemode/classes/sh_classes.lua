@@ -51,10 +51,8 @@ table.Empty(jcms.classesOrderIndices)
 		ply:SetLadderClimbSpeed(130 * data.speedMul)
 		ply:SetSlowWalkSpeed(75 * data.speedMul)
 		
-		data.walkSpeed = data.walkSpeed or (160 * data.speedMul)
-		data.runSpeed = data.runSpeed or (250 * data.speedMul)
-		ply:SetWalkSpeed(data.walkSpeed)
-		ply:SetRunSpeed(data.runSpeed)
+		ply:SetWalkSpeed( data.walkSpeed or (160 * data.speedMul) )
+		ply:SetRunSpeed( data.runSpeed or (250 * data.speedMul) )
 
 		ply:SetJumpPower( data.jumpPower or 200 )
 		ply:SetCrouchedWalkSpeed(0.5)

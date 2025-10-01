@@ -27,16 +27,16 @@ class.mdl = "models/player/urban.mdl"
 class.footstepSfx = "NPC_MetroPolice.RunFootstep"
 
 class.health = 75
-class.shield = 30
+class.shield = 35
 class.shieldRegen = 7.5 -- Armor/suit power restoration, per second
-class.shieldDelay = 2.75 -- This many seconds must've passed since unit last got hurt to start restoring
+class.shieldDelay = 2.85 -- This many seconds must've passed since unit last got hurt to start restoring
 
 class.damage = 1 -- This unit deals 1.0x damage
 class.hurtMul = 1 -- This unit takes 1.0x damage
 class.hurtReduce = 1 -- Subtracted from damage taken
-class.speedMul = 1.25 -- Speed multiplier
+class.speedMul = 1.33 -- Speed multiplier
 class.walkSpeed = 160
-class.runSpeed = 350
+class.runSpeed = 400
 class.jumpPower = 280 -- Self-explanatory
 class.shareObjectiveMarkers = true
 
@@ -48,10 +48,21 @@ class.matOverrides = {
 	["models/cstrike/ct_urban_glass"] = "jcms/jglow"
 }
 
+local function updateJumpAbility(ply, newValue)
+	if SERVER then
+		local oldValue = not not ply.jcms_CanJump
+		ply.jcms_CanJump = not not newValue
+
+		if oldValue ~= ply.jcms_CanJump then
+			jcms.net_SendCanDoubleJump(ply, ply.jcms_CanJump)
+		end
+	end
+end
+
 function class.SetupMove(ply, mv, cmd)
-	if ply:Alive() and not ply:OnGround() and ply:WaterLevel()<3 and not IsValid(ply:GetNWEntity("jcms_vehicle")) then
+	if ply:GetObserverMode() == OBS_MODE_NONE and ply:Alive() and ply:GetMoveType() == MOVETYPE_WALK and not ply:OnGround() and ply:WaterLevel()<3 and not IsValid(ply:GetNWEntity("jcms_vehicle")) then
 		if ply.jcms_CanJump and mv:KeyPressed(IN_JUMP) then
-			ply.jcms_CanJump = false
+			updateJumpAbility(ply, false)
 
 			local vel = ply:GetVelocity()
 			vel:Mul( 0.12 )
@@ -70,50 +81,54 @@ function class.SetupMove(ply, mv, cmd)
 			vel:Add( jump )
 			mv:SetVelocity(vel)
 
-			-- Damage
-			local tr = util.TraceEntity({ 
-				start = ply:GetPos(), 
-				endpos = ply:GetPos() + Vector(0, 0, -220), 
-				filter = ply
-			}, ply)
+			if CLIENT and IsFirstTimePredicted() then
+				sound.Play("weapons/grenade_launcher1.wav", ply:GetPos(), 70, 88, 1)
+			end
 
-			sound.Play("weapons/grenade_launcher1.wav", ply:GetPos(), 70, 88, 1)
+			if SERVER then
+				-- Damage
+				local tr = util.TraceEntity({ 
+					start = ply:GetPos(), 
+					endpos = ply:GetPos() + Vector(0, 0, -220), 
+					filter = ply
+				}, ply)
 
-			if tr.Hit then
-				local pos = tr.HitPos
 
-				if SERVER then
+				if tr.Hit then
+					local pos = tr.HitPos
+					
 					timer.Simple(0, function()
 						local ed = EffectData()
 						ed:SetOrigin(pos)
 						util.Effect("HelicopterMegaBomb", ed)
 					end)
+
 					sound.Play("ambient/explosions/explode_9.wav", ply:GetPos(), 95, 105, 1)
-				end
 
-				local dmg = DamageInfo()
-				dmg:SetDamagePosition(ply:GetPos())
-				dmg:SetReportedPosition(ply:GetPos())
-				dmg:SetDamageType( DMG_CRUSH )
-				dmg:SetInflictor(ply)
-				dmg:SetAttacker(ply)
+					local dmg = DamageInfo()
+					dmg:SetDamagePosition(ply:GetPos())
+					dmg:SetReportedPosition(ply:GetPos())
+					dmg:SetDamageType( DMG_CRUSH )
+					dmg:SetInflictor(ply)
+					dmg:SetAttacker(ply)
+					dmg:SetDamage(30)
 
-				for i, target in ipairs( ents.FindInSphere(pos, 128) ) do
-					if not jcms.team_SameTeam(ply, target) and target.TakeDamageInfo then
-						dmg:SetDamage( 25 )
-						target:TakeDamageInfo(dmg)
+					for i, target in ipairs( ents.FindInSphere(pos, 128) ) do
+						if not jcms.team_SameTeam(ply, target) and target.TakeDamageInfo then
+							target:TakeDamageInfo(dmg)
+						end
 					end
-				end
-				if tr.Entity then
-					if not jcms.team_SameTeam(ply, tr.Entity) and tr.Entity.TakeDamageInfo then --An extra 25 dmg if we are on top of it.
-						dmg:SetDamage(25)
-						tr.Entity:TakeDamageInfo(dmg)
+					if tr.Entity then
+						if not jcms.team_SameTeam(ply, tr.Entity) and tr.Entity.TakeDamageInfo then --An extra 25 dmg if we are on top of it.
+							dmg:SetDamage(25)
+							tr.Entity:TakeDamageInfo(dmg)
+						end
 					end
 				end
 			end
 		end
 	else
-		ply.jcms_CanJump = true
+		updateJumpAbility(ply, true)
 	end
 end
 

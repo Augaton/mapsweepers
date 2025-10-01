@@ -26,6 +26,7 @@ local bits_ply, bits_ent, bits_wld = 2, 2, 4
 	-- // SERVER {{{
 		local PLY_NOTIF = 0
 		local PLY_VOTE = 1
+		local PLY_DOUBLEJUMP = 2
 		
 		local ENT_ = 0
 
@@ -753,6 +754,15 @@ if SERVER then
 			net.WriteVector(pos)
 		net.Broadcast()
 	end
+
+	function jcms.net_SendCanDoubleJump(ply, state)
+		net.Start("jcms_msg")
+			net.WriteBool(true)
+			net.WritePlayer(ply)
+			net.WriteUInt(PLY_DOUBLEJUMP, bits_ply)
+			net.WriteBool(state)
+		net.Broadcast()
+	end
 end
 
 if CLIENT then
@@ -796,6 +806,10 @@ if CLIENT then
 				jcms.aftergame.vote.votes[ply] = mapname
 				surface.PlaySound("friends/friend_join.wav")
 			end
+		end,
+
+		[ PLY_DOUBLEJUMP ] = function(ply)
+			ply.jcms_CanJump = net.ReadBool()
 		end
 	}
 
