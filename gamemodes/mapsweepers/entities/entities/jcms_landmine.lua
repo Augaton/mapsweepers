@@ -272,6 +272,8 @@ if SERVER then
 					weldedTo.jcms_breached = true
 
 					self:DamageUnder(weldedTo)
+				elseif weldedTo.BreakByBreach then
+					weldedTo:BreakByBreach( self:GetAngles():Up() )
 				end
 			end
 			

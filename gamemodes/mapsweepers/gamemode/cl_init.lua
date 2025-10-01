@@ -919,12 +919,12 @@ end)
 		["$alphatest"] = 1
 	} )
 
-	function jcms.render_HackedByRebels(ent)
+	function jcms.render_HackedByRebels(ent, sizeOverride, widthOverride, colorOverride, matOverride)
 		local entPos = ent:GetPos()
 		local eyeDist = jcms.EyePos_lowAccuracy:Distance(entPos)
 		if eyeDist > 4500 then return end
 		
-		render.SetMaterial(jcms.render_rebelHackBeamMat)
+		render.SetMaterial(matOverride or jcms.render_rebelHackBeamMat)
 		local mins, maxs = ent:OBBMins(), ent:OBBMaxs()
 		local minsX, minsY, minsZ = mins:Unpack()
 		local maxsX, maxsY, maxsZ = maxs:Unpack()
@@ -942,7 +942,7 @@ end)
 		
 			local n = math.random(4, 6)
 			render.StartBeam(n)
-			local size = math.Rand(4, 16) * (beamReduction/3 + 1)
+			local size = (sizeOverride or math.Rand(4, 16)) * (beamReduction/3 + 1)
 			for j=1, n do
 				gi = gi +1
 				local f = math.Remap(j, 1, n, 0, 1)
@@ -952,7 +952,7 @@ end)
 				norm:Mul(sin)
 				v:Add(right)
 				v:Add(norm)
-				render.AddBeam(v, 24/i, f*0.6+0.2, cols[gi % #cols + 1] )
+				render.AddBeam(v, (widthOverride or 24)/i, f*0.6+0.2, colorOverride or cols[gi % #cols + 1])
 				v:Sub(norm)
 				v:Sub(right)
 				norm:Div(sin)

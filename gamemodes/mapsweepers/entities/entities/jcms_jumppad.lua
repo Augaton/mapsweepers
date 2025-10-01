@@ -27,6 +27,10 @@ ENT.Author = "Octantis Addons"
 ENT.Category = "Map Sweepers"
 ENT.Spawnable = false
 
+function ENT:SetupDataTables()
+    self:NetworkVar("Bool", 0, "Overclocked")
+end
+
 function ENT:Initialize()
 	if SERVER then
 		self:SetModel("models/jcms/jcorp_jumppad.mdl")
@@ -38,6 +42,57 @@ function ENT:UpdateForFaction(faction)
 	for i, matname in ipairs(self:GetMaterials()) do
 		self:SetSubMaterial(i-1, matname:gsub("jcorp_", tostring(faction) .. "_"))
 	end
+end
+
+if SERVER then
+    function ENT:Think()
+        local state = not not (self.overclockedUntil and CurTime() < self.overclockedUntil)
+        if self:GetOverclocked() ~= state then
+            self:SetOverclocked(state)
+
+            if state then
+                self:EmitSound("ambient/levels/citadel/zapper_warmup4.wav", 100, 170)
+            else
+                self:EmitSound("weapons/physcannon/superphys_small_zap3.wav", 100, 110)
+            end
+        end
+    end
+
+    function ENT:OnTakeDamage(dmg)
+        if jcms.util_IsStunstick( dmg:GetInflictor() ) then
+            self.overclockedUntil = CurTime() + 5
+
+            local ed = EffectData()
+			ed:SetEntity(self)
+			ed:SetScale(5)
+            ed:SetMagnitude(10)
+            ed:SetColor( jcms.util_ColorIntegerFast(150, 255, 255) )
+            ed:SetMaterialIndex(1)
+			util.Effect("jcms_electricarcs", ed)
+        end
+    end
+
+    function ENT:BreakByBreach(forceVector)
+        self:EmitSound("physics/metal/metal_box_break2.wav", 80, 103)
+        self:PhysicsInit(SOLID_VPHYSICS)
+        self:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+        local physObj = self:GetPhysicsObject()
+        if IsValid(physObj) and forceVector then
+            physObj:SetVelocity( forceVector )
+        end
+
+        timer.Simple(2.75, function()
+            if IsValid(self) then
+                self:SetModelScale(0, 0.25)
+            end
+        end)
+
+        timer.Simple(3, function()
+            if IsValid(self) then
+                self:Remove()
+            end
+        end)
+    end
 end
 
 function ENT:JumpEffect()
@@ -53,18 +108,28 @@ function ENT:JumpEffect()
 end
 
 function ENT:LaunchPlayer(ply)
+    self:JumpEffect()
+
     if SERVER then
         ply.noFallDamage = true
     end
 
-    self:JumpEffect()
-
-    local vector = Vector(0, 0, ply:Crouching() and 260 or 580)
-
+    local isOverclocked = self:GetOverclocked()
+    
+    local vector = Vector(0, 0, isOverclocked and (ply:Crouching() and 950 or 1300) or (ply:Crouching() and 260 or 580))
     local ev = ply:EyeAngles():Forward()
-    ev:Mul(128)
+    ev:Mul(isOverclocked and 0 or 128)
     ev:Add(vector)
 
+    if isOverclocked then
+        local oldVel = ply:GetVelocity()
+        oldVel:Mul(0.8)
+        ev:Sub(oldVel)
+
+        if SERVER then
+            self:BreakByBreach(-ev)
+        end
+    end
     ply:SetVelocity(ev)
 end
 

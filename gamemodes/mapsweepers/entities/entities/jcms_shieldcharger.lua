@@ -133,6 +133,30 @@ if SERVER then
 			return 0
 		end
 	end
+
+	function ENT:BreakByBreach(forceVector)
+		self.ChargePerSecond = 0
+		
+        self:EmitSound("physics/metal/metal_box_break2.wav", 80, 103)
+        self:PhysicsInit(SOLID_VPHYSICS)
+        self:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+        local physObj = self:GetPhysicsObject()
+        if IsValid(physObj) and forceVector then
+            physObj:SetVelocity( forceVector )
+        end
+
+        timer.Simple(2.75, function()
+            if IsValid(self) then
+                self:SetModelScale(0, 0.25)
+            end
+        end)
+
+        timer.Simple(3, function()
+            if IsValid(self) then
+                self:Remove()
+            end
+        end)
+    end
 end
 
 if CLIENT then

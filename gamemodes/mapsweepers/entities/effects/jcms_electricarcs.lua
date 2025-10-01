@@ -28,11 +28,16 @@
 
 EFFECT.RenderGroup = RENDERGROUP_TRANSLUCENT
 
+EFFECT.Mats = {
+	[1] = nil, -- Use default material
+	[2] = Material("cable/hydra")
+}
+
 function EFFECT:Init( data )
 	self.ent = data:GetEntity()
-	local dur = data:GetScale()-- scale used for duration
 	if not IsValid(self.ent) then return end 
-
+	
+	local dur = data:GetScale() -- scale used for duration
 	if dur == 0 then 
 		self.infinite = true
 		self.endTime = 0
@@ -40,6 +45,14 @@ function EFFECT:Init( data )
 		self.endTime = CurTime() + dur
 		self.infinite = false
 	end
+
+	local size = data:GetMagnitude()
+	self.size = data:GetMagnitude()
+
+	local color = data:GetColor()
+	self.color = jcms.util_ColorFromInteger(color)
+
+	self.mat = self.Mats[ data:GetMaterialIndex() ]
 
 	self:SetPos(self.ent:WorldSpaceCenter())
 	self:SetParent(self.ent)
@@ -52,5 +65,5 @@ end
 function EFFECT:Render()
 	if not IsValid(self.ent) then return end 
 
-	jcms.render_HackedByRebels(self.ent)
+	jcms.render_HackedByRebels(self.ent, self.size, math.max(4, self.size), self.color, self.mat)
 end
