@@ -42,6 +42,7 @@ local bits_ply, bits_ent, bits_wld = 2, 2, 4
 		local WLD_ANNOUNCER_UPDATE = 9
 		local WLD_WEAPON_PRICES = 10
 		local WLD_NUKE = 11
+		local WLD_SPAWNEFFECTS = 12
 
 	-- // }}}
 
@@ -763,6 +764,30 @@ if SERVER then
 			net.WriteBool(state)
 		net.Broadcast()
 	end
+
+	function jcms.net_SendNPCSpawnEffects(spawneffectCategory)
+		net.Start("jcms_msg")
+			net.WriteBool(false)
+			net.WriteEntity(game.GetWorld())
+			net.WriteUInt(WLD_SPAWNEFFECTS, bits_wld)
+
+			local count = math.Clamp(#spawneffectCategory, 0, 63)
+			net.WriteUInt(tonumber(spawneffectCategory.colorInt) or 0, 8)
+			net.WriteFloat(tonumber(spawneffectCategory.scale) or 1)
+			net.WriteUInt(count, 6)
+			for i=1, count do
+				local e = spawneffectCategory[i]
+
+				local vec = e[1]
+				local delay = e[2]
+
+				net.WriteInt(math.Round(vec.x/2), 14) -- Writes a vector rounded to nearest 2 units
+				net.WriteInt(math.Round(vec.y/2), 14)
+				net.WriteInt(math.Round(vec.z/2), 14)
+				net.WriteUInt(math.min(2047, math.floor(delay*8)), 11) -- Writes delay multiplied by 8.
+			end
+		net.Broadcast()
+	end
 end
 
 if CLIENT then
@@ -1164,6 +1189,34 @@ if CLIENT then
 
 		[WLD_NUKE] = function()
 			jcms.effect_skyNuke(net.ReadVector(), 3)
+		end,
+
+		[ WLD_SPAWNEFFECTS ] = function()
+			local colorInteger = net.ReadUInt(8)
+			local scale = net.ReadFloat()
+			local count = net.ReadUInt(9)
+			
+			local ed = EffectData()
+			ed:SetFlags(1)
+			ed:SetColor(colorInteger)
+			ed:SetScale(scale)
+
+			print("Receiving portals", count, scale, jcms.util_ColorFromInteger(colorInteger))
+			local pos = Vector(0, 0, 0)
+			for i=1, count do
+				local x_2 = net.ReadInt(14)
+				local y_2 = net.ReadInt(14)
+				local z_2 = net.ReadInt(14)
+				local _8_delay = net.ReadUInt(11)
+				
+				pos:SetUnpacked(x_2*2, y_2*2, z_2*2 - 40)
+				ed:SetOrigin(pos)
+				pos:SetUnpacked(x_2*2, y_2*2, z_2*2 + 40)
+				ed:SetStart(pos)
+
+				ed:SetMagnitude(_8_delay/8)
+				util.Effect("jcms_spawneffect", ed)
+			end
 		end
 	}
 

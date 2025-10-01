@@ -255,14 +255,16 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 		local colorInteger = jcms.factions_GetColorInteger(enemyData.faction)
 
 		if not noeffect then
-			local ed = EffectData()
-			ed:SetColor(colorInteger)
-			ed:SetFlags(1)
-			ed:SetOrigin(pos + Vector(0, 0, -40))
-			ed:SetStart(pos + Vector(0, 0, 40))
-			ed:SetMagnitude(delay)
-			ed:SetScale(enemyData.portalScale or 1)
-			util.Effect("jcms_spawneffect", ed)
+			jcms.npc_SpawneffectInsert(colorInteger, pos, delay, enemyData.portalScale or 1)
+
+			-- local ed = EffectData()
+			-- ed:SetColor(colorInteger)
+			-- ed:SetFlags(1)
+			-- ed:SetOrigin(pos + Vector(0, 0, -40))
+			-- ed:SetStart(pos + Vector(0, 0, 40))
+			-- ed:SetMagnitude(delay)
+			-- ed:SetScale(enemyData.portalScale or 1)
+			-- util.Effect("jcms_spawneffect", ed)
 		end
 		
 		local time = CurTime()
@@ -416,7 +418,50 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 		end)
 	end
 
--- }}}
+-- // }}}
+
+-- // Spawneffect Buffer {{{
+
+	-- For networking a group of NPC pre-spawn effects
+	-- This fixes the issue of effects disappearing on lag, which is horribly annoying on servers.
+
+	jcms.npc_spawneffectBuffer = {}
+
+	function jcms.npc_SpawneffectCategorize(colorInt, pos, delay, scale)
+		local category = tostring(colorInt) .. " " .. tostring(scale)
+		
+		local categoryFinal = category
+		local i = 0
+
+		while jcms.npc_spawneffectBuffer[ categoryFinal ] and #jcms.npc_spawneffectBuffer[ categoryFinal ] > 63 do
+			i = i + 1
+			categoryFinal = category .. " " .. i
+		end
+
+		return categoryFinal
+	end
+
+	function jcms.npc_SpawneffectInsert(colorInt, pos, delay, scale)
+		local category = jcms.npc_SpawneffectCategorize(colorInt, pos, delay, scale)
+		
+		if not jcms.npc_spawneffectBuffer[category] then
+			jcms.npc_spawneffectBuffer[category] = {
+				colorInt = colorInt,
+				scale = scale
+			}
+		end
+
+		table.insert(jcms.npc_spawneffectBuffer[category], { pos, delay })
+	end
+
+	hook.Add("Think", "jcms_processSpawneffects", function()
+		for key, category in pairs(jcms.npc_spawneffectBuffer) do
+			jcms.net_SendNPCSpawnEffects(category)
+			jcms.npc_spawneffectBuffer[ key ] = nil
+		end
+	end)
+
+-- // }}}
 
 -- // NPC Utility/Helper functions {{{
 
