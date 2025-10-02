@@ -861,6 +861,13 @@ jcms.terminal_modeTypes = {
 						size2 = size2 + 16
 						surface.SetDrawColor(color_fg)
 					end
+
+					local jText = tostring(500) --TODO: Might want to make this networked later, hardcoded for now.
+					draw.SimpleText(jText, "jcms_hud_small", w - 325, h - 125, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+					surface.SetFont("jcms_hud_small")
+					local tw = surface.GetTextSize(jText)
+					jcms.draw_IconCash("jcms_hud_small", w-325 + tw, h-125, 4)
+
 					draw.SimpleText("#jcms.confirm", "jcms_hud_small", w - 300, h - 170, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 					
 					jcms.draw_Circle(w - 300, h - 170, size, size, bId==0 and 4 or 8 + sin*4, 32)
