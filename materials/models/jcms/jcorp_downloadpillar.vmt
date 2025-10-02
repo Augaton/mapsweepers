@@ -1,0 +1,10 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models/jcms/jcorp_downloadpillar"
+	"$bumpmap" "models/jcms/jcorp_downloadpillar_normal"
+	"$phong" 1
+	"$phongexponenttexture" "models/jcms/jcorp_downloadpillar_metallic"
+	"$phongboost" 3.0
+	"$phongfresnelranges"		"[0.5 0.7 1.0]"
+}
+
