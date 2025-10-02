@@ -329,6 +329,7 @@ end)
 
 		jcms.cachedValues.motionSickness = jcms.cvar_motionsickness:GetBool()
 		jcms.cachedValues.hudScale = jcms.cvar_hud_scale:GetFloat()
+		jcms.cachedValues.noVignette = jcms.cvar_hud_novignette:GetBool()
 	-- // }}}
 
 	hook.Add("Think", "jcms_cachevalues", function()
@@ -360,6 +361,7 @@ end)
 
 		jcms.cachedValues.motionSickness = jcms.cvar_motionsickness:GetBool()
 		jcms.cachedValues.hudScale = jcms.cvar_hud_scale:GetFloat()
+		jcms.cachedValues.noVignette = jcms.cvar_hud_novignette:GetBool()
 
 		jcms.scrW = ScrW()
 		jcms.scrH = ScrH()

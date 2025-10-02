@@ -26,6 +26,7 @@ jcms.inTutorial = game.GetMap() == "jcms_tutorial"
 jcms.vectorOrigin = Vector(0, 0, 0)
 jcms.vectorUp = Vector(0, 0, 1)
 jcms.vectorOne = Vector(1, 1, 1)
+jcms.vectorInvalid = Vector(math.huge, math.huge, math.huge)
 
 
 local pmt = FindMetaTable("Player")

@@ -203,12 +203,11 @@
 	
 	hook.Add("Think", "jcms_Colors", jcms.hud_UpdateColors)
 	
-	function jcms.hud_Update()
+	function jcms.hud_FrameUpdate(plyObserverMode) --Updates that run every frame
 		local me = jcms.locPly
-		if not IsValid(me) then return end
 
 		if me:Alive() then
-			if me:GetObserverMode() == OBS_MODE_CHASE then
+			if plyObserverMode == OBS_MODE_CHASE then
 				jcms.hud_dead = math.min(1, math.max(jcms.hud_dead - FrameTime(), 0))
 			else
 				jcms.hud_dead = 0
@@ -234,7 +233,7 @@
 		jcms.hud_UpdateNotifs()
 		jcms.hud_UpdateLocators()
 
-		if jcms.locPly:KeyDown(IN_RELOAD) and jcms.locPly:GetObserverMode() == OBS_MODE_CHASE and jcms.locPly:GetNWInt("jcms_desiredteam", 0) < 2 then
+		if jcms.locPly:KeyDown(IN_RELOAD) and plyObserverMode == OBS_MODE_CHASE and jcms.locPly:GetNWInt("jcms_desiredteam", 0) < 2 then
 			jcms.hud_npcConfirmation = math.Clamp( jcms.hud_npcConfirmation + FrameTime(), 0, 1 )
 
 			if not jcms.hud_npcConfirmed and jcms.hud_npcConfirmation >= 1 then
@@ -247,6 +246,10 @@
 			jcms.hud_npcConfirmed = false
 		end
 	end
+
+	timer.Create("jcms_Hud_SlowUpdate", 1/8, 0, function() --Some stuff we don't want running EVERY FUCKING FRAME (e.g. most traces)
+		jcms.hud_UpdateLocatorsSlow()
+	end)
 
 	local mat_stripes = Material("jcms/stripes.png", "noclamp")
 	function jcms.hud_DrawStripedRect(x,y,w,h,sc,uvOff)
@@ -432,7 +435,7 @@
 			return
 		end
 
-		local shouldDrawVignette = not jcms.cvar_hud_novignette:GetBool()
+		local shouldDrawVignette = not jcms.cachedValues.noVignette
 
 		cam.Start2D()
 			surface.SetMaterial(jcms.mat_vignette)
@@ -518,7 +521,7 @@
 			local addX = 64
 			local respawns = jcms.util_GetRespawnCount(me:GetNWInt("jcms_pvpTeam", -1))
 			local deadteammates = 0
-			for i, ply in ipairs(player.GetAll()) do
+			for i, ply in player.Iterator() do
 				if ply:GetNWInt("jcms_desiredteam") == 1 and (not ply:GetNWBool("jcms_evacuated")) and (ply:GetObserverMode() == OBS_MODE_CHASE or ply:GetObserverMode() == OBS_MODE_NONE and not ply:Alive()) then
 					deadteammates = deadteammates + 1
 				end
@@ -1243,11 +1246,7 @@
 
 			if not pos then continue end
 
-			if loc._lastVector then
-				loc._lastVector:SetUnpacked( pos:Unpack() )
-			else
-				loc._lastVector = Vector(pos)
-			end
+			loc._lastVector:SetUnpacked( pos:Unpack() )
 
 			surface.SetAlphaMultiplier(loc.a)
 
@@ -1260,13 +1259,15 @@
 				local distToScreenCenter = math.Distance(sw/2, sh/2, x, y)
 				local dsc = math.max(math.min(1, (150 - distToScreenCenter)/100), (3000/(dist*(loc.type == jcms.LOCATOR_GENERIC and 1 or 0.1)+3000)))
 				
-				jcms_dl_m:Identity()
-				jcms_dl_transformVec:SetUnpacked(x, y, 0)
-				jcms_dl_m:Translate(jcms_dl_transformVec)
+				--:SteamHappy:
+				jcms_dl_m:SetUnpacked(
+					dsc,	0,		0,		x,
+					0,		dsc,	0,		y,
+					0,		0,		dsc,	0,
+					0,		0,		0,		1
+				)
+				
 				x, y = 0, 0
-
-				jcms_dl_transformVec:SetUnpacked(dsc,dsc,dsc)
-				jcms_dl_m:Scale(jcms_dl_transformVec)
 
 				local size = Lerp(math.ease.OutBack(loc.a), 14, 24)
 
@@ -1658,14 +1659,6 @@
 	hook.Add("PreDrawEffects", "jcms_HUD", function()
 		if render.GetRenderTarget() then return end
 
-		draw.NoTexture()
-		render.OverrideBlend(false)
-		surface.SetAlphaMultiplier(1)
-		jcms.hud_Update()
-		
-		cam.IgnoreZ(true)
-		jcms.draw_Vignette()
-		
 		local ply = jcms.locPly
 		if not IsValid(ply) then
 			ply = LocalPlayer()
@@ -1673,6 +1666,14 @@
 		end
 		
 		local obs = ply:GetObserverMode()
+
+		draw.NoTexture()
+		render.OverrideBlend(false)
+		surface.SetAlphaMultiplier(1)
+		jcms.hud_FrameUpdate(obs)
+
+		cam.IgnoreZ(true)
+		jcms.draw_Vignette()
 
 		if jcms.hud_beginsequencet <= jcms.hud_beginsequenceLen then
 			jcms.hud_BeginningSequenceDraw()
@@ -1853,19 +1854,36 @@
 			tout = timeout, 
 			a = totallyNew and 0 or 1,
 			icon = icon,
-			new = totallyNew 
+			new = totallyNew,
+
+			_lastVector = jcms.vectorInvalid
 		})
 	end
 	
 	function jcms.hud_UpdateLocators()
 		local dt = FrameTime()
-		local mypos = EyePos()
-
 		local W = 7
+		
 		for i=#jcms.hud_locators, 1, -1 do
 			local loc = jcms.hud_locators[i]
 			loc.t = loc.t + dt
 
+			if loc.tout and loc.t > loc.tout then
+				loc.a = (loc.a*W + 0)/(W+1) - FrameTime()/2
+				if loc.a < 0 then
+					table.remove(jcms.hud_locators, i)
+				end
+			else
+				loc.a = (loc.a*W + 1)/(W+1)
+			end
+		end
+	end
+
+	function jcms.hud_UpdateLocatorsSlow()
+		local mypos = jcms.EyePos_lowAccuracy
+
+		for i=#jcms.hud_locators, 1, -1 do
+			local loc = jcms.hud_locators[i]
 			if loc._lastVector then
 				local trace = util.TraceLine {
 					start = mypos,
@@ -1876,15 +1894,6 @@
 				loc.directlyVisible = not trace.Hit
 			else
 				loc.directlyVisible = false
-			end
-
-			if loc.tout and loc.t > loc.tout then
-				loc.a = (loc.a*W + 0)/(W+1) - FrameTime()/2
-				if loc.a < 0 then
-					table.remove(jcms.hud_locators, i)
-				end
-			else
-				loc.a = (loc.a*W + 1)/(W+1)
 			end
 		end
 	end
