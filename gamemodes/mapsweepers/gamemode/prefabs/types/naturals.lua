@@ -481,8 +481,7 @@ local prefabs = jcms.prefabs
 			if not IsValid(ent) then return end
 
 			ent:Spawn()
-			ent:SetColor(Color(87, 83, 34))
-			ent:InitAsTerminal("models/props/de_nuke/nuclearcontrolbox.mdl", "gunlocker")
+			ent:InitAsTerminal("models/jcms/mafia_locker.mdl", "gunlocker")
 			ent:SetPos(data.pos)
 			ent:SetAngles(data.normal:Angle())
 

@@ -269,6 +269,10 @@ jcms.terminal_modeTypes = {
 				ply:Give(ent.jcms_weaponclass)
 				ply.jcms_canGetWeapons = oldValue
 
+				ent:ResetSequence("idle_open")
+				ent:SetCycle(0)
+				ent:EmitSound("doors/door_latch1.wav", 75, 137, 1)
+
 				local gunstats = jcms.gunstats_GetExpensive(ent.jcms_weaponclass)
 				if gunstats then
 					jcms.net_NotifyGeneric(ply, jcms.NOTIFY_OBTAINED, gunstats.name or "#"..ent.jcms_weaponclass)
