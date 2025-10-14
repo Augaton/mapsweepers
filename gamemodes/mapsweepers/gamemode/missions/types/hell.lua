@@ -33,6 +33,12 @@
 		
 		generate = function(data, missionData)
 			jcms.mapgen_PlaceNaturals( jcms.mapgen_AdjustCountForMapSize(20) )
+
+			
+			--Prefabs from all factions
+			for k, commander in pairs(jcms.npc_commanders) do 
+				commander:placePrefabs(missionData)
+			end
 		end,
 		
 		getObjectives = function(missionData)

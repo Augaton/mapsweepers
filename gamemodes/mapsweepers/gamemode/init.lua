@@ -23,7 +23,7 @@ DEFINE_BASECLASS("gamemode_base")
 include "sh_debugtools.lua"
 
 include "sh_bspReader.lua" --Data from the BSP. We probably(?) want to use this in mapgen and missions, so I put it at the top. - J
-do
+do --TODO: PCALL
 	local bspReadStart = SysTime()
 	bspReader.readLeafData()
 	bspReader.readNodeData()
@@ -2183,6 +2183,20 @@ end
 		end
 	end, nil, "Instantly unlocks the terminal you're looking at.", FCVAR_CHEAT)
 	
+	concommand.Add("jcms_debug_quickreboot", function(ply, cmd, args)
+		if not ply:IsPlayer() or ply:IsAdmin() then
+			RunConsoleCommand("jcms_debug_enable", "0")
+			if args[1] then
+				RunConsoleCommand("jcms_mission", args[1])
+			end
+			
+			for i, ply in player.Iterator() do 
+				ply:ConCommand( "jcms_jointeam 1" )
+				ply:ConCommand( "jcms_ready" )
+			end
+		end
+	end, nil, "End the mission and instantly boot into a new one", FCVAR_CHEAT)
+
 	concommand.Add("jcms_debug_enable", function(ply, cmd, args)
 		if not ply:IsPlayer() or ply:IsAdmin() then
 			if jcms.director then

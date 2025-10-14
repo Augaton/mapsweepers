@@ -149,10 +149,16 @@
 		end
 
 		function jcms.director_PvpObjectiveCompleted(ply, pos) --Player who completed, objective position.
-			if not jcms.cvar_pvpMode:GetBool() or not IsValid(ply) then return end --Only PVP uses this function rn.
+			if not IsValid(ply) then return end
 
 			local teamId = ply:GetNWInt("jcms_pvpTeam", -1)
 			teamId = not(teamId==-1) and teamId or 1
+
+			jcms.director_PvpObjectiveCompletedTeam(teamId, pos)
+		end
+
+		function jcms.director_PvpObjectiveCompletedTeam(teamId, pos) --Skips getting player team 
+			if not jcms.cvar_pvpMode:GetBool() then return end
 
 			local awayAreas = jcms.director_GetAreasAwayFrom(jcms.mapgen_MainZone(), {pos}, 100, 1250)
 			local weightedAreas = {}

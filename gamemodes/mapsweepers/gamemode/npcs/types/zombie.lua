@@ -269,12 +269,14 @@ jcms.npc_commanders["zombie"] = {
 	end, 
 
 	placePrefabs = function(c, data)
-		--Place extra respawn chambers		
-		local function weightOverride(name, ogWeight)
-			return ((name == "respawn_chamber") and 1) or 0
-		end
+		--Place extra respawn chambers
+		if data.faction == "zombie" then --We can potentially be called on non-zombie missions now.
+			local function weightOverride(name, ogWeight)
+				return ((name == "respawn_chamber") and 1) or 0
+			end
 
-		jcms.mapgen_PlaceNaturals(jcms.mapgen_AdjustCountForMapSize( 2 + math.ceil(1.5 * #jcms.GetLobbySweepers())), weightOverride)
+			jcms.mapgen_PlaceNaturals(jcms.mapgen_AdjustCountForMapSize( 2 + math.ceil(1.5 * #jcms.GetLobbySweepers())), weightOverride)
+		end
 
 		--Faction prefabs
 		local count = math.ceil(jcms.mapgen_AdjustCountForMapSize( 4 ) * jcms.runprogress_GetDifficulty())
