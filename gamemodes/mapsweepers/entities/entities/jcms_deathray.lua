@@ -60,7 +60,7 @@ function ENT:Initialize()
 	if CLIENT then
 		self.soundBeam = CreateSound(self, "ambient/levels/citadel/zapper_loop1.wav")
 		self.soundBeam:ChangePitch(130, 0)
-		self.soundBeam:SetSoundLevel(200)
+		self.soundBeam:SetSoundLevel(140)
 
 		self.BeamColor = Color(255, 0, 0)
 
@@ -271,12 +271,12 @@ if CLIENT then
 		if beamTime <= prepTime then
 			if beamTime > prepTime - 0.5 and not selfTbl.sndPlayedPre then
 				local _, lineVec = util.DistanceToLine(tr.StartPos, tr.HitPos, EyePos())
-				EmitSound("ambient/levels/citadel/portal_beam_shoot6.wav", lineVec, 0, CHAN_AUTO, 1, 200, 0, 100, 0)
+				EmitSound("ambient/levels/citadel/portal_beam_shoot6.wav", lineVec, 0, CHAN_AUTO, 1, 140, 0, 100, 0)
 				selfTbl.sndPlayedPre = true
 			end
 		elseif beamTime > prepTime and beamTime <= lifeTime + prepTime then
 			if not selfTbl.sndPlayed then
-				self:EmitSound("beams/beamstart5.wav", 105, 88)
+				self:EmitSound("beams/beamstart5.wav", 100, 88)
 				selfTbl.sndPlayed = true
 				
 				selfTbl.soundBeam:Play()
@@ -288,8 +288,8 @@ if CLIENT then
 				selfTbl.sndEnded = true
 
 				local _, lineVec = util.DistanceToLine(tr.StartPos, tr.HitPos, EyePos())
-				EmitSound("ambient/levels/citadel/portal_beam_shoot3.wav", lineVec, 0, CHAN_AUTO, 1, 200, 0, 130, 0)
-				self:EmitSound("ambient/levels/citadel/portal_beam_shoot3.wav", 105, 130)
+				EmitSound("ambient/levels/citadel/portal_beam_shoot3.wav", lineVec, 0, CHAN_AUTO, 1, 140, 0, 130, 0)
+				self:EmitSound("ambient/levels/citadel/portal_beam_shoot3.wav", 100, 130)
 			end
 		end
 		
