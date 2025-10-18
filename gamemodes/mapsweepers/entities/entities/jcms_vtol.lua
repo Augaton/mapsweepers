@@ -32,6 +32,10 @@ ENT.Damage = 15
 ENT.Firerate = 0.07
 ENT.Spread = 1.7
 
+ENT.jcms_miningCrateAttaches = {
+	Vector(-100,0,-30)
+}
+
 function ENT:Initialize()
 	self:SetCollisionGroup(COLLISION_GROUP_VEHICLE)
 	
@@ -59,6 +63,8 @@ function ENT:Initialize()
 		self.nextInteract = 0
 		self:CreatePassengerSeats()
 		self:SetUseType(SIMPLE_USE)
+
+		self.jcms_attachedCrates = {}
 	elseif CLIENT then 
 		self.jetTransition = 0
 	end
@@ -95,30 +101,6 @@ function ENT:UpdateForFaction(faction)
 end
 
 if SERVER then
-	function ENT:SpawnMinecart()
-		if IsValid(self.jcms_minecart) then
-			self.jcms_minecart:Remove()
-		end
-		
-		local mdl = "models/props_mining/flatbed_cart03.mdl"
-		local off = 80
-
-		local mc = ents.Create("prop_physics")
-		mc:SetParent(self)
-		mc:SetModel(mdl)
-		mc:Spawn()
-		mc:SetColor(Color(255, 34, 34))
-		mc:SetPos(Vector(-100, 0, -60))
-
-		mc:GetPhysicsObject():SetMass(150)
-
-		local ang = self:GetAngles()
-		mc:SetAngles(ang)
-		mc:SetParent()
-		constraint.Weld(mc, self, 0, 0, 0, true, true)
-		self.jcms_minecart = mc
-	end
-
 	function ENT:Think()
 		if self.jcms_destroyed or not self:GetIsWorking() then
 			if self.soundTurbo then
@@ -330,8 +312,6 @@ if SERVER then
 			
 			return
 		end
-		
-		local hasMinecart = IsValid(self.jcms_minecart)
 
 		local mass = phys:GetMass()
 		local mypos = self:GetPos()
@@ -432,11 +412,6 @@ if SERVER then
 		end
 		
 		local gravity = physenv.GetGravity()
-
-		if hasMinecart then -- Some adjustmets so that flight is less painful
-			gravity.z = gravity.z*1.08
-			addFwd = addFwd + 0.1
-		end
 		
 		if jetMode then
 			damp = math.max(0, 0.01 - crashtime*0.0011)

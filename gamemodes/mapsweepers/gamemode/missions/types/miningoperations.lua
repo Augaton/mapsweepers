@@ -191,9 +191,6 @@ jcms.missions.miningoperations = {
 			local entTbl = ent:GetTable()
 			if ent:GetClass() == "jcms_orevein" then
 				oresRightNow = oresRightNow + math.Clamp( ent:Health() / ent:GetMaxHealth(), 0, 1 )
-			elseif type(entTbl.SpawnMinecart) == "function" and not entTbl.jcms_minecartHandled then
-				entTbl.SpawnMinecart(ent)
-				entTbl.jcms_minecartHandled = true
 			end
 		end
 
@@ -211,7 +208,105 @@ jcms.missions.miningoperations = {
 		else
 			return basePassesCheck
 		end
-	end
+	end,
+	
+	orders = { --mission-specific call-ins
+		--TODO: Too much repeated code in the funcs, separate out.
+		mo_smallcrate = {
+			category = jcms.SPAWNCAT_MISSION,
+			cost = 500,
+			cooldown = 120,
+			slotPos = 1,
+			argparser = "orbital_fixed",
+
+			missionSpecific = true,
+
+			func = function(ply, pos, angle)
+				local faction = "jcorp"
+				if IsValid(ply) then
+					faction = jcms.util_GetFactionNamePVP(ply)
+				end
+				
+				local col
+				if faction == "mafia" then
+					col = Color(238, 255, 0)
+				else
+					col = Color(255, 0, 0)
+				end
+
+				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_orecrate", 10, [=[Ore Crate]=], col, ply)
+				crate.CrateType = 1
+
+				if CPPI then
+					crate:CPPISetOwner( game.GetWorld() )
+				end
+			end
+		},
+		
+		mo_mediumcrate = {
+			category = jcms.SPAWNCAT_MISSION,
+			cost = 1500,
+			cooldown = 120,
+			slotPos = 2,
+			argparser = "orbital_fixed",
+
+			missionSpecific = true,
+
+			func = function(ply, pos, angle)
+				local faction = "jcorp"
+				if IsValid(ply) then
+					faction = jcms.util_GetFactionNamePVP(ply)
+				end
+				
+				local col
+				if faction == "mafia" then
+					col = Color(238, 255, 0)
+				else
+					col = Color(255, 0, 0)
+				end
+
+				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_orecrate", 10, [=[Ore Crate]=], col, ply)
+				crate.CrateType = 2
+
+				if CPPI then
+					crate:CPPISetOwner( game.GetWorld() )
+				end
+			end
+		},
+		
+		mo_largecrate = {
+			category = jcms.SPAWNCAT_MISSION,
+			cost = 3500,
+			cooldown = 120,
+			slotPos = 3,
+			argparser = "orbital_fixed",
+
+			missionSpecific = true,
+
+			func = function(ply, pos, angle)
+				local faction = "jcorp"
+				if IsValid(ply) then
+					faction = jcms.util_GetFactionNamePVP(ply)
+				end
+				
+				local col
+				if faction == "mafia" then
+					col = Color(238, 255, 0)
+				else
+					col = Color(255, 0, 0)
+				end
+
+				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_orecrate", 10, [=[Ore Crate]=], col, ply)
+				crate.CrateType = 3
+
+				if CPPI then
+					crate:CPPISetOwner( game.GetWorld() )
+				end
+			end
+		},
+	}
+
+
 }
 
 -- }}}

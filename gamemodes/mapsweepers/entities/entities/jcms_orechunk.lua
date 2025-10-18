@@ -43,13 +43,27 @@ if SERVER then
 		["models/props_mining/rock_caves01b.mdl"] = 15,
 	}
 
+	function ENT:SetOreType(oretype)
+		local data = assert(jcms.oreTypes[oretype], "unknown ore type '"..tostring(oretype).."'")
+		
+		self.jcms_oreValue = data.value
+		self:SetOreName(oretype)
+		self:SetOreColourInt(jcms.util_ColorInteger(data.color) or 0)
+
+		self:SetMaterial(data.material)
+	end
+
 	function ENT:Initialize()
 		local weights = {}
 		for mdl, mass in pairs(self.ModelsWithMasses) do
 			weights[mdl] = 100 - mass
 		end
 
-		local mdl = jcms.util_ChooseByWeight(weights)
+		local mdl = self:GetModel()
+		if mdl == "models/error.mdl" then
+			mdl = jcms.util_ChooseByWeight(weights)
+		end
+
 		local mass = self.ModelsWithMasses[mdl]
 
 		self:SetModel(mdl)
@@ -60,9 +74,10 @@ if SERVER then
 		self:SetHealth(self:GetMaxHealth())
 
 		self.jcms_oreMass = mass
+
 		local phys = self:GetPhysicsObject()
 		if IsValid(phys) then
-			phys:SetMass( math.ceil(mass*0.8 + 10) )
+			phys:SetMass( mass )
 		end
 
 		timer.Simple(0, function()
