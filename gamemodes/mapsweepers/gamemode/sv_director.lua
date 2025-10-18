@@ -170,7 +170,7 @@
 			for i=1, respCount, 1 do
 				local area = jcms.util_ChooseByWeight(weightedAreas) --TODO: account for no areas? Although that should be impossible.
 
-				jcms.director_InsertRespawnVector(area:GetCenter(), teamId) 
+				jcms.director_InsertRespawnVector(area:GetCenter(), teamId)
 			end
 		end
 		

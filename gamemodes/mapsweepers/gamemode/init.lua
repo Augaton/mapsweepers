@@ -2194,6 +2194,13 @@ end
 				ply:ConCommand( "jcms_jointeam 1" )
 				ply:ConCommand( "jcms_ready" )
 			end
+
+			for i, bot in ipairs(player.GetBots()) do
+				bot:SetNWInt("jcms_desiredteam", 1)
+				bot:SetNWBool("jcms_ready", true)
+			end
+
+			--TODO: Tell director to teleport spawn us instead of using the droppod
 		end
 	end, nil, "End the mission and instantly boot into a new one", FCVAR_CHEAT)
 

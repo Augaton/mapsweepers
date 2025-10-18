@@ -53,9 +53,15 @@ if SERVER then
 		self.nextSlowThink = CurTime()
 	end
 
-	function ENT:BeamMoveTo(v)
+	function ENT:BeamMoveTo(v, target) --target is optional/potentially null.
 		local speed = self.Speed
 		local dmgrad = self.beamRadius
+
+		if IsValid(target) then 
+			if IsValid(self.jcms_owner) and not jcms.team_pvpSameTeam(self.jcms_owner, target) then
+				speed = speed * 0.75
+			end
+		end
 
 		local selfPos = self:GetPos()
 		selfPos.z = v.z --ignore Z
@@ -143,7 +149,7 @@ if SERVER then
 		iterateEnts(player.GetAll())
 		
 		if IsValid(bestTarget) then
-			self:BeamMoveTo( bestTarget:WorldSpaceCenter() )
+			self:BeamMoveTo( bestTarget:WorldSpaceCenter(), bestTarget )
 		end
 	end
 	
@@ -163,13 +169,15 @@ if SERVER then
 		selfTbl.beamTime = selfTbl.beamTime + iv
 		
 		if selfTbl.beamTime <= selfTbl.beamLifeTime + selfTbl.beamPrepTime then
-			selfTbl.SlowThink(self)
+			if not(jcms.util_IsPVP() and selfTbl.beamTime < selfTbl.beamPrepTime) then
+				selfTbl.SlowThink(self)
 
-			local x,y,z = selfTbl.beamVelocity:Unpack()
-			selfTbl.beamMultipliedVelocity:SetUnpacked( x*iv, y*iv, z*iv )
-			selfTbl.beamMultipliedVelocity:Add(selfPos)
+				local x,y,z = selfTbl.beamVelocity:Unpack()
+				selfTbl.beamMultipliedVelocity:SetUnpacked( x*iv, y*iv, z*iv )
+				selfTbl.beamMultipliedVelocity:Add(selfPos)
 
-			self:SetPos(selfTbl.beamMultipliedVelocity)
+				self:SetPos(selfTbl.beamMultipliedVelocity)
+			end
 		else
 			self:Remove()
 		end
