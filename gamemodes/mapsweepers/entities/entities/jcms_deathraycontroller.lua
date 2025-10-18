@@ -51,6 +51,12 @@ if SERVER then
 		dRay:Spawn()
 
 		self.nextSlowThink = CurTime()
+
+		local pos = self:GetBeamTrace().HitPos
+		EmitSound("buttons/blip2.wav", pos, 0, CHAN_AUTO, 1, 75, 0, 110)
+		timer.Simple(0.125, function()
+			EmitSound("buttons/button17.wav", pos, 0, CHAN_AUTO, 1, 75, 0, 85)
+		end)
 	end
 
 	function ENT:BeamMoveTo(v, target) --target is optional/potentially null.
