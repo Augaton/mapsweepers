@@ -192,7 +192,7 @@ local nmt = FindMetaTable("NPC")
 			ClassName = "weapon_stunstick",
 			PrintName = "#weapon_stunstick",
 			WorldModel = "models/weapons/c_stunstick.mdl",
-			Primary = { Ammo = false, Damage = 40, RPM = 60, ClipSize = -1, Cone = 0 }
+			Primary = { Ammo = false, Damage = 47, RPM = 60, ClipSize = -1, Cone = 0 }
 		},
 
 		weapon_physcannon = {
@@ -210,7 +210,7 @@ local nmt = FindMetaTable("NPC")
 			ClassName = "weapon_pistol",
 			PrintName = "#weapon_pistol",
 			WorldModel = "models/weapons/w_pistol.mdl",
-			Primary = { Ammo = "Pistol", Damage = 5, RPM = 550, ClipSize = 18, Cone = math.rad(0.8) }
+			Primary = { Ammo = "Pistol", Damage = 11, RPM = 550, ClipSize = 18, Cone = math.rad(0.8) }
 		},
 
 		weapon_smg1 = {
@@ -219,7 +219,7 @@ local nmt = FindMetaTable("NPC")
 			ClassName = "weapon_smg1",
 			PrintName = "#weapon_smg1",
 			WorldModel = "models/weapons/w_smg1.mdl",
-			Primary = { Ammo = "SMG1", Damage = 4, RPM = 800, ClipSize = 45, Cone = math.rad(1.5) }
+			Primary = { Ammo = "SMG1", Damage = 9, RPM = 800, ClipSize = 45, Cone = math.rad(1.5) }
 		},
 
 		weapon_357 = {
@@ -228,7 +228,7 @@ local nmt = FindMetaTable("NPC")
 			ClassName = "weapon_357",
 			PrintName = "#weapon_357",
 			WorldModel = "models/weapons/w_357.mdl",
-			Primary = { Ammo = "357", Damage = 40, RPM = 80, ClipSize = 6, Cone = 0 }
+			Primary = { Ammo = "357", Damage = 93, RPM = 80, ClipSize = 6, Cone = 0 }
 		},
 
 		weapon_ar2 = {
@@ -237,7 +237,7 @@ local nmt = FindMetaTable("NPC")
 			ClassName = "weapon_ar2",
 			PrintName = "#weapon_ar2",
 			WorldModel = "models/weapons/w_irifle.mdl",
-			Primary = { Ammo = "AR2", Damage = 8, RPM = 600, ClipSize = 30, Cone = math.rad(0.8) }
+			Primary = { Ammo = "AR2", Damage = 18, RPM = 600, ClipSize = 30, Cone = math.rad(0.8) }
 		},
 
 		weapon_shotgun = {
@@ -246,7 +246,7 @@ local nmt = FindMetaTable("NPC")
 			ClassName = "weapon_shotgun",
 			PrintName = "#weapon_shotgun",
 			WorldModel = "models/weapons/w_shotgun.mdl",
-			Primary = { Ammo = "Buckshot", Damage = 8, RPM = 80, ClipSize = 6, Cone = math.rad(2.5), NumShots = 7 }
+			Primary = { Ammo = "Buckshot", Damage = 23, RPM = 80, ClipSize = 6, Cone = math.rad(2.5), NumShots = 7 }
 		},
 
 		weapon_rpg = {
@@ -255,7 +255,7 @@ local nmt = FindMetaTable("NPC")
 			ClassName = "weapon_rpg",
 			PrintName = "#weapon_rpg",
 			WorldModel = "models/weapons/w_rocket_launcher.mdl",
-			Primary = { Ammo = "RPG_Round", Damage = 200, RPM = 34, ClipSize = 1, Cone = 0 }
+			Primary = { Ammo = "RPG_Round", Damage = 265, RPM = 34, ClipSize = 1, Cone = 0 }
 		},
 
 		weapon_frag = {
@@ -273,7 +273,7 @@ local nmt = FindMetaTable("NPC")
 			ClassName = "weapon_crossbow",
 			PrintName = "#weapon_crossbow",
 			WorldModel = "models/weapons/w_crossbow.mdl",
-			Primary = { Ammo = "XBowBolt", Damage = 100, RPM = 31, ClipSize = 1, Cone = 0 }
+			Primary = { Ammo = "XBowBolt", Damage = 187, RPM = 31, ClipSize = 1, Cone = 0 }
 		}
 
 		--HL1 Weapons
