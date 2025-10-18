@@ -1061,11 +1061,10 @@ local nmt = FindMetaTable("NPC")
 
 	function jcms.util_GetSky(from)
 		local lastpos = from
-		local up = Vector(0, 0, 20000)
-		local normalup = Vector(0, 0, 1)
+		local up = Vector(0, 0, 32768)
 
 		for i=1, 48 do
-			local trace = util.TraceLine { start = lastpos + normalup, endpos = lastpos + up, mask = MASK_SOLID_BRUSHONLY }
+			local trace = util.TraceLine { start = lastpos + jcms.vectorUp, endpos = lastpos + up, mask = MASK_SOLID_BRUSHONLY }
 
 			if trace.HitSky then
 				return trace.HitPos, i == 1

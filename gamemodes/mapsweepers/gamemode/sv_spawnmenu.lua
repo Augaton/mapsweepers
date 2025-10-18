@@ -42,8 +42,10 @@
 		orbital_fixed_outdoors = function(ply, args) --TODO: Allegedly not usable on skybox
 			local tr = ply:GetEyeTrace()
 
-			local skyPos, hitSky = jcms.util_GetSky(tr.HitPos)
-			if hitSky then
+			if tr.HitSky then return true, tr.HitPos - jcms.vectorUp end --Hitting the roof has somewhat wonky behaviour
+
+			local skyPos, _ = jcms.util_GetSky(tr.HitPos)
+			if skyPos then
 				return true, skyPos - jcms.vectorUp
 			else
 				jcms.net_SendOrderMessage(ply, 5)
