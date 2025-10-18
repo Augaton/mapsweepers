@@ -112,6 +112,8 @@ if SERVER then
 					beam.deathRay:SetBeamPrepTime(prep)
 					beam.deathRay.jcms_owner = self
 					beam.deathRay:SetBeamLifeTime(20)
+
+					beam.IsIdleUntilActive = true --Don't track until we're actually fully formed.
 				end
 			elseif jcms.npc_airCheck() then --Missiles 
 				local pos = self:WorldSpaceCenter() + (jcms.vectorUp * 180)

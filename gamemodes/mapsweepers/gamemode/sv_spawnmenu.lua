@@ -39,7 +39,7 @@
 			return true, tr.HitPos
 		end,
 
-		orbital_fixed_outdoors = function(ply, args)
+		orbital_fixed_outdoors = function(ply, args) --TODO: Allegedly not usable on skybox
 			local tr = ply:GetEyeTrace()
 
 			local skyPos, hitSky = jcms.util_GetSky(tr.HitPos)
@@ -511,6 +511,8 @@
 				beam.deathRay.DPS_DIRECT = 160
 				beam.deathRay:SetBeamRadius(rad)
 				beam.deathRay.jcms_owner = ply
+
+				beam.IsIdleUntilActive = jcms.util_IsPVP()
 
 				jcms.announcer_SpeakChance(0.2, jcms.ANNOUNCER_ORBITALBEAM)
 				jcms.net_NotifyGeneric(ply, jcms.NOTIFY_ORDERED, "#jcms.orbitalbeam")

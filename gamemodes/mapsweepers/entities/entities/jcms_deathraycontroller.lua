@@ -29,6 +29,7 @@ ENT.Spawnable = false
 ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
  
 ENT.Speed = 300
+ENT.IsIdleUntilActive = false
 
 if SERVER then 
 	function ENT:Initialize()
@@ -175,7 +176,7 @@ if SERVER then
 		selfTbl.beamTime = selfTbl.beamTime + iv
 		
 		if selfTbl.beamTime <= selfTbl.beamLifeTime + selfTbl.beamPrepTime then
-			if not(jcms.util_IsPVP() and selfTbl.beamTime < selfTbl.beamPrepTime) then
+			if not(self.IsIdleUntilActive and selfTbl.beamTime < selfTbl.beamPrepTime) then
 				selfTbl.SlowThink(self)
 
 				local x,y,z = selfTbl.beamVelocity:Unpack()
