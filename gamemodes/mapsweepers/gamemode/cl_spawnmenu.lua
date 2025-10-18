@@ -584,10 +584,12 @@ end
 
 		local isSweeper = ply:Team() == 1
 		local isNPC = ply:Team() == 2
-		local dead = not ply:Alive() or ply:GetObserverMode() == OBS_MODE_CHASE
-		local ox, oy = dead and math.Rand(-1, 1) or 0, dead and math.Rand(-1, 1) or 0
 
-		if dead then
+		local evacuated = ply:GetNWBool("jcms_evacuated", false)
+		local dead = (not evacuated) and (not ply:Alive() or ply:GetObserverMode() == OBS_MODE_CHASE)
+
+		local ox, oy = dead and math.Rand(-1, 1) or 0, dead and math.Rand(-1, 1) or 0
+		if dead or evacuated then
 			surface.SetAlphaMultiplier(0.5)
 		end
 
@@ -601,7 +603,7 @@ end
 			jcms.classmats[ tgclass ] = Material("jcms/classes/"..tgclass..".png")
 		end
 
-		local classmat = jcms.classmats[ tgclass ]
+		local classmat = evacuated and jcms.mat_evac or jcms.classmats[ tgclass ]
 		if classmat and not classmat:IsError() then
 			surface.SetMaterial(classmat)
 			surface.SetDrawColor(jcms.color_bright)
@@ -629,7 +631,7 @@ end
 			render.OverrideBlend( false )
 		end
 		
-		if not dead and isSweeper then
+		if not (dead or evacuated) and isSweeper then
 			local healthWidth = ply:GetMaxHealth()/2
 			local healthFrac = math.Clamp(ply:Health() / ply:GetMaxHealth(), 0, 1)
 			local armorWidth = ply:GetMaxArmor()/2
