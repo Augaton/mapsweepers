@@ -815,6 +815,7 @@ jcms.terminal_modeTypes = {
 		end,
 
 		command = function(ent, cmd, data, ply)
+			if not ent:GetNWBool("jcms_terminal_locked") then return end
 			local sample = "1234567890QWERTYUIOP-ASDFGHJKL+ZXCVBNM_"
 			local char = sample:sub(cmd, cmd)
 
