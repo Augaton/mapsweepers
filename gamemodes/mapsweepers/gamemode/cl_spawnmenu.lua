@@ -164,15 +164,22 @@ end
 				selectedOption = sector
 				
 				if jcms.spawnmenu_selectedOrders[sector] then
-					if jcms.mousewheel ~= 0 then
-						surface.PlaySound("weapons/zoom.wav")
-						jcms.spawnmenu_scrolled = true
-					end
+					local scrolled = false
 
 					if jcms.mousewheel > 0 then
 						jcms.spawnmenu_selectedOrders[sector] = math.min(jcms.spawnmenu_selectedOrders[sector] + 1, #jcms.orders_lists[sector])
+						scrolled = true
 					elseif jcms.mousewheel < 0 then
 						jcms.spawnmenu_selectedOrders[sector] = math.max(jcms.spawnmenu_selectedOrders[sector] - 1, 1)
+						scrolled = true
+					elseif jcms.locPly:KeyPressed(IN_RELOAD) then
+						jcms.spawnmenu_selectedOrders[sector] = (jcms.spawnmenu_selectedOrders[sector] % (#jcms.orders_lists[sector]) ) + 1
+						scrolled = true
+					end
+
+					if scrolled then
+						surface.PlaySound("weapons/zoom.wav")
+						jcms.spawnmenu_scrolled = true
 					end
 				end
 			end
@@ -414,7 +421,13 @@ end
 				surface.DrawRect(tipx - tw/2, tipy + th/2 + 11, tw, 1)
 				jcms.hud_DrawStripedRect(tipx-tw/2-16, tipy - th/2 - 12, 4, th + 24, 32, CurTime()%1 * 24)
 				jcms.hud_DrawStripedRect(tipx+tw/2+16-4, tipy - th/2 - 12, 4, th + 24, 32, CurTime()%1 * 24)
-				draw.SimpleText("#jcms.orderscrolltip", "jcms_medium", tipx, tipy, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				local _, th2 = draw.SimpleText("#jcms.orderscrolltip", "jcms_medium", tipx, tipy - 4, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				
+				surface.SetAlphaMultiplier(0.5*blend2)
+				local binding = input.LookupBinding("+reload") or "???"
+				local str = language.GetPhrase("jcms.orderscrolltip_alt"):format( binding:upper() )
+				draw.SimpleText(str, "jcms_small_bolder", tipx, tipy + th2/2 + 2, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				surface.SetAlphaMultiplier(1)
 			end
 		end
 
