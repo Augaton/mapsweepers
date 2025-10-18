@@ -26,7 +26,7 @@ jcms.missions.miningoperations = {
 	
 	generate = function(data, missionData)
 		--Place refineries / Difficulty calculations
-		local pvpMode = jcms.cvar_pvpMode:GetBool()
+		local pvpMode = jcms.util_IsPVP()
 
 		local refineries_main = jcms.mapgen_SpreadPrefabs("refinery_main", pvpMode and 2 or 1, 250, true)
 		local refineries_secondary = jcms.mapgen_SpreadPrefabs("refinery_secondary", jcms.mapgen_AdjustCountForMapSize(3), 180, false)

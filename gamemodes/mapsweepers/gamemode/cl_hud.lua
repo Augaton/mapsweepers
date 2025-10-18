@@ -2539,7 +2539,7 @@
 
 	function jcms.hud_SpectatorDraw_ChangeClass(col, colAlt) --TODO: Better visual integeration w/ npc hud
 		local off = 4
-		if (jcms.locPly:GetNWInt("jcms_desiredteam", 0) == 1 or jcms.cvar_pvpMode:GetBool()) and jcms.vm_evacd <= 0 then
+		if (jcms.locPly:GetNWInt("jcms_desiredteam", 0) == 1 or jcms.util_IsPVP()) and jcms.vm_evacd <= 0 then
 			local binding = input.LookupBinding("+jump", true)
 			if binding then
 				binding = binding:upper()

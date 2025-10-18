@@ -158,7 +158,7 @@
 		end
 
 		function jcms.director_PvpObjectiveCompletedTeam(teamId, pos) --Skips getting player team 
-			if not jcms.cvar_pvpMode:GetBool() then return end
+			if not jcms.util_IsPVP() then return end
 
 			local awayAreas = jcms.director_GetAreasAwayFrom(jcms.mapgen_MainZone(), {pos}, 100, 1250)
 			local weightedAreas = {}
@@ -1020,10 +1020,10 @@
 							end
 						end
 						
-						if ply:GetNWInt("jcms_desiredteam", 0) == 1 or jcms.cvar_pvpMode:GetBool() then
+						if ply:GetNWInt("jcms_desiredteam", 0) == 1 or jcms.util_IsPVP() then
 							table.insert(deadPlayers, ply)
 						end
-					elseif jcms.cvar_pvpMode:GetBool() and jcms.team_NPC(ply) then
+					elseif jcms.util_IsPVP() and jcms.team_NPC(ply) then
 						table.insert(deadPlayers, ply)
 					end
 				end
@@ -1213,7 +1213,7 @@
 		end
 
 		function jcms.director_ThinkPvp(d)
-			if jcms.cvar_pvpMode:GetBool() and d.missionData.evacuating then 
+			if jcms.util_IsPVP() and d.missionData.evacuating then 
 				--DESTROY EVERYTHING
 				local cTime = CurTime()
 
@@ -1597,7 +1597,7 @@
 				end
 
 				--Everyone dead or everyone evacuated
-				if (not d.debug) and (aliveTeams <= ( (jcms.cvar_pvpMode:GetBool() and not jcms.cvar_pvpDebug:GetBool()) and 1 or 0)) or (livingPlayers == 0 and deadPlayers == 0) then
+				if (not d.debug) and (aliveTeams <= ( (jcms.util_IsPVP() and not jcms.cvar_pvpdebug:GetBool()) and 1 or 0)) or (livingPlayers == 0 and deadPlayers == 0) then
 					local victory = evacCount > 0
 
 					local missionTime = jcms.director_GetMissionTime()

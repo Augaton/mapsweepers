@@ -220,7 +220,7 @@ if SERVER then
 				self:EmitSound("ambient/explosions/explode_6.wav", 140, 110, 1, CHAN_AUTO)
 				self:EmitSound("ambient/explosions/explode_2.wav", 100, 140, 1, CHAN_AUTO)
 
-				if not jcms.cvar_pvpMode:GetBool() then --We have a different incentive in PVP and keeping the radiation could get aids.
+				if not jcms.util_IsPVP() then --We have a different incentive in PVP and keeping the radiation could get aids.
 					local radSphere = ents.Create("jcms_radsphere")
 					radSphere:SetPos(self:WorldSpaceCenter())
 					radSphere:Spawn()
@@ -259,7 +259,7 @@ if SERVER then
 		self.alarmSound:SetSoundLevel(90)
 		self.alarmSound:PlayEx(1, 90)
 
-		self:SetMaxHealth( jcms.cvar_pvpMode:GetBool() and 1000 or 500 ) --double HP for pvp mode since it's harder to defend there.
+		self:SetMaxHealth( jcms.util_IsPVP() and 1000 or 500 ) --double HP for pvp mode since it's harder to defend there.
 		self:SetHealth(self:GetMaxHealth())
 
 		--self:RemoveFlags(FL_NOTARGET)

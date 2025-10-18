@@ -135,9 +135,8 @@ local nmt = FindMetaTable("NPC")
 	jcms.cvar_swarm_size = CreateConVar("jcms_swarm_size", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Swarm size multiplier.", 0, 5)
 	jcms.cvar_swarm_warning = CreateConVar("jcms_swarm_warning", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Extra seconds between a portal opening and enemies coming out of it.", 0, 30)
 	
-	jcms.cvar_pvpMode = CreateConVar("jcms_pvpmode", "0", FCVAR_JCMS_SHARED_SAVED, "Enables / Disables PVP mode")
-	jcms.cvar_pvpDebug = CreateConVar("jcms_pvpdebug", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "Stops PVP mode from ending when only 1 team is present")
-	jcms.cvar_pvpNoBeacons = CreateConVar("jcms_pvpnobeacons", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Disables Respawn beacons in PvP (leaving only chambers/objective respawns)")
+	jcms.cvar_pvpdebug = CreateConVar("jcms_pvpdebug", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "Stops PVP mode from ending when only 1 team is present")
+	jcms.cvar_pvpnobeacons = CreateConVar("jcms_pvpnobeacons", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Disables Respawn beacons in PvP (leaving only chambers/objective respawns)")
 	
 	-- Replicated
 	jcms.cvar_announcer_type = CreateConVar("jcms_announcer_type", "default", FCVAR_JCMS_SHARED_SAVED, "Selects the current announcer by name.")
@@ -1344,6 +1343,10 @@ local nmt = FindMetaTable("NPC")
 
 	function jcms.util_GetCurrentDifficulty()
 		return game.GetWorld():GetNWFloat("jcms_difficulty", 0)
+	end
+
+	function jcms.util_IsPVP()
+		return game.GetWorld():GetNWBool("jcms_pvpmode", false)
 	end
 
 -- }}}

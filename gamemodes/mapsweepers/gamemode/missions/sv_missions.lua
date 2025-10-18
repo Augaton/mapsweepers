@@ -96,7 +96,7 @@
 				jcms.runprogress_SetLastMission()
 				jcms.director.fullyInited = true
 
-				if jcms.cvar_pvpMode:GetBool() then
+				if jcms.util_IsPVP() then
 					for teamId=1, 2 do
 						for i=1, math.ceil(player.GetCount()/2) do
 							--TODO: Weighted
@@ -106,7 +106,7 @@
 						end
 					end
 
-					if jcms.cvar_pvpNoBeacons:GetBool() then
+					if jcms.cvar_pvpnobeacons:GetBool() then
 						jcms.orders.respawnbeacon.pvpBlacklisted = true
 						jcms.net_RemoveOrder("respawnbeacon")
 					else
@@ -356,7 +356,7 @@
 		-- }}}
 
 		-- Announcer {{{
-			if not jcms.cvar_pvpMode:GetBool() then
+			if not jcms.util_IsPVP() then
 				timer.Simple(2, function()
 					if victory then 
 						jcms.announcer_Speak(jcms.ANNOUNCER_VICTORY)
@@ -482,7 +482,7 @@
 	end
 	
 	function jcms.mission_GenerateEvacObjective()
-		if jcms.cvar_pvpMode:GetBool() then
+		if jcms.util_IsPVP() then
 			return {
 				{type = "j", 0,0},
 				{type = "die", 0,0}
@@ -575,7 +575,7 @@
 
 	function jcms.mission_DropEvac(pos, timeToWaitOverride)
 		local d = jcms.director
-		if d and not jcms.cvar_pvpMode:GetBool() then
+		if d and not jcms.util_IsPVP() then
 			if IsValid(d.evacEnt) then
 				d.evacEnt:Remove()
 			end

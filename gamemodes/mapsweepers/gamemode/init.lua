@@ -2568,6 +2568,19 @@ end
 		end
 	end)
 
+	concommand.Add("jcms_pvptoggle", function(ply, cmd, args)
+		if game.SinglePlayer() then
+			jcms.printf("You must be in Multiplayer")
+			return
+		end
+
+		if not ply:IsPlayer() or ply:IsAdmin() then
+			local newState = not game.GetWorld():GetNWBool("jcms_pvpmode", false)
+			game.GetWorld():SetNWBool("jcms_pvpmode", newState)
+			jcms.printf("PVP Mode: " .. (newState and "On" or "Off"))
+		end
+	end)
+
 -- // }}}
 
 -- // Weapons {{{

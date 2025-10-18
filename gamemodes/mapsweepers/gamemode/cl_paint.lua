@@ -1061,6 +1061,9 @@
 				local missionData = jcms.missions[ missionType ]
 				local missionNameX = w - 32 - 600
 				
+				local winstreak = jcms.util_GetCurrentWinstreak()
+				local difficulty = jcms.util_GetCurrentDifficulty()
+				
 				if (missionType ~= "") then
 					local name = language.GetPhrase("#jcms." .. (missionData and missionData.basename or missionType))
 					local desc = language.GetPhrase("#jcms." .. (missionData and missionData.basename or missionType).."_desc")
