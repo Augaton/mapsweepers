@@ -250,7 +250,7 @@ end
 			return 0
 		elseif ent:IsPlayer() then
 			ent.jcms_lastDamaged = CurTime()
-			jcms.net_SendDamage(ent, dmginfo)
+			jcms.net_SendDamage(ent, dmg)
 		end
 
 		local swpShield = ent:GetNWInt("jcms_sweeperShield", 0)

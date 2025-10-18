@@ -1452,6 +1452,18 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 	end
 
 	function jcms.mapgen_PlaceNaturals(maxcount, weightOverride)
+		local shopCount = jcms.mapgen_AdjustCountForMapSize(1) + (jcms.runprogress_GetDifficulty() <= 0.9 and 1 or 0)
+		local mainZoneShopCount = math.min(shopCount, math.floor(shopCount/4 + 2))
+
+		if mainZoneShopCount == shopCount then
+			jcms.mapgen_SpreadPrefabs("shop", mainZoneShopCount, 0, true)
+			jcms.printf("Shop count: %d (all in the main zone)", mainZoneShopCount)
+		else
+			jcms.mapgen_SpreadPrefabs("shop", mainZoneShopCount, 0, true)
+			jcms.mapgen_SpreadPrefabs("shop", shopCount - mainZoneShopCount, 0, false)
+			jcms.printf("Shop count: %d (%d/%d in the main portion of the map)", shopCount, mainZoneShopCount, shopCount)
+		end
+
 		local naturalWeights = jcms.prefab_GetNaturalTypesWithWeights()
 
 		if isfunction(weightOverride) then
@@ -1570,8 +1582,9 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 
 -- // Shared Generation Behaviours. {{{
 
-	function jcms.mapgen_SpreadPrefabs(type, count, sizeXY, onlyMainZone)
-		local pref = jcms.prefabs[type]
+	function jcms.mapgen_SpreadPrefabs(prefabtype, count, sizeXY, onlyMainZone)
+		if type(count) ~= "number" or (count <= 0) then return end
+		local pref = jcms.prefabs[prefabtype]
 
 		local zoneDict = jcms.mapgen_ZoneDict()
 
@@ -1622,7 +1635,7 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 
 			if not chosenArea then return prefabs end --Fail safe (map has no or not enough valid areas)
 
-			local worked, pref = jcms.prefab_TryStamp(type, chosenArea) --We've already checked if our target area is valid, no need to check again
+			local worked, pref = jcms.prefab_TryStamp(prefabtype, chosenArea) --We've already checked if our target area is valid, no need to check again
 			table.insert(prefabAreas, chosenArea) 
 			table.insert(prefabs, pref)
 

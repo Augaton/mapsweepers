@@ -1194,7 +1194,7 @@ if CLIENT then
 		[ WLD_SPAWNEFFECTS ] = function()
 			local colorInteger = net.ReadUInt(8)
 			local scale = net.ReadFloat()
-			local count = net.ReadUInt(9)
+			local count = net.ReadUInt(6)
 			
 			local ed = EffectData()
 			ed:SetFlags(1)

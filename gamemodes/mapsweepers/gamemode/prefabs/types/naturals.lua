@@ -21,43 +21,6 @@
 
 local prefabs = jcms.prefabs
 
--- // Critical / Always spawns {{{
-	prefabs.shop = {
-		natural = true,
-		weight = 9999999,
-		limit = function()
-			return (jcms.runprogress_GetDifficulty() <= 0.9 and 2) or 1 
-		end,
-		limitMulBySize = true,
-		onlyMainZone = true,
-
-		check = function(area)
-			if not jcms.mapgen_ValidArea(area) then return false end
-
-			local wallspots, normals = jcms.prefab_GetWallSpotsFromArea(area, 48, 128)
-			
-			if #wallspots > 0 then
-				local rng = math.random(#wallspots)
-				return true, { pos = wallspots[rng], normal = normals[rng] }
-			else
-				return false
-			end
-		end,
-
-		stamp = function(area, data)
-			local ent = ents.Create("jcms_shop")
-			if not IsValid(ent) then return end
-
-			data.pos = data.pos + data.normal * 14
-			ent:SetPos(data.pos)
-			ent:DropToFloor()
-			ent:SetAngles(data.normal:Angle())
-			ent:Spawn()
-			return ent
-		end
-	}
--- // }}}
-
 -- // Ambient prefabs {{{
 	prefabs.wall_charger = {
 		natural = true,
