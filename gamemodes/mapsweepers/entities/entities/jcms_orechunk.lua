@@ -80,12 +80,7 @@ if SERVER then
 			phys:SetMass( mass )
 		end
 
-		timer.Simple(0, function()
-			if not self.jcms_worthSet then
-				self.jcms_worthSet = true
-				self:SetWorth((tonumber(self.jcms_oreMass) or 0) * (tonumber(self.jcms_oreValue) or 1))
-			end
-		end)
+		self:SetWorth((tonumber(self.jcms_oreMass) or 0) * (tonumber(self.jcms_oreValue) or 1))
 	end
 
 	function ENT:Use(activator)

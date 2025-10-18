@@ -98,41 +98,29 @@ if SERVER then
 		end
 	end
 
-	--GM:OnPlayerPhysicsDrop( Player ply, Entity ent, boolean thrown )
-	--TODO: We can currently pick up a crate as soon as we drop it and that's suboptimal.
-
 	function ENT:Use( activator, caller, useType, value )
-		if self:IsPlayerHolding() then return end
+		if self:IsPlayerHolding() or self.jcms_lastCarried and self.jcms_lastCarried + 0.05 > CurTime() then return end
+		self:DetachFromVehicle()
+
 		activator:PickupObject(self)
-
-		if self.jcms_attachedToVehicle then
-			--TODO: SFX
-			--TODO: Gravity Gun as well if that's possible.
-
-			self.lastVehicleAttached = CurTime()
-			
-			local crateType = self.CrateTypes[self.CrateType]
-			self:GetPhysicsObject():SetMass(crateType.mass)
-
-			if IsValid(self.jcms_attachedVehicle) then
-				self.jcms_attachedVehicle.jcms_attachedCrates[self.jcms_attachedSlot] = nil 
-
-				self.jcms_attachedSlot = nil
-				self.jcms_attachedVehicle = NULL
-			end
-		end
-
-		constraint.RemoveConstraints( self, "Weld" )
-		self.jcms_attachedToVehicle = false
 	end
 
+	hook.Add("OnPlayerPhysicsDrop", "jcms_orecrate_drop", function(ply, ent, thrown)
+		ent.jcms_lastCarried = CurTime()
+	end)
+
+	hook.Add("GravGunOnPickedUp", "jcms_orecrate_pickup", function(ply, ent)
+		if not isfunction(ent.DetachFromVehicle) then return end
+		ent:DetachFromVehicle()
+	end)
+ 
 	function ENT:PhysicsCollide( data, physObj )
 		--Is the target an ore and do we have space for it?
 		local hitEnt = data.HitEntity
 
 		if self.lastEjected + self.EjectionCooldown < CurTime() and hitEnt:GetClass() == "jcms_orechunk" and self:GetHeldCapacity() + hitEnt:GetPhysicsObject():GetMass() < self:GetMaxCapacity() and not hitEnt.jcms_physAte then
 			self:Eat(hitEnt)
-		elseif self.lastVehicleAttached + self.AttachCooldown < CurTime() and hitEnt.jcms_attachedCrates and self:FindAttachSlot(hitEnt) then
+		elseif not self.jcms_attachedToVehicle and self.lastVehicleAttached + self.AttachCooldown < CurTime() and hitEnt.jcms_attachedCrates and self:FindAttachSlot(hitEnt) then
 			self:ForcePlayerDrop()
 			self:AttachToVehicle(hitEnt, self:FindAttachSlot(hitEnt))
 		end
@@ -147,7 +135,7 @@ if SERVER then
 	end
 
 	function ENT:Eat( target )
-		--TODO: SFX
+		self:EmitSound("ambient/levels/outland/forklift_stop.wav", 75, 110 + math.Rand(-5, 5) - target.jcms_oreMass/5)
 
 		target.jcms_physAte = true --We can get multiple physcollide calls at once, we don't want to eat the same object twice.
 
@@ -163,7 +151,13 @@ if SERVER then
 	end
 
 	function ENT:Vomit()
-		--TODO: SFX
+		--TODO: These don't work.
+		self:EmitSound("items/itempickup.wav", 75)
+		self:EmitSound("vehicles/atv_ammo_close.wav", 75)
+
+		--[[ --These work but suck.
+		self:EmitSound("vehicles/tank_readyfire1.wav", 75)
+		self:EmitSound("vehicles/tank_turret_stop1.wav", 75)--]]
 
 		self.lastEjected = CurTime()
 
@@ -184,15 +178,13 @@ if SERVER then
 
 
 	function ENT:AttachToVehicle(target, slot)
-		--TODO: SFX
+		self:EmitSound("Metal_Box.ImpactHard")
 
 		local vec = target.jcms_miningCrateAttaches[slot]
 		local crateType = self.CrateTypes[self.CrateType]
 		local angAdd, posAdd = crateType.attachAngle, crateType.attachOffset
 
-		self:SetParent(target)
-		self:SetPos(vec + posAdd)
-		self:SetParent()
+		self:SetPos(target:LocalToWorld(vec + posAdd))
 
 		self:SetAngles(target:GetAngles() + angAdd)
 		
@@ -210,15 +202,45 @@ if SERVER then
 		target.jcms_attachedCrates[slot] = self
 	end
 
+	function ENT:DetachFromVehicle()
+		constraint.RemoveConstraints( self, "Weld" )
+
+		if self.jcms_attachedToVehicle then
+			self:EmitSound("Metal_Box.BulletImpact")
+
+			self.lastVehicleAttached = CurTime()
+			
+			local crateType = self.CrateTypes[self.CrateType]
+			self:GetPhysicsObject():SetMass(crateType.mass)
+
+			if IsValid(self.jcms_attachedVehicle) then
+				self.jcms_attachedVehicle.jcms_attachedCrates[self.jcms_attachedSlot] = nil 
+
+				self.jcms_attachedSlot = nil
+				self.jcms_attachedVehicle = NULL
+			end
+		end
+
+		self.jcms_attachedToVehicle = false
+	end
+
 	function ENT:FindAttachSlot(target)
+		local selfPos = self:WorldSpaceCenter()
+
 		local i = 1
+		local closestSlot
+		local closestDist = math.huge
 
 		while target.jcms_miningCrateAttaches[i] do
-			if not IsValid(target.jcms_attachedCrates[i]) then
-				return i
+			local dist = selfPos:DistToSqr( target:LocalToWorld(target.jcms_miningCrateAttaches[i]) )
+			if dist < closestDist and not IsValid(target.jcms_attachedCrates[i]) then
+				closestSlot = i
+				closestDist = dist
 			end
 			i = i + 1
 		end
+
+		return closestSlot
 	end
 end
 
