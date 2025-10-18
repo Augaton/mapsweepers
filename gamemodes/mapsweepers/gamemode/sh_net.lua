@@ -122,7 +122,6 @@ if SERVER then
 			jcms.playerAfkPings[ply] = CurTime()
 		end
 	}
-
 	
 	for i = 1, 2^bits_ply do ply_messages[i-1] = ply_messages[i-1] or function() end end
 	for i = 1, 2^bits_ent do ent_messages[i-1] = ent_messages[i-1] or function() end end

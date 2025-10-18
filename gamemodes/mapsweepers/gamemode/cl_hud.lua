@@ -2896,7 +2896,7 @@
 	
 	jcms.hud_damageIndicators = {
 		{ dmgType = DMG_RADIATION, icon = Material "jcms/radiation.png", time = -5, alpha = 0, negated = false },
-		{ dmgType = DMG_NERVEGAS, icon = Material "jcms/biohazard.png", time = -5, alpha = 0, negated = false },
+		{ dmgType = bit.bor(DMG_POISON, DMG_NERVEGAS), icon = Material "jcms/biohazard.png", time = -5, alpha = 0, negated = false },
 		{ dmgType = DMG_DROWN, icon = Material "jcms/oxygen.png", time = -5, alpha = 0, negated = false },
 		{ dmgType = DMG_FALL, icon = Material "jcms/fracture.png", time = -5, alpha = 0, negated = false }
 	}

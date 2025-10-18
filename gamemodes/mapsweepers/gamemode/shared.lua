@@ -1226,7 +1226,7 @@ local nmt = FindMetaTable("NPC")
 	jcms.util_colorIntegerMafia = jcms.util_ColorInteger( Color(255, 217, 0) )
 	jcms.util_colorIntegerSweeperShield = jcms.util_ColorInteger( Color(32, 200, 255) )
 
-	jcms.util_dmgTypesCompression = { DMG_ACID, DMG_FALL, DMG_DROWN, DMG_NERVEGAS, DMG_RADIATION, DMG_BURN }
+	jcms.util_dmgTypesCompression = { DMG_ACID, DMG_FALL, DMG_DROWN, DMG_NERVEGAS, DMG_RADIATION, DMG_BURN, DMG_POISON }
 	function jcms.util_dmgTypeCompress(dmgType)
 		local compressed = 0
 		for i, n in ipairs(jcms.util_dmgTypesCompression) do

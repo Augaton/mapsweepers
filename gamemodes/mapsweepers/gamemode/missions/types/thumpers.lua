@@ -248,7 +248,7 @@
 					device:Spawn()
 					device:SetupDevice("sapper", attachEnt, false)
 					constraint.Weld(device, attachEnt, 0, 0)
-					
+					jcms.util_TryUpdateForPVP(device)
 					if IsValid(ply) then
 						device:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
 					end
