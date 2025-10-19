@@ -364,9 +364,14 @@
 
 	-- Swarm-related {{{
 	
-		function jcms.director_SpawnSwarm(d, fullQueue)
+		function jcms.director_SpawnSwarm(d, fullQueue, isInitialSwarm)
 			local time = CurTime()
-			local aggroChance = (#d.npcs > 0 and jcms.director_GetMissionTime() >= 20) and Lerp(d.npcs_alarm or 0, 0.15, 0.95) or 0.1
+			local aggroChance = (#d.npcs > 0 and jcms.director_GetMissionTime() >= 35) and Lerp(d.npcs_alarm or 0, 0.2, 0.7) or 0.1
+
+			if isInitialSwarm then
+				aggroChance = 0 -- Ambient enenies don't have aggro
+			end
+
 			local zoneList = jcms.mapgen_ZoneList()
 			local difficulty_warn = math.Clamp(jcms.cvar_swarm_warning:GetFloat(), 0, 30)
 			
@@ -385,14 +390,22 @@
 					zoneWeights[zoneId] = population / totalPopulation
 				end
 			end
+
+			if isInitialSwarm then
+				totalPopulation = 1
+				zoneWeights[1] = 1
+			end
 			
 			local playerOrigins = {}
 			local zoneDict = jcms.mapgen_ZoneDict()
-			for i, ply in ipairs(team.GetPlayers(1)) do
-				if ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE then
-					local plyarea = jcms.director.playerAreas[ ply ]
-					if plyarea and zoneDict[ plyarea ] == zoneChosen then
-						table.insert(playerOrigins, ply:GetPos())
+
+			if not isInitialSwarm then
+				for i, ply in ipairs(team.GetPlayers(1)) do
+					if ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE then
+						local plyarea = jcms.director.playerAreas[ ply ]
+						if plyarea and zoneDict[ plyarea ] == zoneChosen then
+							table.insert(playerOrigins, ply:GetPos())
+						end
 					end
 				end
 			end
@@ -415,7 +428,6 @@
 				local zoneAreas = zoneList[zoneChosen]
 				
 				local zoneAreasInRange = zonesInRangeBuffer[ zoneChosen ]
-				
 				if not zoneAreasInRange then
 					zoneAreasInRange = jcms.director_GetAreasAwayFrom(zoneAreas, playerOrigins, 256, 3500)
 					zonesInRangeBuffer[ zoneChosen ] = zoneAreasInRange
@@ -432,7 +444,6 @@
 					if safeRepeat == 64 then jcms.printf("Can't spawn a full squad of NPCs after 64 tries. Map might be too small?") end
 					
 					local areaChoice = jcms.util_ChooseByWeight(weightedAreas)
-					--local vectors, allFit = jcms.director_PackSquadVectors( zonesTable[math.random(1, #zonesTable)]:GetCenter(), #queue, math.Rand(90, 105) + math.sqrt(#queue)*1.2 )
 					local vectors, allFit = jcms.director_PackSquadVectors( areaChoice:GetCenter(), #queue, math.Rand(90, 105) + math.sqrt(#queue)*1.2 )
 					local patrolArea = zoneAreas[math.random(1, #zoneAreas)]
 					
@@ -468,9 +479,10 @@
 						end
 						
 						if type(enemyType) == "table" then
+							if isInitialSwarm then continue end
 							-- Respawn an NPC-player
 							
-							-- We're giving players a higher delay before spawn so what
+							-- We're giving players a higher delay before spawn so that
 							-- the rest of the NPCs can potentially act as meatshields.
 							local delay = 2.1 + i*0.23
 							
@@ -497,7 +509,12 @@
 						else
 							-- Spawn a regular NPC
 							local delay = difficulty_warn + 1 + (i + math.random()*0.5)*0.23
-							jcms.npc_SpawnFancy(enemyType, pos, delay, giveAwayPlayer, patrolArea)
+							if isInitialSwarm then
+								local spawned = jcms.npc_Spawn(enemyType, pos, false)
+								spawned.jcms_ignoreStraggling = true
+							else
+								jcms.npc_SpawnFancy(enemyType, pos, delay, giveAwayPlayer, patrolArea)
+							end
 						end
 					end
 				end
@@ -1490,7 +1507,7 @@
 					return
 				end
 				
-				if CurTime() - d.encounterTriggerLast >= 12/difficulty_freq then
+				if CurTime() - d.encounterTriggerLast >= 6/difficulty_freq then
 					local sweepers = jcms.GetAliveSweepers()
 					
 					for i, enc in ipairs(d.encounters) do
@@ -1509,8 +1526,9 @@
 					local aggressor = NULL
 						for j, ply in ipairs(sweepers) do
 							local dist2 = encPos:DistToSqr(ply:WorldSpaceCenter())
-							if (dist2 <= math.min(enc.rad/2, 300)^2 and ply:TestPVS(encPos)) 
-							or (dist2 <= enc.rad^2 and ply:VisibleVec(enc.pos)) then
+							if (dist2 <= enc.rad^2)
+							or (dist2 <= (enc.rad*1.5)^2 and ply:TestPVS(encPos)) 
+							or (dist2 <= (enc.rad*2.5)^2 and ply:VisibleVec(encPos)) then
 								mustTrigger = true
 								aggressor = ply
 								break

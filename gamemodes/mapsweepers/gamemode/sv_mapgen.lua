@@ -1486,6 +1486,7 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		d.encounters = d.encounters or {}
 		
 		local sizedAreas = jcms.mapgen_GetSizedAreas()
+		local zoneDict = jcms.mapgen_ZoneDict()
 		local visData = jcms.mapgen_GetVisData()
 		
 		local chances = {
@@ -1513,16 +1514,24 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		for size, areas in pairs(sizedAreas) do
 			for i, area in ipairs(areas) do
 				local chance = chances[size]
+
+				if zoneDict[ area ] ~= 1 then
+					local newChance = chance + 0.27
+					chance = newChance
+				end
 				
 				if visData then
 					local vis = #area:GetVisibleAreas()
 					local aavg = (visData.avg + visData.min)/2
 					if vis < aavg then
-						chance = math.Remap(vis, visData.min, aavg, math.max(chance*1.1, 0.25), chance)
+						-- Places where we *do* want encounters.
+						chance = math.Remap(vis, visData.min, aavg, math.max(chance*1.5, 0.45), math.max(chance*1.25, 0.3))
 					elseif vis < visData.avg then
-						chance = math.Remap(vis, aavg, visData.avg, chance, chance*0.6)
+						-- Various corners of the map. Having an encounter here is a little underwhelming but possible.
+						chance = math.Remap(vis, aavg, visData.avg, chance*0.5, chance*0.2)
 					else
-						chance = math.Remap(vis, visData.avg, visData.max, chance*0.6, chance*0.3)
+						-- Main part of the map.
+						chance = math.Remap(vis, visData.avg, visData.max, chance*0.4, chance*0.2)
 					end
 				end
 				
@@ -1534,7 +1543,7 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 					
 					table.insert(d.encounters, {
 						pos = v,
-						rad = math.max(math.sqrt(sx*sx + sy*sy) + 20, 250),
+						rad = math.max(math.sqrt(sx*sx + sy*sy) + 60, 350)*1.5,
 						npcCount = math.ceil( math.ceil((sx + sy)/(512))^1.28 ) + 1,
 						delay = delays[size] + math.random()
 					})

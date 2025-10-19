@@ -194,8 +194,8 @@ jcms.npc_types.antlion_worker = {
 	
 	danger = jcms.NPC_DANGER_FODDER,
 	suppressSwarmPortalEffect = true,
-	cost = 0.9,
-	swarmWeight = 0.34,
+	cost = 1,
+	swarmWeight = 0.3,
 
 	class = "npc_antlion",
 	bounty = 50,
@@ -221,6 +221,7 @@ jcms.npc_types.antlion_worker = {
 		end
 
 		jcms.npc_SetupAntlionBurrowCheck(npc)
+		npc.jcms_dmgMult = 0.73
 	end,
 
 	timerMin = 0.2,
@@ -250,7 +251,7 @@ jcms.npc_types.antlion_drone = {
 	faction = "antlion",
 	
 	danger = jcms.NPC_DANGER_FODDER,
-	cost = 0.3,
+	cost = 0.4,
 	swarmWeight = 1,
 
 	class = "npc_antlion",
@@ -295,7 +296,7 @@ jcms.npc_types.antlion_waster = {
 
 	danger = jcms.NPC_DANGER_FODDER,
 	suppressSwarmPortalEffect = true,
-	cost = 0.15,
+	cost = 0.2,
 	swarmWeight = 1.2,
 	
 	class = "npc_antlion",
