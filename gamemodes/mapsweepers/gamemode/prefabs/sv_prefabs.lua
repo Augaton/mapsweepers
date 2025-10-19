@@ -129,6 +129,7 @@
 		}
 
 		if not tr_Main.HitWorld then return false end
+		if bit.band( tr_Main.SurfaceFlags, SURF_TRANS ) > 0 then return false end
 		local normal = tr_Main.HitNormal
 		
 		local zThreshold = 0.2 -- walls cant be this tilted
@@ -151,6 +152,7 @@
 				}
 				
 				if not tr_Adj.HitWorld then return false end
+				if bit.band( tr_Adj.SurfaceFlags, SURF_TRANS ) > 0 then return false end
 				if not normalAngle:IsEqualTol( tr_Adj.HitNormal:Angle(), angleThreshold ) then return false end
 			end
 		end
