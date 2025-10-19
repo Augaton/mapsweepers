@@ -477,7 +477,7 @@ jcms.vectorOne = Vector(1, 1, 1)
 				stats.automatic = gunData.Primary.Automatic
 				stats.accuracy = gunData.SciFiACC or 0
 				radAccuracy = false
-			elseif gunData.Primary.RPM and gunData.Primary.Recoil and gunData.Primary.Spread then
+			elseif gunData.Primary.RPM and (gunData.Primary.Recoil or gunData.RecoilAmount) and (gunData.Primary.Spread or gunData.Primary.SpreadHip) then
 				-- M9K or TFA
 				stats.base = gunData.IsTFAWeapon and "TFA" or "M9K"
 
@@ -491,7 +491,7 @@ jcms.vectorOne = Vector(1, 1, 1)
 				stats.damage = gunData.Primary.Damage or 0
 				stats.firerate = 60 / (tonumber(gunData.Primary.RPM) or 1)
 				stats.automatic = gunData.Primary.Automatic
-				stats.accuracy = gunData.Primary.Spread or 0
+				stats.accuracy = gunData.Primary.Spread or gunData.Primary.SpreadHip or 0
 				radAccuracy = true
 			elseif gunData.ArcCW then
 				-- ArcCW
