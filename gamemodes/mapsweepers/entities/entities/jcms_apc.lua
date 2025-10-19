@@ -285,16 +285,17 @@ if SERVER then
 		speed = speed:Length()
 		local shieldOn = self:GetShieldActive()
 
-		if speed > 120 and data.HitEntity:Health() > 0 then
-			local dmg = DamageInfo()
-			dmg:SetDamage(math.sqrt(speed) / 10 + 5)
-			dmg:SetAttacker(self:GetDriver() or self)
-			dmg:SetInflictor(self)
-			dmg:SetDamageType(bit.bor(DMG_CRUSH, DMG_VEHICLE))
-			dmg:SetReportedPosition(self:GetPos())
-			dmg:SetDamagePosition(data.HitPos)
-			data.HitEntity:TakeDamageInfo(dmg)
+		if data.HitEntity:IsNPC() then
+			local dmgInfo = DamageInfo()
+			dmgInfo:SetDamage(speed/10 + (IsValid(self:GetDriver()) and 5 or 0))
+			dmgInfo:SetAttacker(self:GetDriver() or self)
+			dmgInfo:SetInflictor(self)
+			dmgInfo:SetDamageType(bit.bor(DMG_CRUSH, DMG_VEHICLE))
+			dmgInfo:SetReportedPosition(self:GetPos())
+			dmgInfo:SetDamagePosition(data.HitPos)
+			data.HitEntity:TakeDamageInfo(dmgInfo)
 		end
+
 		
 		if speed > 700 then
 			if shieldOn then

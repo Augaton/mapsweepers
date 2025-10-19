@@ -209,6 +209,13 @@ if SERVER then
 			end
 		end
 	end
+
+	function ENT:Think()
+		self:SetSaveValue("m_vecAbsVelocity", Vector(0,0,0))
+
+		self:NextThink(CurTime() + 1)
+		return true
+	end
 end
 
 if CLIENT then

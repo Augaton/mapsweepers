@@ -148,11 +148,14 @@ if SERVER then
 	end)
 
 	function jcms.net_BroadcastToTeam(ply)
-		for i, recipient in player.Iterator() do
+		local allTeamPlys = {}
+		for i, recipient in ipairs(player.GetAll()) do
 			if jcms.team_SameTeam(ply, recipient) then 
-				net.Send(recipient)
+				table.insert(allTeamPlys, recipient)
 			end
 		end
+
+		net.Send(allTeamPlys)
 	end
 
 	function jcms.net_NotifyDeath(ply, suicide)

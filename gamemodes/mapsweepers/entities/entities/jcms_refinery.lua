@@ -35,7 +35,6 @@ function ENT:SetupDataTables()
 end
 
 if SERVER then
-
 	function ENT:Initialize()
 		self:SetModel("models/props_lab/scrapyarddumpster_static.mdl")
 		if self.RefineryType == "main" then
@@ -87,6 +86,13 @@ if SERVER then
 			self:SetTimesGround(self:GetTimesGround() + 1)
 		end
 	end
+
+	function ENT:Think()
+		self:SetSaveValue("m_vecAbsVelocity", Vector(0,0,0))
+
+		self:NextThink(CurTime() + 1)
+		return true
+	end
 end
 
 if CLIENT then
@@ -101,7 +107,7 @@ if CLIENT then
 		local dist2 = jcms.EyePos_lowAccuracy:DistToSqr(self:WorldSpaceCenter())
 
 		if dist2 <= 1000000 then
-			if not self.sfxGrind then
+			if not self.sfxGrind then --TODO: Different SFX for secondary refineries.
 				self.sfxGrind = CreateSound(self, "vehicles/digger_grinder_loop1.wav")
 				self.sfxGrind:PlayEx(0, 80)
 			end
