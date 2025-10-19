@@ -1200,7 +1200,7 @@ if CLIENT then
 			ed:SetColor(colorInteger)
 			ed:SetScale(scale)
 
-			print("Receiving portals", count, scale, jcms.util_ColorFromInteger(colorInteger))
+			--print("Receiving portals", count, scale, jcms.util_ColorFromInteger(colorInteger))
 			local pos = Vector(0, 0, 0)
 			for i=1, count do
 				local x_2 = net.ReadInt(14)

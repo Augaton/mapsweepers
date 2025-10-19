@@ -403,7 +403,7 @@
 				for i, ply in ipairs(team.GetPlayers(1)) do
 					if ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE then
 						local plyarea = jcms.director.playerAreas[ ply ]
-						if plyarea and zoneDict[ plyarea ] == zoneChosen then
+						if plyarea and zoneDict[plyarea] == 1 then
 							table.insert(playerOrigins, ply:GetPos())
 						end
 					end
