@@ -36,7 +36,7 @@ class.hurtMul = 1 -- This unit takes 1.0x damage
 class.hurtReduce = 1 -- Subtracted from damage taken
 class.speedMul = 1.33 -- Speed multiplier
 class.walkSpeed = 160
-class.runSpeed = 400
+class.runSpeed = 350
 class.jumpPower = 280 -- Self-explanatory
 class.shareObjectiveMarkers = true
 
