@@ -1498,11 +1498,11 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		}
 		
 		local delays = {
-			huge = 5,
-			big = 4,
+			huge = 3.5,
+			big = 3,
 			medium = 3,
 			small = 2,
-			tiny = 1
+			tiny = 1.3
 		}
 		
 		if visData and (visData.max <= 4 or visData.avg <= 2) then -- This is a pretty shitty situation to be in.
@@ -1535,7 +1535,7 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 					end
 				end
 				
-				if math.random() < chance * difficultyChanceMul then
+				if math.random() < (chance * difficultyChanceMul) then
 					local sx, sy = area:GetSizeX(), area:GetSizeY()
 					
 					local v = area:GetCenter()
@@ -1545,7 +1545,8 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 						pos = v,
 						rad = math.max(math.sqrt(sx*sx + sy*sy) + 60, 350)*1.5,
 						npcCount = math.ceil( math.ceil((sx + sy)/(512))^1.28 ) + 1,
-						delay = delays[size] + math.random()
+						delay = delays[size] + math.random(),
+						danger = (math.random() < (chance * difficultyChanceMul)) and jcms.NPC_DANGER_STRONG or jcms.NPC_DANGER_FODDER
 					})
 					
 					stamped = stamped + 1

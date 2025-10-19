@@ -1511,7 +1511,7 @@
 					local sweepers = jcms.GetAliveSweepers()
 					
 					for i, enc in ipairs(d.encounters) do
-						debugoverlay.Sphere(enc.pos, enc.rad, 0.5, Color(0, 255, 0))
+						debugoverlay.Sphere(enc.pos, enc.rad, 0.5, Color(200*(enc.danger-1), 255, 0))
 					end
 					
 					for i=#d.encounters, 1, -1 do
