@@ -141,7 +141,8 @@ if SERVER then
 
 		local targetData = {
 			type = target:GetOreName(),
-			model = target:GetModel()
+			model = target:GetModel(),
+			owner = target.jcms_miner
 		}
 		table.insert(self.crate_contents, targetData)
 
@@ -167,6 +168,7 @@ if SERVER then
 
 			ore:SetModel(oreData.model)
 			ore:SetOreType(oreData.type)
+			ore.jcms_miner = oreData.owner
 
 			ore:Spawn()
 			ore:GetPhysicsObject():Wake()

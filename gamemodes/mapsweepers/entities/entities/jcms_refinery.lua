@@ -50,7 +50,7 @@ if SERVER then
 		local mass = tonumber(ent.jcms_oreMass) or 0
 		local value = tonumber(ent.jcms_oreValue) or 1
 		if mass and mass*value > 0 then
-			local obtained = math.max(0, math.ceil(mass*value))
+			local obtained = math.max(0, ent:GetWorth())
 			self:SetValueInside( self:GetValueInside() + obtained )
 
 			ent.jcms_oreMass = nil
