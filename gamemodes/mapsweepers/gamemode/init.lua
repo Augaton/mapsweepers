@@ -2803,7 +2803,9 @@ end
 							end
 						end
 						
-					jcms.printf("Loaded weapon prices from '%s'.", weaponPricesFile)
+						jcms.printf("Loaded weapon prices from '%s'.", weaponPricesFile)
+					else
+						jcms.printf("FAILED to load weapon prices from '%s'. Corrupted data.", weaponPricesFile)
 					end
 				end
 			end
@@ -2824,16 +2826,11 @@ end
 					if jcms.weapon_prices[ class ] then continue end
 					
 					local success, rtn = pcall(jcms.gunstats_GetExpensive, class)
-					local stats
-					if not success then
-						jcms.printf("Weapon: '%s' caused an error/contains garbage data.", class)
-						ErrorNoHaltWithStack(rtn)
+					if success and type(rtn) == "table" then
+						jcms.weapon_prices[ class ] = jcms.gunstats_CalcWeaponPrice(rtn)
 					else
-						stats = rtn
-					end
-
-					if stats then
-						jcms.weapon_prices[ class ] = jcms.gunstats_CalcWeaponPrice(stats)
+						jcms.printf("Weapon: '%s' caused an error/contains garbage data.", class)
+						jcms.weapon_prices[ class ] = 0
 					end
 				end
 			end

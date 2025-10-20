@@ -149,6 +149,10 @@ function jcms.pathfinder.ain_nodeSplat(pos, range, hull, cap)
 	--]]
 
 	local startNode = jcms.pathfinder.ain_nearestNodeInView(pos)
+	if not startNode then
+		return {}
+	end
+	
 	local finalNodeList = {startNode}
 
 	local openNodes = {startNode}

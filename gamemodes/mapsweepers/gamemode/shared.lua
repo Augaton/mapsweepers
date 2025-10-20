@@ -448,7 +448,7 @@ local nmt = FindMetaTable("NPC")
 		local gunData = weapons.Get(class) or jcms.default_weapons_datas[class]
 		if not gunData then return end
 		if not gunData.Primary then
-			ErrorNoHaltWithStack( "Weapon set up incorrectly: " .. class .. "from the base" .. gunData.Base .. " go bother the dev to fix it" )
+			ErrorNoHalt("Weapon set up incorrectly: '" .. class .. "' from the base '" .. tostring(gunData.Base) .. "' go bother the weapon's dev to fix it")
 			return
 		end
 

@@ -31,6 +31,7 @@
 	jcms.mat_boss = Material "jcms/factions/everyone.png"
 	jcms.mat_lock = Material "jcms/lock.png"
 	jcms.mat_maze = Material "jcms/maze.png"
+	jcms.mat_ring = Material "effects/select_ring"
 
 -- // }}}
 
@@ -882,13 +883,7 @@
 		
 						local x, alpha = math.sin(yaw)/2 + 0.5, math.cos(yaw)
 						if alpha > 0 then
-							local icon = jcms.hud_locator_icons[ locator.icon ]
-
-							if not icon then
-								icon = Material("jcms/landmarks/" .. tostring(locator.icon) .. ".png")
-								jcms.hud_locator_icons[ locator.icon ] = icon
-							end
-
+							local icon = jcms.hud_GetLandmarkIcon(locator.icon)
 							surface.SetMaterial(icon)
 							surface.SetDrawColor( jcms.hud_GetLocatorColor(locator) )
 							surface.DrawTexturedRectRotated(Lerp(x, -span, span), 82, 64, 64, 0)
@@ -1204,6 +1199,17 @@
 
 		return jcms.color_bright
 	end
+
+	function jcms.hud_GetLandmarkIcon(path)
+		local icon = jcms.hud_locator_icons[ path ]
+
+		if not icon then
+			icon = Material("jcms/landmarks/" .. tostring(path) .. ".png")
+			jcms.hud_locator_icons[ path ] = icon
+		end
+
+		return icon
+	end
 	
 	local jcms_dl_mOff = Matrix()
 	jcms_dl_mOff:Translate(Vector(1.5, 1.5, 0))
@@ -1221,6 +1227,7 @@
 		local sw, sh = jcms.scrW, jcms.scrH
 		local pad = 64
 		local eyePos = EyePos()
+		local ct = CurTime()
 		
 		for i, loc in ipairs(jcms.hud_locators) do
 			local pos = loc.at
@@ -1259,6 +1266,10 @@
 				local distToScreenCenter = math.Distance(sw/2, sh/2, x, y)
 				local dsc = math.max(math.min(1, (150 - distToScreenCenter)/100), (3000/(dist*(loc.type == jcms.LOCATOR_GENERIC and 1 or 0.1)+3000)))
 				
+				if loc.type == jcms.LOCATOR_WARNING then
+					dsc = dsc + (math.abs(math.sin(ct*6))-0.5)*0.15
+				end
+				
 				--:SteamHappy:
 				jcms_dl_m:SetUnpacked(
 					dsc,	0,		0,		x,
@@ -1296,11 +1307,32 @@
 						draw.SimpleTextOutlined(loc.name, "TargetID", x, y - 12, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, jcms.color_dark)
 						draw.SimpleTextOutlined(string.FormattedTime(remaining, "%02i:%02i"), "jcms_medium", x, y-2, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, jcms.color_dark)
 					elseif loc.type == jcms.LOCATOR_SIGNAL then
+						if loc.t < 1 then
+							local alphamul = surface.GetAlphaMultiplier()
+							local strobes = 6
+							local ringFrac = 1 - (loc.t * strobes % 1)
+							surface.SetAlphaMultiplier(1 - ringFrac)
+							surface.SetDrawColor(clr)
+
+							surface.SetMaterial(jcms.mat_ring)
+							surface.DrawTexturedRectRotated(x, y, 24 + 104*ringFrac, 24 + 104*ringFrac, 0)
+							surface.SetAlphaMultiplier(alphamul)
+						end
+
 						draw.SimpleTextOutlined(distStr, "jcms_small", x, y + 6, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 2, jcms.color_dark)
 						draw.SimpleTextOutlined(loc.name, "jcms_medium", x, y - 6, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, jcms.color_dark)
 					else
 						draw.SimpleTextOutlined(distStr, "jcms_small", x, y + 6, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 2, jcms.color_dark)
-						draw.SimpleTextOutlined(loc.name, "TargetID", x, y - 2, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, jcms.color_dark)
+						if loc.name == "" and loc.icon then
+							local icon = jcms.hud_GetLandmarkIcon(loc.icon)
+							surface.SetMaterial(icon)
+							surface.SetDrawColor(jcms.color_dark)
+							surface.DrawTexturedRectRotated(x - 2, y - 12 + 2, 24, 24, 0)
+							surface.SetDrawColor(clr)
+							surface.DrawTexturedRectRotated(x, y - 12, 24, 24, 0)
+						else
+							draw.SimpleTextOutlined(loc.name, "TargetID", x, y - 2, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, jcms.color_dark)
+						end
 					end
 
 					if loc.new then
@@ -1308,7 +1340,14 @@
 					end
 				cam.PopModelMatrix()
 			elseif (not loc.icon or loc.type == jcms.LOCATOR_WARNING) then
-				local frac = loc.new and math.abs( math.sin(CurTime()*4 + i) ) or 0
+				local frac = 0
+
+				if loc.new then
+					frac = math.abs( math.sin(ct*4 + i) )
+				elseif loc.type == jcms.LOCATOR_WARNING then
+					frac = math.abs( math.sin(ct*8 + i/2) ) * 0.25
+				end
+
 				local dir = math.atan2(y-sh/2, x-sw/2)
 				local cos, sin = math.cos(dir), math.sin(dir)
 				draw.NoTexture()
@@ -1318,7 +1357,7 @@
 				jcms_dl_transformVec:SetUnpacked(sw/2 + cos*xScrOff, sh/2 + sin*yScrOff, 0)
 				jcms_dl_m:Translate(jcms_dl_transformVec)
 				jcms_dl_m:Rotate(Angle(0, math.deg(dir), 0))
-				if loc.new then
+				if frac > 0 then
 					local bop = frac*2 + 1
 					jcms_dl_transformVec:SetUnpacked(bop, bop, 1)
 					jcms_dl_m:Scale(jcms_dl_transformVec)
@@ -1341,7 +1380,17 @@
 					surface.DrawPoly(arrow)
 				cam.PopModelMatrix()
 				local xScr, yScr = sw/2+cos*(xScrOff-12), sh/2+sin*(yScrOff-12)
-				draw.SimpleText(loc.name, "jcms_small", xScr, yScr, clr_dark, xAlign, yAlign)
+
+				local use_icon = loc.name == "" and loc.icon and jcms.hud_GetLandmarkIcon(loc.icon)
+				local use_font = loc.type == jcms.LOCATOR_SIGNAL and "jcms_medium" or "jcms_small"
+
+				if use_icon then
+					surface.SetMaterial(use_icon)
+					surface.DrawTexturedRectRotated(xScr - cos*10, yScr - sin*8, 18, 18, 0)
+					draw.NoTexture()
+				else
+					draw.SimpleText(loc.name, use_font, xScr, yScr, clr_dark, xAlign, yAlign)
+				end
 
 				cam.PushModelMatrix(jcms_dl_mOff, true)
 				render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
@@ -1351,7 +1400,25 @@
 						surface.DrawPoly(arrow)
 					cam.PopModelMatrix()
 
-					draw.SimpleText(loc.name, "jcms_small", xScr, yScr, clr, xAlign, yAlign)
+					if use_icon then
+						surface.SetMaterial(use_icon)
+						surface.DrawTexturedRectRotated(xScr - cos * 11, yScr - sin * 9, 18, 18, 0)
+						draw.NoTexture()
+					else
+						draw.SimpleText(loc.name, use_font, xScr, yScr, clr, xAlign, yAlign)
+					end
+
+					if loc.type == jcms.LOCATOR_SIGNAL and loc.t < 1 then
+						local alphamul = surface.GetAlphaMultiplier()
+						local strobes = 6
+						local ringFrac = 1 - (loc.t * strobes % 1)
+						surface.SetAlphaMultiplier(1 - ringFrac)
+						surface.SetDrawColor(clr)
+
+						surface.SetMaterial(jcms.mat_ring)
+						surface.DrawTexturedRectRotated(xScr, yScr, 16 + 64*ringFrac, 16 + 64*ringFrac, 0)
+						surface.SetAlphaMultiplier(alphamul)
+					end
 
 				render.OverrideBlend(false)
 				cam.PopModelMatrix()

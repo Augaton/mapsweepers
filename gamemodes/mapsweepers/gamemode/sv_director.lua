@@ -1259,7 +1259,7 @@
 			local players = jcms.GetAliveSweepers()
 			
 			if IsValid(d.evacEnt) then
-				jcms.net_SendLocator("all", "Evac", "#jcms.evac", d.evacEnt:WorldSpaceCenter(), jcms.LOCATOR_WARNING, 3, "evac")
+				jcms.net_SendLocator("all", "Evac", "", d.evacEnt:WorldSpaceCenter(), jcms.LOCATOR_WARNING, 3, "evac")
 			end
 
 			-- Processing what must be marked fist {{{
