@@ -22,7 +22,6 @@ AddCSLuaFile()
 
 ENT.Type = "ai"
 ENT.Base = "base_anim"
-ENT.PrintName = "JCorp Bullseye"
 ENT.Author = "Octantis Addons"
 ENT.Category = "Map Sweepers"
 ENT.Spawnable = false

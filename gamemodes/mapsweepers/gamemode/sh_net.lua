@@ -485,7 +485,15 @@ if SERVER then
 				return false
 			end
 
-			net.WriteString(tostring(name or id or "???"))
+			if type(name) == "table" and #name == 2 then
+				net.WriteBool(true)
+				net.WriteString(tostring(name[1] or id or "???"))
+				net.WriteString(tostring(name[2] or id or "???"))
+			else
+				net.WriteBool(false)
+				net.WriteString(tostring(name or id or "???"))
+			end
+
 			net.WriteUInt(locatorType or 0, 2)
 			
 			if timeout and timeout > 0 then
@@ -508,6 +516,13 @@ if SERVER then
 			else
 				net.WriteBool(false)
 			end
+
+			local writePly = IsValid(fromPly)
+			net.WriteBool(writePly)
+			if writePly then
+				net.WritePlayer(fromPly)
+			end
+
 		if to == "all" then
 			if not IsValid(fromPly) then
 				net.Broadcast()
@@ -1050,7 +1065,13 @@ if CLIENT then
 				else
 					at = net.ReadVector()
 				end
+
+				local formatted = net.ReadBool()
 				local name = net.ReadString()
+				if formatted then
+					name = language.GetPhrase(name):format( language.GetPhrase(net.ReadString()) )
+				end
+				
 				local locatorType = net.ReadUInt(2)
 
 				local isTemporary = net.ReadBool()
@@ -1070,8 +1091,16 @@ if CLIENT then
 				if hasLandmarkIcon then
 					landmarkIcon = net.ReadString()
 				end
-			
-				jcms.hud_AddLocator(id, name, at, locatorType, timeout, landmarkIcon)
+
+				local loc = jcms.hud_AddLocator(id, name, at, locatorType, timeout, landmarkIcon)
+
+				local hasPlayerWritten = net.ReadBool()
+				if hasPlayerWritten then
+					local sender = net.ReadPlayer()
+					if IsValid(sender) then
+						loc.toptext = sender:Nick() or "???"
+					end
+				end
 			end
 		end,
 		

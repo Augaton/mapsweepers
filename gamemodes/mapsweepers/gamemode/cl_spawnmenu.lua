@@ -129,6 +129,8 @@ end
 	jcms.spawnmenu_selectedOption = nil
 	jcms.spawnmenu_selectedOrders = { 1, 1, 1, 1, 1, 1, 1, 1 }
 	jcms.spawnmenu_lastUseTime = 0
+	jcms.spawnmenu_tagKeyTranslation = { 7, 1, 3, 5, 8, 2, 4, 6 }
+	jcms.spawnmenu_tagKeyTranslationAlt = { 2, 6, 3, 7, 4, 8, 1, 5 }
 
 	function jcms.spawnmenu_Update()
 		if (not jcms.spawnmenu_isOpen) then 
@@ -140,9 +142,9 @@ end
 		
 		if jcms.spawnmenu_isContext then
 			jcms.mousewheel_Occupy()
-			for i=2, 5 do
+			for i=2, 9 do
 				if input.IsKeyDown(i) then
-					selectedOption = i-1
+					selectedOption = jcms.spawnmenu_tagKeyTranslation[i-1]
 					fromKeyboard = true
 					break
 				end
@@ -157,7 +159,7 @@ end
 		if not selectedOption and math.DistanceSqr(mx, my, ScrW()/2, ScrH()/2) > (jcms.spawnmenu_isContext and 8*8 or 64*64) then
 			local a = math.atan2(my-ScrH()/2, mx-ScrW()/2)
 			if jcms.spawnmenu_isContext then
-				local sector = math.floor( (a+math.pi/4)/(math.pi/2)+1 )%4 + 1
+				local sector = math.floor( (a+math.pi/8)/(math.pi/4) )%8 + 1
 				selectedOption = sector
 			else
 				local sector = math.floor( (a+math.pi/8)/(math.pi/4) )%8 + 1
@@ -242,8 +244,12 @@ end
 			render.SetColorMaterial()
 			draw.NoTexture()
 
-			local commands = { "go", "attack", "look", "defend" }
-			for i=1, 4 do
+			local span = math.pi*2/8
+			local ca = -span/2 - span/2*(1-blend)
+
+			local commands = { "attack", "airstrike", "look", "take", "defend", "help", "go", "meet" }
+			
+			for i=1, #commands do
 				local clr = jcms.color_bright
 				local clr_dark = jcms.color_dark
 				if i == jcms.spawnmenu_selectedOption then
@@ -251,19 +257,20 @@ end
 					clr_dark = jcms.color_dark_alt
 				end
 				
-				local a = math.pi/2 * (-2 + i)
-				local size = 128
-				local cos, sin = math.cos(a), math.sin(a)
-				local dist = size / 1.4142135 + 4
-				surface.SetDrawColor(clr.r, clr.g, clr.b, 100)
-				surface.DrawTexturedRectRotated(sw + cos*dist, sh + sin*dist, size, size, 45)
+				local cos, sin = math.cos(ca+span/2), math.sin(ca+span/2)
+				surface.SetDrawColor(clr.r, clr.g, clr.b, 250*alphamul)
+				drawSegment(sw, sh, ca, ca+span, 256 + (i%2==0 and 0 or 16), 128 + (i%2==0 and 32 or 0), 4)
 
-				local dist2 = dist - size*0.4
-				local dist3 = dist + size*0.2
-				local commandStr = language.GetPhrase("jcms." .. commands[i])
-				draw.SimpleText(commandStr, "jcms_medium", sw + cos*dist3, sh + sin*dist3, clr_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-				draw.SimpleTextOutlined(commandStr, "jcms_medium", sw + cos*dist3, sh + sin*dist3 - 2, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, clr_dark)
-				draw.SimpleTextOutlined("["..i.."]", "jcms_medium", sw + cos*dist2, sh + sin*dist2, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, jcms.color_dark)	
+				local dist = i%2==0 and 160 or 135
+				local dist2 = i%2==0 and 72 or 64
+				local alignX = cos > 0.2 and TEXT_ALIGN_LEFT or cos < -0.2 and TEXT_ALIGN_RIGHT or TEXT_ALIGN_CENTER
+				local alignY = sin > 0.2 and TEXT_ALIGN_TOP or sin < -0.2 and TEXT_ALIGN_BOTTOM or TEXT_ALIGN_CENTER
+
+				local text = language.GetPhrase("jcms." .. commands[i] .. "_cmd")
+				draw.SimpleTextOutlined(text, "jcms_medium", sw+cos*dist, sh+sin*dist, clr, alignX, alignY, 1, clr_dark)
+				draw.SimpleTextOutlined(jcms.spawnmenu_tagKeyTranslationAlt[i], i%2==0 and "jcms_small" or "jcms_big", sw+cos*dist2, sh+sin*dist2, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, clr_dark)
+
+				ca = ca + span
 			end
 		else
 			local span = math.pi*2/8

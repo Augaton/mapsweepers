@@ -1691,34 +1691,50 @@
 		end
 	end)
 
+	jcms.signals = {
+		{ act = "group", text = "#jcms.attack", textEnt = "#jcms.attack_ent" },
+		{ act = "forward", text = "#jcms.airstrike", textEnt = "#jcms.airstrike_ent" },
+		
+		{ act = "forward", text = "#jcms.look", textEnt = "#jcms.look_ent" },
+		{ act = "forward", text = "#jcms.take", textEnt = "#jcms.take_ent" },
+		
+		{ act = "halt", text = "#jcms.defend", textEnt = "#jcms.defend_ent" },
+		{ act = "wave", text = "#jcms.help", textEnt = "#jcms.help_ent" },
+
+		{ act = "forward", text = "#jcms.go", textEnt = "#jcms.go_ent" },
+		{ act = "forward", text = "#jcms.meet", textEnt = "#jcms.meet_ent" }
+	}
+
 	concommand.Add("jcms_signal", function(ply, cmd, args)
 		if ply:Alive() and ply:GetObserverMode()==0 and jcms.team_JCorp_player(ply) then
 			local signalId = args[1]
 			local trace = ply:GetEyeTrace()
 			local at
+
 			if trace.Entity and not trace.HitWorld then
 				at = trace.Entity
 			else
 				at = trace.HitPos
 			end
 			
-			local text 
-			if signalId == "1" then
-				text = "#jcms.go"
-				RunConsoleCommand("act", "forward")
-			elseif signalId == "2" then
-				text = "#jcms.attack"
-				RunConsoleCommand("act", "group")
-			elseif signalId == "3" then
-				text = "#jcms.look"
-				RunConsoleCommand("act", "forward")
-			elseif signalId == "4" then
-				text = "#jcms.defend"
-				RunConsoleCommand("act", "halt")
-			end
+			local signalData = jcms.signals[ tonumber(signalId) ]
+			if signalData then
+				local text = tostring(signalData.text or "")
+				local arg = ply:Nick()
 
-			if text then
-				jcms.net_SendLocator("all", "Signal"..ply:EntIndex(), text, at, jcms.LOCATOR_SIGNAL, 10, nil, ply)
+				if IsValid(at) then
+					if signalData.textEnt then
+						text = tostring(signalData.textEnt)
+					end
+
+					arg = tostring( at.jcms_localization or at:GetClass() )
+				end
+
+				jcms.net_SendLocator("all", "Signal"..ply:EntIndex(), { text, arg }, at, jcms.LOCATOR_SIGNAL, 10, nil, ply)
+
+				if signalData.act then
+					RunConsoleCommand("act", signalData.act)
+				end
 			end
 			
 			hook.Run("MapSweepersPlayerSignal", ply, signalId, at)

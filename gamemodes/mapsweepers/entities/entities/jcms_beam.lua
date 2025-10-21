@@ -22,7 +22,6 @@ AddCSLuaFile()
 
 ENT.Type = "anim"
 ENT.Base = "base_anim"
-ENT.PrintName = "Damaging Beam"
 ENT.Author = "Octantis Addons"
 ENT.Category = "Map Sweepers"
 ENT.Spawnable = false

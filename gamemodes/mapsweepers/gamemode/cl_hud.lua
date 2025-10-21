@@ -1320,7 +1320,10 @@
 						end
 
 						draw.SimpleTextOutlined(distStr, "jcms_small", x, y + 6, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 2, jcms.color_dark)
-						draw.SimpleTextOutlined(loc.name, "jcms_medium", x, y - 6, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, jcms.color_dark)
+						local _, th = draw.SimpleTextOutlined(loc.name, "jcms_medium", x, y - 6, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, jcms.color_dark)
+						if loc.toptext then
+							draw.SimpleTextOutlined(loc.toptext, "jcms_small", x, y - 12 - th/2, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, jcms.color_dark)
+						end
 					else
 						draw.SimpleTextOutlined(distStr, "jcms_small", x, y + 6, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 2, jcms.color_dark)
 						if loc.name == "" and loc.icon then
@@ -1912,7 +1915,7 @@
 			surface.PlaySound("ui/buttonrollover.wav")
 		end
 		
-		table.insert(jcms.hud_locators, { 
+		local loc = { 
 			id = id, 
 			name = name, 
 			type = type, 
@@ -1924,7 +1927,10 @@
 			new = totallyNew,
 
 			_lastVector = jcms.vectorInvalid
-		})
+		}
+
+		table.insert(jcms.hud_locators, loc)
+		return loc
 	end
 	
 	function jcms.hud_UpdateLocators()
