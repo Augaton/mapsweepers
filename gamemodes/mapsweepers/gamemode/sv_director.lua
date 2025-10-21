@@ -444,7 +444,7 @@
 					if safeRepeat == 64 then jcms.printf("Can't spawn a full squad of NPCs after 64 tries. Map might be too small?") end
 					
 					local areaChoice = jcms.util_ChooseByWeight(weightedAreas)
-					local vectors, allFit = jcms.director_PackSquadVectors( areaChoice:GetCenter(), #queue, math.Rand(90, 105) + math.sqrt(#queue)*1.2 )
+					local vectors, allFit = jcms.director_PackSquadVectors( jcms.mapgen_AreaPointAwayFromEdges(areaChoice, 72), #queue, math.Rand(90, 105) + math.sqrt(#queue)*1.2 )
 					local patrolArea = zoneAreas[math.random(1, #zoneAreas)]
 					
 					local giveAwayPlayer = nil
@@ -1562,7 +1562,7 @@
 					for i=1, 3 do
 						local area = areas[i]
 						local usingCount = math.min(npcCountRemaining, math.ceil(npcCount / 3))
-						table.Add( allVectors, jcms.director_PackSquadVectors(area:GetCenter(), usingCount, 100) )
+						table.Add( allVectors, jcms.director_PackSquadVectors(jcms.mapgen_AreaPointAwayFromEdges(area, 80), usingCount, 100) )
 						npcCountRemaining = npcCountRemaining - usingCount
 						if npcCountRemaining <= 0 then
 							break
@@ -1572,7 +1572,7 @@
 					for i, area in ipairs(areas) do
 						local area = areas[i]
 						local usingCount = math.min(npcCountRemaining, math.ceil(npcCount / 3))
-						table.Add( allVectors, jcms.director_PackSquadVectors(area:GetCenter(), usingCount, 95) )
+						table.Add( allVectors, jcms.director_PackSquadVectors(jcms.mapgen_AreaPointAwayFromEdges(area, 72), usingCount, 95) )
 						npcCountRemaining = npcCountRemaining - usingCount
 						if npcCountRemaining <= 0 then
 							break
