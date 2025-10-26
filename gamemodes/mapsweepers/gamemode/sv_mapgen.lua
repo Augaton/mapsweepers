@@ -1452,7 +1452,8 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 	end
 
 	function jcms.mapgen_PlaceNaturals(maxcount, weightOverride)
-		local shopCount = jcms.mapgen_AdjustCountForMapSize(1) + (jcms.runprogress_GetDifficulty() <= 0.9 and 1 or 0)
+		--2x shops if difficulty is <=0.9 , minimum of 1 shop.
+		local shopCount = math.max(jcms.mapgen_AdjustCountForMapSize((jcms.runprogress_GetDifficulty() <= 0.9 and 2 or 1)), 1)
 		local mainZoneShopCount = math.min(shopCount, math.floor(shopCount/4 + 2))
 
 		if mainZoneShopCount == shopCount then
