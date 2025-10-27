@@ -2286,6 +2286,18 @@ end
 		end
 	end)
 
+	concommand.Add("jcms_setwinstreak", function(ply, cmd, args)
+		if (not ply:IsPlayer() or ply:IsAdmin()) then
+			local to = math.max(0, math.floor(tonumber(args[1]) or 0))
+
+			local rp = jcms.runprogress
+			rp.winstreak = to
+			rp.difficulty = jcms.runprogress_CalculateDifficultyFromWinstreak(rp.winstreak, rp.totalWins)
+			game.GetWorld():SetNWInt("jcms_winstreak", rp.winstreak)
+			game.GetWorld():SetNWInt("jcms_difficulty", rp.difficulty)
+		end
+	end)
+
 	concommand.Add("jcms_forcerespawn", function(ply, cmd, args)
 		if jcms.director and (not ply:IsPlayer() or ply:IsAdmin()) then
 			local resPly = Entity(args[1])
@@ -2356,6 +2368,10 @@ end
 		local team = tonumber(args[1]) or tostring(args[1])
 
 		if ply:GetObserverMode() == OBS_MODE_FIXED then
+			if jcms.util_IsPVP() then
+				canJoinNpcs = false -- Can't join NPCs from the lobby if we're in PVP.
+			end
+
 			if team == 0 or team == "none" then
 				-- Leaving the lobby is not as scary as it sounds
 				ply:SetNWInt("jcms_desiredteam", 0)
@@ -2372,8 +2388,7 @@ end
 		
 		if jcms.director and not game.SinglePlayer() then
 			if (ply:GetObserverMode() == OBS_MODE_CHASE) or (ply:GetObserverMode() == OBS_MODE_NONE and not ply:Alive()) then
-				
-			if canJoinNpcs and (team == 2 or team == "npc" or team == "enemy") and (ply:GetNWInt("jcms_desiredteam", 0) < 2) then
+				if canJoinNpcs and (team == 2 or team == "npc" or team == "enemy") and (ply:GetNWInt("jcms_desiredteam", 0) < 2) then
 					ply.jcms_classAtEvac = ply:GetNWString("jcms_class", "infantry")
 					ply:SetNWInt("jcms_desiredteam", 2)
 					ply:SetNWString("jcms_class", jcms.npc_PickPlayerNPCClass(jcms.director.faction))
@@ -2401,11 +2416,18 @@ end
 		end
 	end)
 
-	concommand.Add("jcms_jointeam_pvp", function(ply, cmd, args)
-		--TODO: Barebones for testing. Will need work in future.
+	function jcms.pvp_IsGoodTeamId(teamId)
+		return teamId == 1 or teamId == 2
+	end
 
-		ply:SetNWInt("jcms_pvpTeam", tonumber(args[1]))
-		PrintMessage(HUD_PRINTTALK, tostring(ply) .. " joined team " .. tostring(args[1]))
+	concommand.Add("jcms_jointeam_pvp", function(ply, cmd, args)
+		if jcms.util_IsPVP() then
+			local teamId = tonumber(args[1])
+			if jcms.pvp_IsGoodTeamId(teamId) then
+				ply:SetNWInt("jcms_pvpTeam", teamId)
+				ply:ConCommand("jcms_jointeam 1")
+			end
+		end
 	end)
 
 	concommand.Add("jcms_setclass", function(ply, cmd, args)
@@ -2575,6 +2597,12 @@ end
 		end
 
 		if not ply:IsPlayer() or ply:IsAdmin() then
+			for i, oply in ipairs( player.GetAll() ) do
+				oply:SetNWBool("jcms_ready", false)
+				oply:SetNWInt("jcms_desiredteam", 0)
+				oply:SetNWInt("jcms_pvpTeam", -1)
+			end
+
 			local newState = not game.GetWorld():GetNWBool("jcms_pvpmode", false)
 			game.GetWorld():SetNWBool("jcms_pvpmode", newState)
 			jcms.printf("PVP Mode: " .. (newState and "On" or "Off"))

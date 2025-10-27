@@ -210,9 +210,9 @@ end)
 		["8d992bb020d23a76fb969bc6e93f29cab939c751d2c2637555cb2c87f6233b79"] = "rgg", -- Dullfifqariano, RGG enforcer
 		
 		-- Mafia Members
-		["4f92d868130e272c86a99ad26e3a4f0d920ad58d069aa59ee1b7d98568553a9f"] = "mafia", -- baggie, mafia boss
+		["48f04893f12ffdd62342de3f63664b0c5ac941d0852c61f787c3e1ae3e2e1051"] = "mafia", -- Xelerax, mafia boss
 		["53d0a5fcc6f87fb7449cad422a48196a2c85261598b84354cacea2317077ceb5"] = "mafia", -- Firch, mafia caporegime
-		["48f04893f12ffdd62342de3f63664b0c5ac941d0852c61f787c3e1ae3e2e1051"] = "mafia", -- Xelerax, mafia caporegime
+		["4f92d868130e272c86a99ad26e3a4f0d920ad58d069aa59ee1b7d98568553a9f"] = "mafia", -- baggie, mafia soldato
 		["101449ca879207d041035e8a7c8d07db99dd16aa37626b1a66799084d6ea5594"] = "mafia", -- LeSeiL, mafia soldato
 		["adbdc18a436c3d1a1f2544a98351eef55212800855a2d3e0795c2a7d116936c5"] = "mafia"  -- Beaver Eater, mafia soldato
 	}

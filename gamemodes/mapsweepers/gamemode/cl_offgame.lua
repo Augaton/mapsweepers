@@ -695,43 +695,90 @@ jcms.offgame = jcms.offgame or NULL
 					surface.PlaySound("buttons/button14.wav")
 				end
 			else
-				y = 128
+				-- PvE {{{
+					local pnlPVE = tab:Add("DPanel")
+					pnlPVE:SetPos(32, 128)
+					pnlPVE:SetSize(348, 128)
+					pnlPVE:SetPaintBackground(false)
 
-				local bJoinSweeper = tab:Add("DButton")
-				bJoinSweeper:SetText("#jcms.joinas_sweeper")
-				bJoinSweeper:SetPos(32, y)
-				bJoinSweeper:SetSize(300, 32)
-				bJoinSweeper.Paint = jcms.paint_ButtonFilled
-				bJoinSweeper.jFont = "jcms_medium"
-				function bJoinSweeper:DoClick()
-					tab.Paint = jcms.offgame_paint_MissionPrepTab
+					local bJoinSweeper = pnlPVE:Add("DButton")
+					bJoinSweeper:SetText("#jcms.joinas_sweeper")
+					bJoinSweeper:SetPos(0, 0)
+					bJoinSweeper:SetSize(300, 32)
+					bJoinSweeper.Paint = jcms.paint_ButtonFilled
+					bJoinSweeper.jFont = "jcms_medium"
+					function bJoinSweeper:DoClick()
+						tab.Paint = jcms.offgame_paint_MissionPrepTab
 
-					for i, child in ipairs( tab:GetChildren() ) do
-						child:Remove()
+						for i, child in ipairs( tab:GetChildren() ) do
+							child:Remove()
+						end
+
+						surface.PlaySound("buttons/button14.wav")
+						jcms.offgame_BuildMissionPrepTab(tab)
+						RunConsoleCommand("jcms_jointeam", "1")
 					end
 
-					surface.PlaySound("buttons/button14.wav")
-					jcms.offgame_BuildMissionPrepTab(tab)
-					RunConsoleCommand("jcms_jointeam", "1")
-				end
-				y = y + 32 + 8
+					local bJoinNPC = pnlPVE:Add("DButton")
+					bJoinNPC:SetText("#jcms.joinas_npc")
+					bJoinNPC:SetPos(48, 40)
+					bJoinNPC:SetSize(300, 32)
+					bJoinNPC.Paint = jcms.paint_ButtonFilled
+					bJoinNPC.jFont = "jcms_medium"
+					function bJoinNPC:DoClick()
+						surface.PlaySound("buttons/button14.wav")
+						jcms.offgame_ModalJoinNPC(tab)
+					end
+				-- }}}
 
-				local bJoinNPC = tab:Add("DButton")
-				bJoinNPC:SetText("#jcms.joinas_npc")
-				bJoinNPC:SetPos(48, y)
-				bJoinNPC:SetSize(300, 32)
-				bJoinNPC.Paint = jcms.paint_ButtonFilled
-				bJoinNPC.jFont = "jcms_medium"
-				function bJoinNPC:DoClick()
-					surface.PlaySound("buttons/button14.wav")
-					jcms.offgame_ModalJoinNPC(tab)
-				end
-				y = y + 64 + 8
+				-- PvP {{{
+					local pnlPVP = tab:Add("DPanel")
+					pnlPVP:SetPos(32, 128)
+					pnlPVP:SetSize(348, 128)
+					pnlPVP:SetPaintBackground(false)
+
+					local pvplabel = pnlPVP:Add("DLabel")
+					pvplabel:SetPos(8, 4)
+					pvplabel:SetSize(340, 32)
+					pvplabel:SetText("#jcms.pvptext")
+					pvplabel:SetTextColor(jcms.color_bright_alt)
+					pvplabel:SetFont("jcms_medium")
+
+					local bJoinTeam1 = pnlPVP:Add("DButton")
+					bJoinTeam1:SetText("#jcms.joinas_pvp1")
+					bJoinTeam1:SetPos(48, 32+8)
+					bJoinTeam1:SetSize(256, 32)
+					bJoinTeam1.Paint = jcms.paint_ButtonFilled
+					bJoinTeam1.jFont = "jcms_medium"
+					bJoinTeam1.pvpTeam = 1
+
+					local bJoinTeam2 = pnlPVP:Add("DButton")
+					bJoinTeam2:SetText("#jcms.joinas_pvp2")
+					bJoinTeam2:SetPos(64, 32*2+12)
+					bJoinTeam2:SetSize(256, 32)
+					bJoinTeam2.Paint = jcms.paint_ButtonFilled
+					bJoinTeam2.jFont = "jcms_medium"
+					bJoinTeam2.pvpTeam = 2
+
+					function bJoinTeam1:DoClick()
+						tab.Paint = jcms.offgame_paint_MissionPrepTab
+
+						for i, child in ipairs( tab:GetChildren() ) do
+							child:Remove()
+						end
+
+						surface.PlaySound("buttons/button14.wav")
+						jcms.offgame_BuildMissionPrepTab(tab)
+						RunConsoleCommand("jcms_jointeam_pvp", self.pvpTeam)
+					end
+
+					bJoinTeam2.DoClick = bJoinTeam1.DoClick
+				-- }}}
 
 				if LocalPlayer():IsAdmin() then
 					local bChangeMission = tab:Add("DButton")
 					bChangeMission:SetText("#jcms.changemission_sp")
-					bChangeMission:SetPos(32, y)
+					bChangeMission:SetPos(32, 264)
 					bChangeMission:SetSize(400-64-24, 32)
 					bChangeMission.Paint = jcms.paint_Button
 					bChangeMission.jFont = "jcms_medium"
@@ -741,9 +788,18 @@ jcms.offgame = jcms.offgame or NULL
 					end
 				end
 
-				function bJoinSweeper:Think()
-					bJoinNPC:SetVisible(jcms.cvar_npcteam_restrict:GetInt() == 0)
+				function pnlPVE:Think()
+					local isPVP = jcms.util_IsPVP()
+					pnlPVE:SetVisible(not isPVP)
+					pnlPVP:SetVisible(isPVP)
+
+					if isPVP then
+					else
+						bJoinNPC:SetVisible(jcms.cvar_npcteam_restrict:GetInt() == 0)
+					end
 				end
+				
+				pnlPVP.Think = pnlPVE.Think
 			end
 
 			if not jcms.statistics.playedTutorial then

@@ -235,7 +235,7 @@ jcms.codex = {
 
 			{ 
 				type = "caption",
-				text = [=[Led by baggieman]=] 
+				text = [=[Led by Xelerax]=] 
 			},
 
 			{ 

@@ -1633,7 +1633,7 @@
 				if missionData and missionData.basename then missionType = missionData.basename end
 
 				local tw = draw.SimpleText("#jcms.missionhud", "jcms_hud_small", 0, 96, jcms.color_dark, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-				local missionName = "#jcms." .. missionType
+				local missionName = (jcms.util_IsPVP() and "PVP " or "") .. language.GetPhrase("jcms." .. missionType)
 				draw.SimpleText(missionName, "jcms_hud_small", tw + 16, 96, jcms.color_dark, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 
 				render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )

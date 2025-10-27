@@ -1061,13 +1061,15 @@
 				local missionData = jcms.missions[ missionType ]
 				local missionNameX = w - 32 - 600
 				
+				local isPVP = jcms.util_IsPVP()
 				local winstreak = jcms.util_GetCurrentWinstreak()
 				local difficulty = jcms.util_GetCurrentDifficulty()
+
 				
 				if (missionType ~= "") then
-					local name = language.GetPhrase("#jcms." .. (missionData and missionData.basename or missionType))
+					local name = (isPVP and "PVP " or "") .. language.GetPhrase("#jcms." .. (missionData and missionData.basename or missionType))
 					local desc = language.GetPhrase("#jcms." .. (missionData and missionData.basename or missionType).."_desc")
-
+					
 					local smallscreen = ScrW() <= 1500
 					local font = smallscreen and "jcms_hud_small" or "jcms_hud_medium"
 					surface.SetFont(font)
@@ -1075,10 +1077,10 @@
 					tw = math.max(tw, 210)
 					local xpad = 48
 					local ypad = 8
-
+					
 					local mup = markup.Parse( ("<color=%d,%d,%d><font="..(lowres and "jcms_small" or "jcms_small")..">\"" .. desc .. "\"</font></color>"):format(jcms.color_bright:Unpack()), math.max(lowres and 300 or 520, tw + 48))
 					mup:Draw(w - 48, 100 + ypad + th + 36, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP, 100, TEXT_ALIGN_RIGHT)
-
+					
 					surface.SetDrawColor(jcms.color_pulsing)
 					jcms.hud_DrawNoiseRect(w-64-tw-xpad/2, 100-ypad/2, tw+xpad, th+ypad)
 					surface.SetDrawColor(jcms.color_bright)
@@ -1111,11 +1113,11 @@
 						local mx, my = input.GetCursorPos()
 						local tagy = 100 + th + mup:GetHeight() + 56
 						local tagSize = lowres and 16 or 32
-						if istable(missionData.tags) and #missionData.tags > 0 then
-							if not p.tagMats then
-								p.tagMats = {}
-							end
+						if not p.tagMats then
+							p.tagMats = {}
+						end
 
+						if istable(missionData.tags) and #missionData.tags > 0 then
 							for i, tag in ipairs(missionData.tags) do
 								if not p.tagMats[ tag ] then
 									p.tagMats[ tag ] = Material("jcms/missiontags/" .. tostring(tag) .. ".png")
@@ -1137,12 +1139,32 @@
 							end
 						end
 
+						local isUnofficial = not jcms.missions_official[ missionType ]
+						if isUnofficial then
+							local tagx = w-48-(tagSize+4)*(#missionData.tags+1)
+							local tag = "unofficial"
+
+							if not p.tagMats[ tag ] then
+								p.tagMats[ tag ] = Material("jcms/missiontags/" .. tostring(tag) .. ".png")
+							end
+
+							surface.SetDrawColor(jcms.color_bright_alt)
+
+							if not hoveredTag and mx >= tagx and my >= tagy and mx < tagx + 32 and my < tagy + 32 then
+								hoveredTag = tag
+								surface.DrawCircle(tagx+16, tagy+16, 16)
+							end
+							
+							surface.SetMaterial(p.tagMats[tag])
+							surface.DrawTexturedRect(tagx, tagy, tagSize, tagSize)
+						end
+
 						if hoveredTag then
 							tagy = tagy - 4
 							local hoveredTagName = language.GetPhrase("jcms.missiontag_"..hoveredTag)
 							local hoveredTagDesc = language.GetPhrase("jcms.missiontag_"..hoveredTag.."_desc")
 
-							local lastTagX = w-48-(tagSize+2)*#missionData.tags-32
+							local lastTagX = w-48-(tagSize+2)*(#missionData.tags + (isUnofficial and 1 or 0))-32
 							local font = lowres and "jcms_small_bolder" or "jcms_medium"
 							surface.SetFont(font)
 							local tw2, th2 = surface.GetTextSize(hoveredTagName)
@@ -1155,6 +1177,49 @@
 							draw.SimpleText(hoveredTagName, font, lastTagX-tw2/2, tagy+th2/2, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 							draw.SimpleText(hoveredTagDesc, lowres and "DefaultSmall" or "jcms_small", lastTagX, tagy+th2+4, ColorAlpha(jcms.color_bright_alt, 100), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
 						end
+
+						local showWarningText = difficulty >= 1.6
+						local textY = showWarningText and 82 or 92
+
+						if winstreak > 0 then
+							local winstreakText = ("%s: x%d"):format(language.GetPhrase("jcms.winstreak"), winstreak)
+							local winstreakColour = jcms.color_bright_alt
+							if showWarningText then
+								winstreakColour = jcms.color_alert
+							end
+
+							shakemag = math.max(0, difficulty - 1)^0.5
+							if shakemag >= 1.5 then
+								shakemag = (shakemag - 1.5)*0.25 + 1.5
+							end
+
+							for i=1, math.floor(math.Clamp(difficulty, 1, 10)) do
+								local shX = math.Round( math.Rand(-1, 1)*shakemag )
+								local shY = math.Round( math.Rand(-1, 1)*shakemag )
+								surface.SetAlphaMultiplier( (1/i)^2 )
+								draw.SimpleText(winstreakText, "jcms_small_bolder", missionNameX + 4 + shX, textY + shY, winstreakColour, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+							end
+							surface.SetAlphaMultiplier(1)
+						end
+
+						if showWarningText then
+							surface.SetAlphaMultiplier(0.5)
+							local fullWidth = w-xpad - missionNameX
+							local warningtw = draw.SimpleText(difficulty >= 3 and "#jcms.extremedifficulty" or "#jcms.highdifficulty", "jcms_small_bolder", missionNameX + fullWidth/2, 92, jcms.color_alert, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+							surface.SetDrawColor(jcms.color_alert)
+							jcms.hud_DrawStripedRect(missionNameX, 83, fullWidth/2 - warningtw/2 - 8, 2, 32, CurTime()*-32)
+							jcms.hud_DrawStripedRect(missionNameX + fullWidth/2 + warningtw/2 + 8, 83, fullWidth/2 - warningtw/2, 2, 32, CurTime()*32)
+							surface.SetAlphaMultiplier(1)
+						end
+
+						local difficultyText = ("%s: %d%%"):format(language.GetPhrase("jcms.difficulty"), difficulty*100)
+						local difficultyColour = jcms.color_pulsing
+						if difficulty >= 1.35 then
+							difficultyColour = jcms.color_alert
+						elseif difficulty >= 0.9 then
+							difficultyColour = jcms.color_bright
+						end
+						draw.SimpleText(difficultyText, "jcms_small_bolder", w - xpad + 4, textY, difficultyColour, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 					end
 				end
 			-- }}}
