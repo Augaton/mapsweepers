@@ -292,6 +292,25 @@
 
 -- // Aux functions {{{
 
+	jcms.hud_pvpTeamMats = {}
+	function jcms.hud_GetPVPTeamMat(pvpTeam)
+		assert(type(pvpTeam) == "number", "pvpTeam must be a number")
+		if not jcms.hud_pvpTeamMats[ pvpTeam ] then
+			jcms.hud_pvpTeamMats[ pvpTeam ] = Material("jcms/pvpteam/team" .. pvpTeam .. ".png")
+		end
+		return jcms.hud_pvpTeamMats[ pvpTeam ]
+	end
+
+	function jcms.hud_GetPVPTeamColor(pvpTeam)
+		local myPvpTeam = jcms.locPly:GetNWInt("jcms_pvpTeam", -1)
+
+		if pvpTeam == myPvpTeam then
+			return jcms.color_bright
+		else
+			return jcms.color_pulsing
+		end
+	end
+
 	local motionTouchupData = {}
 	local function motionTouchup(pos, ang, id)
 		if jcms.cachedValues.motionSickness then return end
@@ -1561,6 +1580,20 @@
 
 		function jcms.draw_Information()
 			local off = 3
+
+			-- PVP Team
+			local pvpTeam = jcms.locPly:GetNWInt("jcms_pvpTeam", -1)
+			if pvpTeam > 0 then
+				local mat = jcms.hud_GetPVPTeamMat(pvpTeam)
+				surface.SetMaterial(mat)
+				surface.SetDrawColor(jcms.color_dark_alt)
+				surface.DrawTexturedRectRotated(-42, 30, 48, 48, 0)
+
+				render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
+					surface.SetDrawColor(jcms.color_bright_alt)
+					surface.DrawTexturedRectRotated(-42 + off, 30 + off, 48, 48, 0)
+				render.OverrideBlend( false )
+			end
 
 			-- Cash
 			local cashColor, cashColorDark = jcms.color_bright, jcms.color_dark

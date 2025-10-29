@@ -462,8 +462,11 @@
 				drawFilledPolyButton(0, 8, 8, h-8)
 			end
 			
+			local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
 			local iconSize = lowres and 16 or 32
-			local _, nameheight = draw.SimpleText(ply:Nick(), "jcms_small_bolder", baseX + iconSize + 10, baseY + 4, jcms.color_bright)
+			local xOffset = pvpTeam > 0 and iconSize or 0
+
+			local _, nameheight = draw.SimpleText(ply:Nick(), "jcms_small_bolder", baseX + iconSize + xOffset + 10, baseY + 4, jcms.color_bright)
 			local specialText = jcms.hud_GetSpecialText(ply)
 			if specialText then
 				local str = "#jcms.specialtext_" .. specialText
@@ -475,7 +478,7 @@
 					color = jcms.color_bright
 				end
 
-				draw.SimpleText(str, "DefaultSmall", baseX + iconSize + 8, baseY + nameheight + (lowres and 0 or 2), color)
+				draw.SimpleText(str, "DefaultSmall", baseX + xOffset + iconSize + 8, baseY + nameheight + (lowres and 0 or 2), color)
 			end
 
 			local desiredclass = ply:GetNWString("jcms_desiredclass", "")
@@ -485,12 +488,22 @@
 				desiredclass = "infantry"
 				genuinely = false
 			end
-
-			surface.SetMaterial(p.classMats[ desiredclass ])
+			
 			surface.SetAlphaMultiplier(genuinely and 1 or 0.25)
 			surface.SetDrawColor(jcms.color_bright)
-			surface.SetAlphaMultiplier(1)
-			surface.DrawTexturedRect(baseX + 4, baseY + 4, iconSize, iconSize)
+			if pvpTeam > 0 then
+				surface.SetMaterial(p.classMats[ desiredclass ])
+				surface.DrawTexturedRect(baseX + iconSize + 4, baseY + 4, iconSize, iconSize)
+
+				surface.SetAlphaMultiplier(1)
+				surface.SetDrawColor( jcms.hud_GetPVPTeamColor(pvpTeam) )
+				surface.SetMaterial( jcms.hud_GetPVPTeamMat(pvpTeam) )
+				surface.DrawTexturedRect(baseX + 4, baseY + 4, iconSize, iconSize)
+			else
+				surface.SetMaterial(p.classMats[ desiredclass ])
+				surface.DrawTexturedRect(baseX + 4, baseY + 4, iconSize, iconSize)
+				surface.SetAlphaMultiplier(1)
+			end
 
 			local col = Color( jcms.color_bright:Unpack() )
 			col.r = (col.r + 255)/2
@@ -498,9 +511,10 @@
 			col.b = (col.b + 255)/2
 
 			local index = 0
+			local weaponListX = w*0.4
 
 			local mx, my = p:LocalCursorPos()
-			local selectionIndex = (my >= 0 and my <= h) and math.floor( (mx - baseX - 150) / (iconSize+2) ) or -1
+			local selectionIndex = (my >= 0 and my <= h) and math.floor( (mx - baseX - weaponListX) / (iconSize+2) ) or -1
 			local selectionWeapon = nil
 
 			local weps = ply:GetWeapons()
@@ -513,22 +527,22 @@
 				
 				if selectionIndex ~= index then
 					surface.SetDrawColor(jcms.color_pulsing)
-					jcms.hud_DrawNoiseRect(baseX + 150 + index*sizePad, size - 22, size - 4, 24)
+					jcms.hud_DrawNoiseRect(baseX + weaponListX + index*sizePad, size - 22, size - 4, 24)
 
 					surface.SetDrawColor(jcms.color_bright)
-					surface.DrawRect(baseX + 150 + index*sizePad, size + 8, size - 4, 1)
+					surface.DrawRect(baseX + weaponListX + index*sizePad, size + 8, size - 4, 1)
 					surface.SetMaterial(jcms.gunstats_GetMat(class))
-					surface.DrawTexturedRectRotated(baseX + 150 + index*sizePad + 4 + size/2, size/2 + 4, size, size, 0)
+					surface.DrawTexturedRectRotated(baseX + weaponListX + index*sizePad + 4 + size/2, size/2 + 4, size, size, 0)
 					surface.SetDrawColor(col)
-					surface.DrawTexturedRectRotated(baseX + 150 + index*sizePad + size/2, size/2, size, size, 0)
+					surface.DrawTexturedRectRotated(baseX + weaponListX + index*sizePad + size/2, size/2, size, size, 0)
 				else
 					selectionWeapon = weapon
 				end
 
 				index = index + 1
 
-				if (baseX + 150 + index*sizePad) > w * 0.8 and weps[_+1] then
-					draw.SimpleTextOutlined("+", "jcms_hud_small", w*0.8+iconSize, h/2, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, jcms.color_dark)
+				if (baseX + weaponListX + index*sizePad) > w-iconSize*2 and weps[_+1] then
+					draw.SimpleTextOutlined("+", "jcms_hud_small", w-iconSize, h/2, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, jcms.color_dark)
 					break
 				end
 			end
@@ -540,9 +554,9 @@
 				local size = iconSize*1.5
 				surface.SetMaterial(jcms.gunstats_GetMat(class))
 				surface.SetDrawColor(jcms.color_bright)
-				surface.DrawTexturedRectRotated(baseX + 150 + selectionIndex*sizePad + 4 + sizePad/2, size/2 + 4, size, size, 0)
+				surface.DrawTexturedRectRotated(baseX + weaponListX + selectionIndex*sizePad + 4 + sizePad/2, size/2 + 4, size, size, 0)
 				surface.SetDrawColor(color_white)
-				surface.DrawTexturedRectRotated(baseX + 150 + selectionIndex*sizePad + sizePad/2, size/2, size, size, 0)
+				surface.DrawTexturedRectRotated(baseX + weaponListX + selectionIndex*sizePad + sizePad/2, size/2, size, size, 0)
 
 				if p.gunStats then
 					if not p.gunStats[ class ] then
@@ -551,7 +565,7 @@
 
 					local stats = p.gunStats[ class ]
 					if stats then
-						draw.SimpleTextOutlined(stats.name, "jcms_small", baseX + 150 + selectionIndex*sizePad + sizePad/2, 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, jcms.color_dark)
+						draw.SimpleTextOutlined(stats.name, "jcms_small", baseX + weaponListX + selectionIndex*sizePad + sizePad/2, 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, jcms.color_dark)
 					end
 				end
 			end
@@ -1178,48 +1192,50 @@
 							draw.SimpleText(hoveredTagDesc, lowres and "DefaultSmall" or "jcms_small", lastTagX, tagy+th2+4, ColorAlpha(jcms.color_bright_alt, 100), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
 						end
 
-						local showWarningText = difficulty >= 1.6
-						local textY = showWarningText and 82 or 92
+						if jcms.util_GetMapGenProgress() <= 0 then
+							local showWarningText = difficulty >= 1.6
+							local textY = showWarningText and 82 or 92
 
-						if winstreak > 0 then
-							local winstreakText = ("%s: x%d"):format(language.GetPhrase("jcms.winstreak"), winstreak)
-							local winstreakColour = jcms.color_bright_alt
+							if winstreak > 0 then
+								local winstreakText = ("%s: x%d"):format(language.GetPhrase("jcms.winstreak"), winstreak)
+								local winstreakColour = jcms.color_bright_alt
+								if showWarningText then
+									winstreakColour = jcms.color_alert
+								end
+
+								shakemag = math.max(0, difficulty - 1)^0.5
+								if shakemag >= 1.5 then
+									shakemag = (shakemag - 1.5)*0.25 + 1.5
+								end
+
+								for i=1, math.floor(math.Clamp(difficulty, 1, 10)) do
+									local shX = math.Round( math.Rand(-1, 1)*shakemag )
+									local shY = math.Round( math.Rand(-1, 1)*shakemag )
+									surface.SetAlphaMultiplier( (1/i)^2 )
+									draw.SimpleText(winstreakText, "jcms_small_bolder", missionNameX + 4 + shX, textY + shY, winstreakColour, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+								end
+								surface.SetAlphaMultiplier(1)
+							end
+
 							if showWarningText then
-								winstreakColour = jcms.color_alert
+								surface.SetAlphaMultiplier(0.5)
+								local fullWidth = w-xpad - missionNameX
+								local warningtw = draw.SimpleText(difficulty >= 3 and "#jcms.extremedifficulty" or "#jcms.highdifficulty", "jcms_small_bolder", missionNameX + fullWidth/2, 92, jcms.color_alert, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+								surface.SetDrawColor(jcms.color_alert)
+								jcms.hud_DrawStripedRect(missionNameX, 83, fullWidth/2 - warningtw/2 - 8, 2, 32, CurTime()*-32)
+								jcms.hud_DrawStripedRect(missionNameX + fullWidth/2 + warningtw/2 + 8, 83, fullWidth/2 - warningtw/2, 2, 32, CurTime()*32)
+								surface.SetAlphaMultiplier(1)
 							end
 
-							shakemag = math.max(0, difficulty - 1)^0.5
-							if shakemag >= 1.5 then
-								shakemag = (shakemag - 1.5)*0.25 + 1.5
+							local difficultyText = ("%s: %d%%"):format(language.GetPhrase("jcms.difficulty"), difficulty*100)
+							local difficultyColour = jcms.color_pulsing
+							if difficulty >= 1.35 then
+								difficultyColour = jcms.color_alert
+							elseif difficulty >= 0.9 then
+								difficultyColour = jcms.color_bright
 							end
-
-							for i=1, math.floor(math.Clamp(difficulty, 1, 10)) do
-								local shX = math.Round( math.Rand(-1, 1)*shakemag )
-								local shY = math.Round( math.Rand(-1, 1)*shakemag )
-								surface.SetAlphaMultiplier( (1/i)^2 )
-								draw.SimpleText(winstreakText, "jcms_small_bolder", missionNameX + 4 + shX, textY + shY, winstreakColour, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
-							end
-							surface.SetAlphaMultiplier(1)
+							draw.SimpleText(difficultyText, "jcms_small_bolder", w - xpad + 4, textY, difficultyColour, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 						end
-
-						if showWarningText then
-							surface.SetAlphaMultiplier(0.5)
-							local fullWidth = w-xpad - missionNameX
-							local warningtw = draw.SimpleText(difficulty >= 3 and "#jcms.extremedifficulty" or "#jcms.highdifficulty", "jcms_small_bolder", missionNameX + fullWidth/2, 92, jcms.color_alert, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
-							surface.SetDrawColor(jcms.color_alert)
-							jcms.hud_DrawStripedRect(missionNameX, 83, fullWidth/2 - warningtw/2 - 8, 2, 32, CurTime()*-32)
-							jcms.hud_DrawStripedRect(missionNameX + fullWidth/2 + warningtw/2 + 8, 83, fullWidth/2 - warningtw/2, 2, 32, CurTime()*32)
-							surface.SetAlphaMultiplier(1)
-						end
-
-						local difficultyText = ("%s: %d%%"):format(language.GetPhrase("jcms.difficulty"), difficulty*100)
-						local difficultyColour = jcms.color_pulsing
-						if difficulty >= 1.35 then
-							difficultyColour = jcms.color_alert
-						elseif difficulty >= 0.9 then
-							difficultyColour = jcms.color_bright
-						end
-						draw.SimpleText(difficultyText, "jcms_small_bolder", w - xpad + 4, textY, difficultyColour, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 					end
 				end
 			-- }}}

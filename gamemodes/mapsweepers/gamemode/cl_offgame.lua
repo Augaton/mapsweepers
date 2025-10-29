@@ -336,7 +336,7 @@ jcms.offgame = jcms.offgame or NULL
 
 			-- Players list {{{
 				pnl.plyPnlSweeper = pnl:Add("DScrollPanel")
-				pnl.plyPnlSweeper:SetSize(500, ScrH() * 0.25)
+				pnl.plyPnlSweeper:SetSize(550, ScrH() * 0.25)
 				pnl.plyPnlSweeper:SetPos(-1000, -1000)
 				pnl.plyPnlSweeper:SetPaintBackground(false)
 				pnl.plyPnlSweeper.list = {}
