@@ -541,8 +541,9 @@
 			local addX = 64
 			local respawns = jcms.util_GetRespawnCount(me:GetNWInt("jcms_pvpTeam", -1))
 			local deadteammates = 0
+			local myPvpTeam = me:GetNWInt("jcms_pvpTeam", -1)
 			for i, ply in player.Iterator() do
-				if ply:GetNWInt("jcms_desiredteam") == 1 and (not ply:GetNWBool("jcms_evacuated")) and (ply:GetObserverMode() == OBS_MODE_CHASE or ply:GetObserverMode() == OBS_MODE_NONE and not ply:Alive()) then
+				if ply:GetNWInt("jcms_desiredteam") == 1 and jcms.team_pvpSameTeam_optimised(myPvpTeam, ply:GetNWInt("jcms_pvpTeam", -1)) and (not ply:GetNWBool("jcms_evacuated")) and (ply:GetObserverMode() == OBS_MODE_CHASE or ply:GetObserverMode() == OBS_MODE_NONE and not ply:Alive()) then
 					deadteammates = deadteammates + 1
 				end
 			end
