@@ -1615,7 +1615,7 @@
 				end
 
 				--Everyone dead or everyone evacuated
-				if (not d.debug) and (aliveTeams <= ( (jcms.util_IsPVP() and not jcms.cvar_pvpdebug:GetBool()) and 1 or 0)) or (livingPlayers == 0 and deadPlayers == 0) then
+				if (not d.debug) and ( (aliveTeams <= ( (jcms.util_IsPVP() and not jcms.cvar_pvpdebug:GetBool()) and 1 or 0)) or (livingPlayers == 0 and deadPlayers == 0) ) then
 					local victory = evacCount > 0
 
 					local missionTime = jcms.director_GetMissionTime()
