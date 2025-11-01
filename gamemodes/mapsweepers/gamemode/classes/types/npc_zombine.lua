@@ -40,7 +40,6 @@ class.runSpeed = 150
 class.jumpPower = 200
 
 class.playerColorVector = Vector(0.6, 0, 0)
-class.noFallDamage = true
 
 function class.OnSpawn(ply)
 	local weapon = ply:Give("weapon_jcms_playernpc", false)
