@@ -170,9 +170,9 @@ if SERVER then
 					chunk.jcms_miner = attacker
 					chunk:SetPos(pos)
 					chunk:SetAngles(AngleRand())
-					chunk:Spawn()
 
 					chunk:SetOreType(self.OreName)
+					chunk:Spawn()
 
 					local phys = chunk:GetPhysicsObject()
 					phys:Wake()

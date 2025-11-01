@@ -26,6 +26,8 @@
 
 	jcms.MAPGEN_CONSTRUCT_AREART = 322817.33914096
 	jcms.MAPGEN_CONSTRUCT_DENSITYRT = 34.8672226934
+
+	jcms.MAPGEN_CONSTRUCT_AREASPAN = 82411875
 -- // }}}
 
 -- // Restricted {{{
@@ -34,6 +36,8 @@
 	
 	jcms.MAPGEN_CONSTRUCT_AREART_RESTRICTED = 106770
 	jcms.MAPGEN_CONSTRUCT_DENSITYRT_RESTRICTED = 11.7614
+
+	jcms.MAPGEN_CONSTRUCT_AREASPAN_UNRESTRICTED = 85719375
 -- // }}}
 
 jcms.MAPGEN_CONSTRUCT_AVGAREASIZE = 345.53675117538
@@ -1204,8 +1208,9 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		local volumeMult = md.volumeTotal/ jcms.MAPGEN_CONSTRUCT_VOLUME
 		local densityMult = md.densityUnrestrictedRT / jcms.MAPGEN_CONSTRUCT_DENSITYRT
 		local avgAreaMult = md.avgAreaSizeRT / jcms.MAPGEN_CONSTRUCT_AVGAREASIZE
+		local spanMult = md.areaSpan / jcms.MAPGEN_CONSTRUCT_AREASPAN
 
-		return areaMult, volumeMult, densityMult, avgAreaMult
+		return areaMult, volumeMult, densityMult, avgAreaMult, spanMult
 	end
 	
 	function jcms.mapgen_GetMapSizeMultiplier_Restricted() --Restricted versions
@@ -1218,8 +1223,9 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		local volumeMult = md.volumeTotal/ jcms.MAPGEN_CONSTRUCT_VOLUME
 		local densityMult = md.densityRT / jcms.MAPGEN_CONSTRUCT_DENSITYRT_RESTRICTED
 		local avgAreaMult = md.avgAreaSizeRT / jcms.MAPGEN_CONSTRUCT_AVGAREASIZE
+		local spanMult = md.areaSpanUnrestricted / jcms.MAPGEN_CONSTRUCT_AREASPAN_UNRESTRICTED
 
-		return areaMult, volumeMult, densityMult, avgAreaMult
+		return areaMult, volumeMult, densityMult, avgAreaMult, spanMult
 	end
 
 	function jcms.mapgen_AdjustCountForMapSize(count)
@@ -1593,7 +1599,7 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 
 -- // Shared Generation Behaviours. {{{
 
-	function jcms.mapgen_SpreadPrefabs(prefabtype, count, sizeXY, onlyMainZone)
+	function jcms.mapgen_SpreadPrefabs(prefabtype, count, sizeXY, onlyMainZone, avoidAreas)
 		if type(count) ~= "number" or (count <= 0) then return end
 		local pref = jcms.prefabs[prefabtype]
 
@@ -1608,7 +1614,7 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 			end
 		-- // }}}
 
-		local prefabAreas = {}
+		local prefabAreas = avoidAreas or {}
 		local prefabs = {}
 
 		--Optimisation
@@ -1619,6 +1625,14 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 			area_vectors[area] = area:GetCenter()
 			area_raisedVectors[area] = area:GetCenter() + upVec
 		end
+
+		if avoidAreas then
+			for i, area in ipairs(avoidAreas) do
+				area_vectors[area] = area:GetCenter()
+				area_raisedVectors[area] = area:GetCenter() + upVec
+			end
+		end
+
 		jcms.mapgen_Wait( 0.05 )
 
 		for i=1, count, 1 do
@@ -1653,6 +1667,6 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 			jcms.mapgen_Wait( 0.05 + (i/count)*0.95 )
 		end
 
-		return prefabs
+		return prefabs, prefabAreas
 	end
 -- // }}}

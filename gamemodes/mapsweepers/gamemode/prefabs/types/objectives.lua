@@ -205,7 +205,7 @@ local prefabs = jcms.prefabs
 	}
 -- // }}}
 
--- // Refineries {{{
+-- // Mining Ops {{{
 	prefabs.refinery_main = {
 		check = function(area)
 			local sx, sy = area:GetSizeX(), area:GetSizeY()
@@ -257,10 +257,24 @@ local prefabs = jcms.prefabs
 			return ref
 		end
 	}
+
+	prefabs.miningops_orevein = {
+		check = function(area)
+			return true, jcms.mapgen_AreaPointAwayFromEdges(area, 100)
+		end,
+
+		stamp = function(area, center)
+			local vein = ents.Create("jcms_orevein")
+			vein:SetPos(center)
+			vein:SetAngles(Angle(0, math.random()*360, 0))
+			vein:Spawn()
+
+			return vein
+		end
+	}
 -- // }}}
 
 -- // Data Download {{{
-
 	prefabs.datadownload_passwordclue = {
 		check = function(area)
 			if not jcms.mapgen_ValidArea(area) then return false end

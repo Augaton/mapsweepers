@@ -28,8 +28,8 @@ jcms.missions.miningoperations = {
 		--Place refineries / Difficulty calculations
 		local pvpMode = jcms.util_IsPVP()
 
-		local refineries_main = jcms.mapgen_SpreadPrefabs("refinery_main", pvpMode and 2 or 1, 250, true)
-		local refineries_secondary = jcms.mapgen_SpreadPrefabs("refinery_secondary", jcms.mapgen_AdjustCountForMapSize(3), 180, false)
+		local refineries_main, refineries_main_areas = jcms.mapgen_SpreadPrefabs("refinery_main", pvpMode and 2 or 1, 250, true)
+		local refineries_secondary, refineries_secondary_areas = jcms.mapgen_SpreadPrefabs("refinery_secondary", jcms.mapgen_AdjustCountForMapSize(3), 180, false)
 
 		missionData.refineries_main = refineries_main
 		missionData.refineries_secondary = refineries_secondary
@@ -59,70 +59,129 @@ jcms.missions.miningoperations = {
 			end
 		end
 
-
-		local function onRefineSecondary(ref, ore, miner, bringer, obtain)
-			if not jcms.director_IsSuddenDeath() then
-				if miner ~= bringer then
-					local half = math.ceil(obtain/2)
-					jcms.giveCash(miner, half)
-					jcms.giveCash(bringer, half)
-				else
-					jcms.giveCash(miner, obtain)
-				end
-			end
-		end
-
-		--POIs to avoid for ore spawning
-		local vectorsOfInterest = {}
-		for i, ref in ipairs(refineries_main) do 
-			table.insert(vectorsOfInterest, ref:WorldSpaceCenter())
-		end
-		for i, ref in ipairs(refineries_secondary) do
-			ref.OnRefine = onRefineSecondary
-			table.insert(vectorsOfInterest, ref:WorldSpaceCenter())
-		end
-		
-		--Ore spawning
-		local spawned = 0
-		local areas = navmesh.GetAllNavAreas()
-		table.Shuffle(areas)
-
-		for i, area in ipairs( areas ) do
-			if area:GetSizeX() > 200 and area:GetSizeY() > 200 then
-				local wallspots = jcms.prefab_GetWallSpotsFromArea(area, 48, 500)
-				if #wallspots > 0 then
-					table.Shuffle(wallspots)
-
-					for j=1, math.random(1, math.min(2, #wallspots)) do
-						if spawned <= 32 or math.random() < 32 / spawned then
-							local pos = wallspots[j] + Vector(0, 0, -50)
-
-							local minDist2 = math.huge
-							for k,voi in ipairs(vectorsOfInterest) do
-								local dist2 = voi:DistToSqr(pos)
-								minDist2 = math.min(minDist2, dist2)
-							end
-
-							local validOres = {}
-							for k, oreData in pairs(jcms.oreTypes) do
-								if (minDist2 >= oreData.proxMin^2 and minDist2 <= oreData.proxMax^2) then
-									validOres[k] = oreData.weight or 1
-								end
-							end
-
-							if next(validOres) then
-								local vein = ents.Create("jcms_orevein")
-								vein:SetPos(pos)
-								vein:SetAngles(Angle(0, math.random()*360, 0))
-								vein:Spawn()
-								vein:SetOreType(jcms.util_ChooseByWeight(validOres))
-								spawned = spawned + 1
-							end
-						end
+		do
+			local function onRefineSecondary(ref, ore, miner, bringer, obtain)
+				if not jcms.director_IsSuddenDeath() then
+					if miner ~= bringer then
+						local half = math.ceil(obtain/2)
+						jcms.giveCash(miner, half)
+						jcms.giveCash(bringer, half)
+					else
+						jcms.giveCash(miner, obtain)
 					end
 				end
 			end
+			
+			for i, ref in ipairs(refineries_secondary) do
+				ref.OnRefine = onRefineSecondary
+			end
 		end
+
+		--Points of interest to avoid for the spreadprefabs function
+		local avoidAreas = refineries_main_areas
+		table.Add(avoidAreas, refineries_secondary_areas)
+
+		local areaMult, volumeMult, densityMult, avgAreaMult, spanMult = jcms.mapgen_GetMapSizeMultiplier()
+		local sizeScaling = math.sqrt(spanMult)
+
+		local mainZoneSeeds = 7
+		local unrestrictedSeeds = 4
+		local totalOres = 100
+
+		-- // Plant "Seed" ore veins {{{
+			local seedOres, seedOreAreas = jcms.mapgen_SpreadPrefabs("miningops_orevein", mainZoneSeeds, 200, true, avoidAreas)
+
+			table.Add(avoidAreas, seedOreAreas)
+			local seedOresUnrestricted, seedOreAreasUnrestricted = jcms.mapgen_SpreadPrefabs("miningops_orevein", unrestrictedSeeds, 200, true, avoidAreas)
+
+			table.Add(seedOres, seedOresUnrestricted)
+			table.Add(seedOreAreas, seedOreAreasUnrestricted)
+		-- // }}}
+
+		-- // Calculate weights {{{
+			local oreVectors = {} 
+			for i, ore in ipairs(seedOres) do
+				table.insert(oreVectors, ore:WorldSpaceCenter())
+			end
+
+			local oreAreaWeights = {}
+			for i, area in ipairs(jcms.mapdata.validAreas) do
+				oreAreaWeights[area] = math.sqrt(area:GetSizeX() * area:GetSizeY())
+
+				local areaCentre = area:GetCenter()
+
+				local closestDist = math.huge
+				for i, otherVec in ipairs(oreVectors) do
+					local dist = areaCentre:Distance( otherVec )
+					closestDist = (closestDist < dist and closestDist) or dist
+				end
+
+				if not(closestDist == math.huge) then  
+					oreAreaWeights[area] = oreAreaWeights[area] / closestDist
+				end
+			end
+		-- // }}}
+
+		-- // Place Remaining Ores {{{
+			local spawned = mainZoneSeeds + unrestrictedSeeds
+			local allOres = {}
+
+			for i=1, totalOres do 
+				--local wallspots = jcms.prefab_GetWallSpotsFromArea(area, 48, 500)
+				--TODO: Try to place us on walls first, stamp on area otherwise.
+				--TODO: weight against placing near refineries
+
+				local area = jcms.util_ChooseByWeight(oreAreaWeights)
+				oreAreaWeights[area] = oreAreaWeights[area] * 0.00000001
+
+				local succeeded, ore = jcms.prefab_TryStamp("miningops_orevein", area)
+
+				if succeeded then
+					spawned = spawned + 1
+					table.insert(allOres, ore)
+				end
+			end
+		-- // }}}
+
+
+		-- // Set Types {{{
+			local refineryVectors = {}
+			for i, ref in ipairs(refineries_main) do
+				local pos = ref:WorldSpaceCenter()
+				table.insert(refineryVectors, pos)
+			end
+
+			table.Add(allOres, seedOres)
+			for i, ore in ipairs(allOres) do
+				local orePos = ore:WorldSpaceCenter()
+				-- // Closest POI {{{
+					local closestDist = math.huge
+					for i, refVec in ipairs(refineryVectors) do
+						local dist = orePos:Distance( refVec )
+						closestDist = (closestDist < dist and closestDist) or dist
+					end
+					if closestDist == math.huge then closestDist = 0 end
+				-- // }}}
+
+				// Calculate Weights {{{
+					local validOres = {}
+					for k, oreData in pairs(jcms.oreTypes) do
+						validOres[k] = oreData.weight or 1
+
+						--Probably not optimal but my brain isn't working right now. 
+						local proxMin, proxMax = sizeScaling * oreData.proxMin, sizeScaling * oreData.proxMax
+						if closestDist < proxMin then
+							validOres[k] = validOres[k] / math.sqrt(proxMin - closestDist)
+						elseif closestDist > proxMax then
+							validOres[k] = validOres[k] / math.sqrt(closestDist - proxMax)
+						end
+					end
+				-- // }}}
+				
+				ore:SetOreType(jcms.util_ChooseByWeight(validOres))
+			end
+		-- }}}
+		
 		missionData.totalOres = spawned
 		missionData.oreProgress = 0
 

@@ -123,7 +123,7 @@ if SERVER then
 		
 		bolter = {
 			damage = 60,
-			firerate = 1,
+			firerate = 1.1,
 			damagetype = DMG_BULLET + DMG_ALWAYSGIB,
 			muzzleflashScale = 2,
 			muzzleflashFlag = 4,
