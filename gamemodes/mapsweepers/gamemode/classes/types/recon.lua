@@ -113,7 +113,7 @@ function class.SetupMove(ply, mv, cmd)
 					dmg:SetAttacker(ply)
 					dmg:SetDamage(30)
 
-					for i, target in ipairs( ents.FindInSphere(pos, 128) ) do
+					for i, target in ipairs( ents.FindInSphere(pos, 175) ) do
 						if not jcms.team_SameTeam(ply, target) and target.TakeDamageInfo then
 							target:TakeDamageInfo(dmg)
 						end

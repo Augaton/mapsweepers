@@ -1348,6 +1348,16 @@ local nmt = FindMetaTable("NPC")
 		return game.GetWorld():GetNWBool("jcms_pvpmode", false)
 	end
 
+	function jcms.util_AddAngles(ang1, ang2) --TODO: Not super efficient as it creates 2 matrix objects.
+		local mat = Matrix()
+		mat:SetAngles(ang1)
+		
+		local mat2 = Matrix()
+		mat2:SetAngles(ang2)
+
+		mat:Mul(mat2)
+		return mat:GetAngles()
+	end
 -- }}}
 
 -- Licenses {{{

@@ -42,6 +42,11 @@ ENT.jcms_miningCrateAttaches = {
 	Vector(0,-80,0),
 }
 
+ENT.jcms_miningCrateAngles = { --UI ANGLES ONLY
+	Angle(0,0,0),
+	Angle(180,0,0)
+}
+
 function ENT:Initialize()
 	self:SetCollisionGroup(COLLISION_GROUP_VEHICLE)
 	

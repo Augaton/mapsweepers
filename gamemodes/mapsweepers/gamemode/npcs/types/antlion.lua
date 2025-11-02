@@ -216,8 +216,8 @@ jcms.npc_types.antlion_worker = {
 		npc:SetSkin( math.random(0, npc:SkinCount() ))
 
 		if not jcms.HasEpisodes() then
-			npc:SetMaxHealth(60)
-			npc:SetHealth(60)
+			npc:SetMaxHealth(45)
+			npc:SetHealth(45)
 		end
 
 		jcms.npc_SetupAntlionBurrowCheck(npc)

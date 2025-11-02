@@ -223,7 +223,6 @@ local prefabs = jcms.prefabs
 
 		stamp = function(area, center)
 			local ref = ents.Create("jcms_refinery")
-			ref.RefineryType = "main"
 			ref:SetPos(center)
 			local goodFacing, facingAngle = jcms.mapgen_PickBestFacingDirection(center, 300, ref, MASK_PLAYERSOLID_BRUSHONLY)
 			ref:SetAngles(facingAngle)
@@ -250,7 +249,7 @@ local prefabs = jcms.prefabs
 			local ref = ents.Create("jcms_refinery")
 			data.pos = data.pos + data.normal * 24
 			data.pos.z = data.pos.z - 24
-			ref.RefineryType = "secondary"
+			ref:SetIsOreRefinery(true)
 			ref:SetPos(data.pos)
 			ref:SetAngles(data.normal:Angle())
 			ref:Spawn()

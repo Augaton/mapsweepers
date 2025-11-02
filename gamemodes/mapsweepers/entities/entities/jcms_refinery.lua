@@ -37,9 +37,8 @@ end
 if SERVER then
 	function ENT:Initialize()
 		self:SetModel("models/props_lab/scrapyarddumpster_static.mdl")
-		if self.RefineryType == "main" then
-			self:SetModel("models/props_lab/scrapyarddumpster_static.mdl")
-		elseif self.RefineryType == "secondary" then
+
+		if self:GetIsOreRefinery() then --Secondary Refinery
 			self:SetModel("models/props_junk/trashdumpster01a.mdl")
 		end
         self:PhysicsInitStatic(SOLID_VPHYSICS)
@@ -107,8 +106,12 @@ if CLIENT then
 		local dist2 = jcms.EyePos_lowAccuracy:DistToSqr(self:WorldSpaceCenter())
 
 		if dist2 <= 1000000 then
-			if not self.sfxGrind then --TODO: Different SFX for secondary refineries.
-				self.sfxGrind = CreateSound(self, "vehicles/digger_grinder_loop1.wav")
+			if not self.sfxGrind then
+				if self:GetIsOreRefinery() then
+					self.sfxGrind = CreateSound(self, "vehicles/crane/crane_idle_loop3.wav")
+				else
+					self.sfxGrind = CreateSound(self, "vehicles/digger_grinder_loop1.wav")
+				end
 				self.sfxGrind:PlayEx(0, 80)
 			end
 
@@ -126,7 +129,7 @@ if CLIENT then
 			end
 
 			local pitch = 80 + self.grindFactor*40
-			local vol = math.Clamp(math.Remap(dist2, 1000000, 10000, 0, 1), 0, 0.5+self.grindFactor*0.5)
+			local vol = math.Clamp(math.Remap(dist2, 1000000, 10000, 0, 1), 0, self:GetIsOreRefinery() and 1 or (0.5+self.grindFactor*0.5))
 			self.sfxGrind:ChangePitch(pitch, 0.1)
 			self.sfxGrind:ChangeVolume(vol, 0.1)
 		else

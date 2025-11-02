@@ -31,20 +31,26 @@ ENT.RenderGroup = RENDERGROUP_OPAQUE
 ENT.CrateType = 1
 ENT.CrateTypes = {
 	[1] = {
-		model = "models/Items/item_item_crate.mdl",
+		model = "models/items/item_item_crate.mdl",
 		capacity = 150,
 		mass = 50,
 		
 		attachOffset = Vector(0,0,0),
-		attachAngle = Angle(0,0,0)
+		attachAngle = Angle(0,0,0),
+
+		uiPos = Vector(0,3,16),
+		uiAngle = Angle(0,180,90),
 	},
 	[2] = {
-		model = "models/props_c17/FurnitureFridge001a.mdl",
+		model = "models/props_c17/furniturefridge001a.mdl",
 		capacity = 300,
 		mass = 150,
 
 		attachOffset = Vector(0,0,10),
-		attachAngle = Angle(90,0,0)
+		attachAngle = Angle(-90,0,0),
+
+		uiPos = Vector(0,5,15),
+		uiAngle = Angle(270,90,180)
 	},
 	[3] = {
 		model = "models/props_wasteland/controlroom_storagecloset001a.mdl",
@@ -52,7 +58,10 @@ ENT.CrateTypes = {
 		mass = 250,
 		
 		attachOffset = Vector(0,0,0),
-		attachAngle = Angle(90,0,0)
+		attachAngle = Angle(-90,0,0),
+
+		uiPos = Vector(0,5,25),
+		uiAngle = Angle(270,90,180)
 	},
 }
 
@@ -62,6 +71,9 @@ ENT.AttachCooldown = 1 --How long until we can attach after being grabbed off a 
 function ENT:SetupDataTables()
 	self:NetworkVar("Int", 0, "MaxCapacity")
 	self:NetworkVar("Int", 1, "HeldCapacity")
+
+	self:NetworkVar("Angle", 0, "UIAngle")
+	self:NetworkVar("Vector", 0, "UIPos")
 end
 
 if SERVER then
@@ -76,14 +88,18 @@ if SERVER then
 
 		self:SetMaxCapacity(crateType.capacity)
 		self:GetPhysicsObject():SetMass(crateType.mass)
+		self:GetPhysicsObject():EnableGravity(true)
 
 		self.lastEjected = 0
 		self.lastVehicleAttached = 0
 
 		self.crate_contents = {}
 		--[[Structure:
-			[i] = {type="oreType", model="modelName"} 
+			[i] = {type="oreType", model="modelName", owner = jcms_miner } 
 		--]]
+
+		self:SetUIPos(crateType.uiPos)
+		self:SetUIAngle(crateType.uiAngle)
 
 		self.jcms_attachedToVehicle = false
 	end
@@ -99,7 +115,7 @@ if SERVER then
 	end
 
 	function ENT:Use( activator, caller, useType, value )
-		if self:IsPlayerHolding() or self.jcms_lastCarried and self.jcms_lastCarried + 0.05 > CurTime() then return end
+		if self:IsPlayerHolding() or self.jcms_lastCarried and self.jcms_lastCarried + 0.15 > CurTime() then return end
 		self:DetachFromVehicle()
 
 		activator:PickupObject(self)
@@ -118,7 +134,7 @@ if SERVER then
 		--Is the target an ore and do we have space for it?
 		local hitEnt = data.HitEntity
 
-		if self.lastEjected + self.EjectionCooldown < CurTime() and hitEnt:GetClass() == "jcms_orechunk" and self:GetHeldCapacity() + hitEnt:GetPhysicsObject():GetMass() < self:GetMaxCapacity() and not hitEnt.jcms_physAte then
+		if self.lastEjected + self.EjectionCooldown < CurTime() and hitEnt:GetClass() == "jcms_orechunk" and self:GetHeldCapacity() + hitEnt.jcms_oreMass < self:GetMaxCapacity() and not hitEnt.jcms_physAte then
 			self:Eat(hitEnt)
 		elseif not self.jcms_attachedToVehicle and self.lastVehicleAttached + self.AttachCooldown < CurTime() and hitEnt.jcms_attachedCrates and self:FindAttachSlot(hitEnt) then
 			self:ForcePlayerDrop()
@@ -188,14 +204,19 @@ if SERVER then
 
 		self:SetPos(target:LocalToWorld(vec + posAdd))
 
-		self:SetAngles(target:GetAngles() + angAdd)
+
+		self:SetAngles(jcms.util_AddAngles(target:GetAngles(), angAdd))
 		
 		timer.Simple(0, function()
 			constraint.Weld(target, self, 0, 0, 0, true, true)
 		end)
 
 		self:GetPhysicsObject():SetMass(25) --Vehicles can't park properly if we're too heavy
+		self:GetPhysicsObject():EnableGravity(false)
 
+		local uiAng = target.jcms_miningCrateAngles[slot]
+		local crateType = self.CrateTypes[self.CrateType]
+		self:SetUIAngle(jcms.util_AddAngles(crateType.uiAngle, uiAng))
 
 		self.jcms_attachedToVehicle = true
 		self.jcms_attachedVehicle = target
@@ -214,9 +235,14 @@ if SERVER then
 			
 			local crateType = self.CrateTypes[self.CrateType]
 			self:GetPhysicsObject():SetMass(crateType.mass)
+			self:GetPhysicsObject():EnableGravity(true)
 
 			if IsValid(self.jcms_attachedVehicle) then
 				self.jcms_attachedVehicle.jcms_attachedCrates[self.jcms_attachedSlot] = nil 
+
+				
+				local crateType = self.CrateTypes[self.CrateType]
+				self:SetUIAngle(crateType.uiAngle)
 
 				self.jcms_attachedSlot = nil
 				self.jcms_attachedVehicle = NULL
@@ -246,3 +272,65 @@ if SERVER then
 	end
 end
 
+if CLIENT then
+	ENT.ModelUIScales = {
+		["models/items/item_item_crate.mdl"] = {
+			x = 1,
+			y = 1,
+		},
+		["models/props_c17/furniturefridge001a.mdl"] = {
+			x = 2,
+			y = 2,
+		},
+		["models/props_wasteland/controlroom_storagecloset001a.mdl"] = {
+			x = 3,
+			y = 3,
+		},
+	}
+	
+	function ENT:Draw(flags)
+		self:DrawModel()
+
+		local dist = jcms.EyePos_lowAccuracy:DistToSqr(self:WorldSpaceCenter())
+		if dist < 1000^2 then 
+			self:DrawCounter(dist)
+		end
+	end
+
+	function ENT:DrawCounter( eyeDistSqr )
+		local uiScale = self.ModelUIScales[self:GetModel()]
+		local scaleX = uiScale.x
+		local scaleY = uiScale.y
+
+		local posOffs = self:GetUIPos()
+		local angOffs = self:GetUIAngle()
+
+
+		local pos = self:WorldSpaceCenter()
+		local ang = self:GetAngles()
+		local selfTbl = self:GetTable()
+
+		ang = jcms.util_AddAngles(ang, angOffs)
+
+		posOffs:Rotate(ang)
+		pos:Add(posOffs)
+
+
+		--Stolen directly from turret code.
+		cam.Start3D2D(pos, ang, 1/32)
+			local clip, maxClip = selfTbl:GetHeldCapacity(), selfTbl:GetMaxCapacity()
+			local f = 1 - clip / maxClip
+			local x, y, w, h, p = -276*scaleX, 0*scaleY, 530*scaleX, 170*scaleY, 16
+			
+			local r, g, b = 255, 0, 0
+			surface.SetDrawColor(r, g, b)
+			
+			local ch = w - p*2
+			surface.DrawRect(x+p,y+p,w-p*2-ch*f,h-p*2)
+			if jcms.performanceEstimate > 40 or eyeDistSqr < 600^2 then --If lagging, LOD the text & outline more aggressively.
+				surface.DrawOutlinedRect(x,y,w,h, p/3)
+				draw.SimpleTextOutlined(("%d / %d"):format(clip, maxClip), "jcms_hud_big", x + w/2, y + h/2, color_black, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, surface.GetDrawColor())
+			end
+		cam.End3D2D()
+	end
+end
