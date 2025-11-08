@@ -576,6 +576,12 @@ jcms.npc_types.antlion_mineralguard = {
 	end,
 
 	postSpawn = function(npc)
+		local hp = math.ceil(npc:GetMaxHealth()*1.25)
+		npc:SetMaxHealth(hp)
+		npc:SetHealth(hp)
+
+		jcms.npc_GetRowdy(npc)
+
 		if not npc.jcms_oreType then
 			local weights = {}
 			for name, oreData in pairs(jcms.oreTypes) do

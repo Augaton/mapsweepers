@@ -263,8 +263,8 @@ jcms.missions.miningoperations = {
 
 	npcTypeQueueCheck = function(director, swarmCost, dangerCap, npcType, npcData, basePassesCheck)
 		local md = director.missionData
-		if npcType == "antlion_mineralguard" and md.oreProgress > 0 then
-			return basePassesCheck, md.oreProgress * 1.43
+		if npcType == "antlion_mineralguard" and (md.oreProgress > 0 or jcms.director_GetMissionTime() > (60*5)) then
+			return basePassesCheck, (md.oreProgress * 1.43) + jcms.director_GetMissionTime() / (60*5)
 		else
 			return basePassesCheck
 		end
