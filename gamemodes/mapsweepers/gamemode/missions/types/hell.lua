@@ -23,6 +23,7 @@
 
 	jcms.missions.hell = {
 		faction = "everyone",
+		pvpAllowed = true,
 		
 		phrasesOverride = {
 			["ambient/explosions/exp1.wav"] = 1,

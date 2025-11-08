@@ -119,6 +119,7 @@
 
 	jcms.missions.payload = {
 		faction = "any",
+		pvpAllowed = true,
 
 		generate = function(data, missionData)
 			local track = jcms.mapgen_PayloadGenPath()

@@ -23,6 +23,7 @@
 
 	jcms.missions.violenceflashpoints = {
 		faction = "any",
+		pvpAllowed = true,
 
 		generate = function(data, missionData)
 			local difficulty = jcms.runprogress_GetDifficulty()

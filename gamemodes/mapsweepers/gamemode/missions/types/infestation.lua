@@ -31,6 +31,7 @@
 
 	jcms.missions.infestation = {
 		faction = "zombie",
+		pvpAllowed = true,
 
 		generate = function(data, missionData)
 			local count = math.ceil( jcms.runprogress_GetDifficulty() * 3)

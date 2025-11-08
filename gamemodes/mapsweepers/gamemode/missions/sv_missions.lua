@@ -51,11 +51,11 @@
 	
 	jcms.missions = {}
 
-	function jcms.mission_GetRandomType(except)
+	function jcms.mission_GetRandomType(except, pvpOnly)
 		local keys = {}
 
 		for mission in pairs(jcms.missions) do
-			if mission ~= except then
+			if mission ~= except and not pvpOnly or ( jcms.missions[ mission ].pvpAllowed ) then
 				table.insert(keys, mission)
 			end
 		end
@@ -206,7 +206,7 @@
 
 	function jcms.mission_Randomize()
 		local lastMis, lastFac = jcms.runprogress_GetLastMissionTypes()
-		local newType = jcms.mission_GetRandomType( lastMis )
+		local newType = jcms.mission_GetRandomType( lastMis, jcms.util_IsPVP() )
 		local data = assert(jcms.missions[ newType ], "error randomizing mission type, picked an invalid one: '" .. tostring(newType) .. "'")
 		
 		game.GetWorld():SetNWString("jcms_missiontype", newType)

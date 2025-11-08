@@ -988,6 +988,10 @@ jcms.npc_types.zombie_barnacle = {
 		npc:SetMaxHealth(hp)
 		npc:SetHealth(hp)
 
+		timer.Simple(0, function() --(Unreliable?) fix to us not attacking players
+			npc:Activate()
+			npc:TakeDamage(0) --Awesome!11!
+		end)
 	end,
 
 	check = function() return false end --Stop us from spawning naturally

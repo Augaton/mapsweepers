@@ -218,6 +218,7 @@
 
 	jcms.missions.mainframe = {
 		faction = "rebel",
+		pvpAllowed = true,
 
 		generate = function(data, missionData)
 			local missionObjects = {}

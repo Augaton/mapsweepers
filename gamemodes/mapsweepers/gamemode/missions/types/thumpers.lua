@@ -23,6 +23,7 @@
 	
 	jcms.missions.thumperreactivation = {
 		faction = "antlion",
+		pvpAllowed = true,
 
 		generate = function(data, missionData)
 			local difficulty = jcms.runprogress_GetDifficulty()
@@ -116,6 +117,7 @@
 
 	jcms.missions.thumpersabotage = {
 		faction = "combine",
+		pvpAllowed = true,
 
 		generate = function(data, missionData)
 			local difficulty = jcms.runprogress_GetDifficulty()
