@@ -909,10 +909,16 @@ local nmt = FindMetaTable("NPC")
 		return npcCheck or playerCheck or nextbotCheck or entClassCheck --NOTE: Could be optimised more by turning it into a single massive boolean expression, but idk if that's worth it.
 	end
 
-	function jcms.team_pvpSameTeam(e1, e2)
+	function jcms.team_pvpSameTeam(e1, e2) --Shared pvp Team?
 		local e1Pvp = e1:GetNWInt("jcms_pvpTeam", -1)
 		local e2Pvp = e2:GetNWInt("jcms_pvpTeam", -1)
 		return e1Pvp == -1 or e2Pvp == -1 or e1Pvp == e2Pvp --If either lacks pvp or both on same team
+	end
+
+	function jcms.team_pvpSameTeam_Strict(e1, e2) --Shared pvp team, team -1 is hostile (to self & others)
+		local e1Pvp = e1:GetNWInt("jcms_pvpTeam", -1)
+		local e2Pvp = e2:GetNWInt("jcms_pvpTeam", -1)
+		return e1Pvp == e2Pvp and not (e1Pvp == -1 or e2Pvp == -1)
 	end
 	
 	function jcms.team_pvpSameTeam_optimised(e1Pvp, e2Pvp)
@@ -940,7 +946,7 @@ local nmt = FindMetaTable("NPC")
 					end
 				end
 			else
-				return false
+				return jcms.team_pvpSameTeam_Strict(e1, e2) --Friendly if both have a pvp team and both are the same team, hostile otherwise.
 			end
 		end
 	end
