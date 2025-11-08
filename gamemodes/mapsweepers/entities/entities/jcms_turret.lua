@@ -59,7 +59,8 @@ if SERVER then
 
 			return jcms.team_JCorp(ent) and not(entTbl.GetHackedByRebels and entTbl:GetHackedByRebels())
 		else
-			return jcms.team_NPC_optimised(ent) or not jcms.team_pvpSameTeam_optimised(pvpTeam, ent:GetNWInt("jcms_pvpTeam", -1))
+			local entPvpTeam = ent:GetNWInt("jcms_pvpTeam", -1)
+			return (jcms.team_NPC_optimised(ent) and not jcms.team_pvpSameTeam_Strict_optimised(pvpTeam, entPvpTeam)) or not jcms.team_pvpSameTeam_optimised(pvpTeam, entPvpTeam)
 		end
 	end
 	

@@ -925,6 +925,11 @@ local nmt = FindMetaTable("NPC")
 		return e1Pvp == -1 or e2Pvp == -1 or e1Pvp == e2Pvp --If either lacks pvp or both on same team
 	end
 
+	function jcms.team_pvpSameTeam_Strict_optimised(e1Pvp, e2Pvp)
+		return e1Pvp == e2Pvp and not (e1Pvp == -1 or e2Pvp == -1)
+	end
+
+
 	function jcms.team_SameTeam(e1, e2)
 		if (e1 == e2) or ( jcms.team_JCorp(e1) and jcms.team_JCorp(e2) ) then
 			return jcms.team_pvpSameTeam(e1, e2)
