@@ -88,7 +88,7 @@
 					end
 				-- // }}}
 
-				-- // Generate {{{
+				-- // Generate Pillars {{{
 					local pillarCount = math.ceil(2 * jcms.runprogress_GetDifficulty() * (2/3))
 					local pillars = {}
 					local pillarPositions = {} --Optimisation

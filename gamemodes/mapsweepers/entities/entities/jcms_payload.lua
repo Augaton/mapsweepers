@@ -150,6 +150,10 @@ if SERVER then
 			local pushing = self:GetPushingPlayerCount()
 			local living = math.max(1, jcms.director.livingPlayers)
 			local mul = math.sqrt(pushing / living)
+
+			local isAccelerated = jcms.director_GetMissionTime() < 120 and #jcms.director.npcs < 10
+			local maxSpeed = ( not isAccelerated and self.MaxSpeed ) or (jcms.director.missionData.trackLength / (60 * 3.5))
+
 			return ((CurTime() <= self.BoostTime) and self.BoostMul or 1) * self.MaxSpeed * mul
 		else
 			return 0

@@ -39,6 +39,10 @@
 			for k, commander in pairs(jcms.npc_commanders) do 
 				commander:placePrefabs(missionData)
 			end
+
+			local diffMult = jcms.runprogress_GetDifficulty() ^ (2/3)
+			missionData.progress = 0
+			missionData.duration = 60*7.5 * diffMult
 		end,
 		
 		getObjectives = function(missionData)
@@ -49,8 +53,7 @@
 					{ type = "prep", progress = 60 - math.floor(time), style = 1, completed = true },
 				}
 			else
-				local diffMult = jcms.runprogress_GetDifficulty() ^ (2/3)
-				local progress = math.floor( (time - 60) / (60*7.5 * diffMult) * 100 )
+				local progress = math.floor( missionData.progress / missionData.duration * 100 )
 
 				if progress < 100 then
 					return {
@@ -106,6 +109,7 @@
 
 		think = function(director)
 			director.totalWar = true
+			local missionData = director.missionData
 			
 			if not director.swarmNext or director.swarmNext < 60 then
 				director.swarmNext = 60
@@ -119,6 +123,14 @@
 			for i, npc in ipairs(director.npcs) do
 				if math.random() < 0.25 then
 					jcms.npc_GetRowdy(npc)
+				end
+			end
+
+			if jcms.director_GetMissionTime() > 60 then
+				missionData.progress = missionData.progress + 1
+
+				if jcms.director_GetMissionTime() > 120 and #director.npcs < 15 then
+					missionData.progress = missionData.progress + (missionData.duration / (60 * 7.5))
 				end
 			end
 		end
