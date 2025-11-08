@@ -81,11 +81,9 @@ function class.SetupMove(ply, mv, cmd)
 			vel:Add( jump )
 			mv:SetVelocity(vel)
 
-			if CLIENT and IsFirstTimePredicted() then
-				sound.Play("weapons/grenade_launcher1.wav", ply:GetPos(), 70, 88, 1)
-			end
-
 			if SERVER then
+				sound.Play("weapons/grenade_launcher1.wav", ply:GetPos(), 70, 88, 1)
+				
 				-- Damage
 				local tr = util.TraceEntity({ 
 					start = ply:GetPos(), 

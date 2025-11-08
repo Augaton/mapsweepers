@@ -3024,6 +3024,7 @@ end
 			timer.Simple(9.55, function()		--POST / Ear-Ring
 				for i, ply in player.Iterator() do
 					ply:SetDSP(35)
+					ply:ViewPunch( Angle(-3.5,math.Rand(0,0.1),math.Rand(0,0.1)) )
 				end
 				game.GetWorld():StopSound( "ambient/explosions/explode_1.wav" ) --we don't want the rumble after
 				EmitSound( "ambient/explosions/citadel_end_explosion1.wav", Vector(0,0,0),0, CHAN_AUTO, 1, 0, 0, 100, 0, filter )

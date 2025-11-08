@@ -49,7 +49,7 @@ function EFFECT:Init( data )
 		self.nukeEffect = CreateParticleSystem( self, "explosion_huge", PATTACH_ABSORIGIN_FOLLOW)
 		
 		self.t = 0
-		self.tout = 0.1
+		self.tout = 0.25
 
 		return
 	end
@@ -199,10 +199,6 @@ function EFFECT:Think()
 end
 
 function EFFECT:Render()
-	if self.nukeEffect then
-		return
-	end
-
 	local f = self.t / self.tout
 	
 	if self.blasttype == 3 then
@@ -302,6 +298,15 @@ function EFFECT:Render()
 				render.EndBeam()
 			end
 		end
+	elseif self.blasttype == 6 then
+		local blastCol = Color(175, 255, 175, 200 * (1-f)^2)
+		render.SetColorMaterial()
+		render.DrawSphere( self.pos, 4500 * f^1.5, 12, 12, blastCol)
+		render.DrawSphere( self.pos, -4500 * f^1.5, 12, 12, blastCol )
+
+		local ringCol = Color(150, 255, 150, 200 * (1-f)^2)
+		render.SetMaterial(self.mat_ring1)
+		render.DrawQuadEasy(self.pos, jcms.vectorUp, 6500*f*4, 6500*f*4, ringCol)
 	else
 		local f_flash = 1 - 0.1 / (0.1 + f)
 		local a_flash = math.max(0, 1-f*4)

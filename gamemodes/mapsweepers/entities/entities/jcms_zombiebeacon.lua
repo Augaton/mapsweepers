@@ -195,7 +195,6 @@ if SERVER then
 
 		timer.Simple(5, function()
 			if IsValid(self) then
-
 				if self.deathAlert then
 					self.deathAlert:Stop()
 				end
@@ -216,9 +215,12 @@ if SERVER then
 				ed:SetFlags(1)
 				util.Effect("jcms_blast", ed)
 
-				util.ScreenShake(self:WorldSpaceCenter(), 50, 50, 10, 6000, true)
-				self:EmitSound("ambient/explosions/explode_6.wav", 140, 110, 1, CHAN_AUTO)
-				self:EmitSound("ambient/explosions/explode_2.wav", 100, 140, 1, CHAN_AUTO)
+				local filter = RecipientFilter()
+				filter:AddAllPlayers()
+
+				util.ScreenShake(self:WorldSpaceCenter(), 50, 50, 10, 6000, true, filter)
+				self:EmitSound("ambient/explosions/explode_6.wav", 140, 110, 1, CHAN_AUTO, 0, 1, filter)
+				self:EmitSound("ambient/explosions/explode_2.wav", 100, 140, 1, CHAN_AUTO, 0, 1, filter)
 
 				if not jcms.util_IsPVP() then --We have a different incentive in PVP and keeping the radiation could get aids.
 					local radSphere = ents.Create("jcms_radsphere")
