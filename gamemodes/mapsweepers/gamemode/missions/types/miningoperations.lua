@@ -200,7 +200,7 @@ jcms.missions.miningoperations = {
 
 		for i, ref in ipairs(missionData.refineries_secondary) do
 			if IsValid(ref) then
-				tags[ref] = { name = "#jcms.refinery_secondary", moving = false, active = not missionData.evacuating }
+				tags[ref] = { name = "#jcms.refinery_secondary", moving = false, active = not missionData.evacuating, locatorIgnore = true }
 			end
 		end
 	end,

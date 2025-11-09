@@ -247,6 +247,7 @@
 						alwaysVisible = missionData.phase == 2,
 						moving = false, 
 						active = tagsActive, 
+						locatorIgnore = true,
 						type = pillar:GetIsDisrupted() and jcms.LOCATOR_WARNING or jcms.LOCATOR_GENERIC
 					}
 				end

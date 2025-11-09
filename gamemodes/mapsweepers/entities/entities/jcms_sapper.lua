@@ -134,7 +134,7 @@ if SERVER then
 						local closestZDiff = math.huge
 						
 						for ent, tagInfo in pairs(tagEnts) do 
-							if tagInfo.active then 
+							if tagInfo.active and not tagInfo.locatorIgnore then 
 								local entPos = ent:GetPos()
 								local dist = entPos:Distance(selfPos)
 								if dist < closestDist then 
