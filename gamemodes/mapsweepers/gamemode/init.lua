@@ -3004,8 +3004,9 @@ end
 			timer.Simple(6.5, function()		--VFX
 				jcms.net_SendNuke(pos)
 			end)
-
 			timer.Simple(9.5, function()		--BLAST
+				if jcms.director_GetMissionTime() < 10 then return end --Hacky workaround to prevent us from leaking into the next mission
+
 				EmitSound( "ambient/explosions/explode_1.wav", Vector(0,0,0),0, CHAN_AUTO, 1, 0, 0, 100, 0, filter )
 
 				local ed = EffectData()
@@ -3022,6 +3023,8 @@ end
 				util.BlastDamage(world, world, pos + jcms.vectorUp, 1500, 100)
 			end)
 			timer.Simple(9.55, function()		--POST / Ear-Ring
+				if jcms.director_GetMissionTime() < 10 then return end --Hacky workaround to prevent us from leaking into the next mission
+
 				for i, ply in player.Iterator() do
 					ply:SetDSP(35)
 					ply:ViewPunch( Angle(-3.5,math.Rand(0,0.1),math.Rand(0,0.1)) )

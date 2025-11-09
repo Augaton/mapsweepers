@@ -109,7 +109,7 @@ if SERVER then
 		end
 
 		local inflictor, attacker = dmg:GetInflictor(), dmg:GetAttacker()
-		if IsValid(inflictor) and jcms.util_IsStunstick(inflictor) and jcms.team_JCorp(attacker) then
+		if IsValid(inflictor) and jcms.util_IsStunstick(inflictor) and jcms.team_JCorp(attacker) and jcms.team_pvpSameTeam(self, attacker) then
 			jcms.util_PerformRepairs(self, attacker, 25)
 
 			if self:Health() >= self:GetMaxHealth() then
@@ -125,7 +125,7 @@ if SERVER then
 		end
 
 
-		if jcms.team_JCorp(attacker) then
+		if jcms.team_JCorp(attacker) and jcms.team_pvpSameTeam(self, attacker) then
 			dmg:SetDamage( dmg:GetDamage() * 0.5 * jcms.cvar_ffmul:GetFloat() )
 		end
 
