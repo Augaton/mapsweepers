@@ -43,7 +43,7 @@ jcms.missions.miningoperations = {
 		if pvpMode then
 			refineries_main[1]:SetNWInt("jcms_pvpTeam", 1)
 
-			refineries_main[2]:SetColor(Color(241, 212, 14))
+			refineries_main[2]:SetMaterial("models/jcms/mafia_orerefinery")
 			refineries_main[2]:SetNWInt("jcms_pvpTeam", 2)
 
 			local function onRefineMain(ref, ore, miner, bringer, obtain)

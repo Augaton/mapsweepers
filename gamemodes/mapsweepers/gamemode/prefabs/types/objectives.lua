@@ -247,9 +247,9 @@ local prefabs = jcms.prefabs
 
 		stamp = function(area, data)
 			local ref = ents.Create("jcms_refinery")
-			data.pos = data.pos + data.normal * 24
-			data.pos.z = data.pos.z - 24
-			ref:SetIsOreRefinery(true)
+			data.pos = data.pos + data.normal * 32
+			data.pos.z = data.pos.z - 44
+			ref:SetIsSecondary(true)
 			ref:SetPos(data.pos)
 			ref:SetAngles(data.normal:Angle())
 			ref:Spawn()

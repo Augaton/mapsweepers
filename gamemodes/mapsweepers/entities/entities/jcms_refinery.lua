@@ -29,25 +29,62 @@ ENT.Spawnable = false
 ENT.RenderGroup = RENDERGROUP_OPAQUE
 
 function ENT:SetupDataTables()
-	self:NetworkVar("Bool", 0, "IsOreRefinery")
+	self:NetworkVar("Bool", 0, "IsSecondary")
 	self:NetworkVar("Int", 0, "ValueInside")
 	self:NetworkVar("Int", 1, "TimesGround")
 end
 
 if SERVER then
 	function ENT:Initialize()
-		self:SetModel("models/props_lab/scrapyarddumpster_static.mdl")
+		self:SetModel("models/jcms/jcorp_orerefinery.mdl")
 
-		if self:GetIsOreRefinery() then --Secondary Refinery
-			self:SetModel("models/props_junk/trashdumpster01a.mdl")
+		if self:GetIsSecondary() then
+			self:SetModel("models/jcms/jcorp_orerefinerymini.mdl")
 		end
+
         self:PhysicsInitStatic(SOLID_VPHYSICS)
+	end
+
+	function ENT:IsDamagingVector(v)
+		local radius = 32
+		local selfPos = self:GetPos()
+		--debugoverlay.Sphere(Vector(selfPos.x, selfPos.y, selfPos.z+30), radius, 1, Color(255,0,0), false)
+		return (v.z > selfPos.z + 30) and (math.DistanceSqr(v.x, v.y, selfPos.x, selfPos.y) <= radius*radius)
+	end
+
+	function ENT:StartTouch(ent)
+		if IsValid(ent) and ( ent:IsPlayer() or ent:IsNPC() ) then
+			if (ent.jcms_oreMass or ent.jcms_oreValue) then return end
+			local entPos = ent:GetPos()
+			
+			if self:IsDamagingVector(entPos) then
+				self:EmitSound("NPC_Manhack.Slice")
+				ent:SetVelocity( Vector(math.random(-100, 100), math.random(-100, 100), 350) )
+
+				local dmginfo = DamageInfo()
+				dmginfo:SetDamage(10)
+				dmginfo:SetDamageType(DMG_SLASH)
+				dmginfo:SetDamageForce(jcms.vectorUp)
+				dmginfo:SetInflictor(self)
+				dmginfo:SetDamagePosition(entPos)
+				dmginfo:SetReportedPosition(entPos)
+				dmginfo:SetAttacker(self)
+				ent:TakeDamageInfo(dmginfo)
+			end
+		end
 	end
 
 	function ENT:PhysicsCollide(colData, collider)
 		local ent = colData.HitEntity
+
+		local selfPos = self:GetPos()
+		if not self:IsDamagingVector(colData.HitPos) then
+			return
+		end
+		
 		local mass = tonumber(ent.jcms_oreMass) or 0
 		local value = tonumber(ent.jcms_oreValue) or 1
+
 		if mass and mass*value > 0 then
 			local obtained = math.max(0, ent:GetWorth())
 			self:SetValueInside( self:GetValueInside() + obtained )
@@ -83,6 +120,29 @@ if SERVER then
 			end
 
 			self:SetTimesGround(self:GetTimesGround() + 1)
+		else
+			self:EmitSound("NPC_Manhack.Grind")
+			local invNormal = -colData.HitNormal
+
+			local ed = EffectData()
+			ed:SetOrigin(colData.HitPos)
+			ed:SetMagnitude(1)
+			ed:SetScale(2)
+			ed:SetRadius(4)
+			ed:SetNormal(invNormal)
+			util.Effect("Sparks", ed)
+
+			local dmginfo = DamageInfo()
+			dmginfo:SetDamage(10)
+			dmginfo:SetDamageType(DMG_SLASH)
+			dmginfo:SetDamageForce(invNormal)
+			dmginfo:SetInflictor(self)
+			dmginfo:SetDamagePosition(colData.HitPos)
+			dmginfo:SetReportedPosition(colData.HitPos)
+			dmginfo:SetAttacker(self)
+			ent:TakeDamageInfo(dmginfo)
+
+			colData.HitObject:AddVelocity(invNormal*100)
 		end
 	end
 
@@ -107,7 +167,7 @@ if CLIENT then
 
 		if dist2 <= 1000000 then
 			if not self.sfxGrind then
-				if self:GetIsOreRefinery() then
+				if self:GetIsSecondary() then
 					self.sfxGrind = CreateSound(self, "vehicles/crane/crane_idle_loop3.wav")
 				else
 					self.sfxGrind = CreateSound(self, "vehicles/digger_grinder_loop1.wav")
@@ -129,9 +189,20 @@ if CLIENT then
 			end
 
 			local pitch = 80 + self.grindFactor*40
-			local vol = math.Clamp(math.Remap(dist2, 1000000, 10000, 0, 1), 0, self:GetIsOreRefinery() and 1 or (0.5+self.grindFactor*0.5))
+			local vol = math.Clamp(math.Remap(dist2, 1000000, 10000, 0, 1), 0, self:GetIsSecondary() and 1 or (0.5+self.grindFactor*0.5))
 			self.sfxGrind:ChangePitch(pitch, 0.1)
 			self.sfxGrind:ChangeVolume(vol, 0.1)
+
+			self.grindAnim = ((self.grindAnim or 0) + FrameTime() * (50 + self.grindFactor*200)) % (math.pi*2)
+			local grindAnimSin = math.sin(self.grindAnim)
+			local grindAnimCos = math.cos(self.grindAnim)
+
+			local shakeVector = VectorRand(-1, 1)
+			shakeVector:Mul(0.06 + self.grindFactor*0.28)
+
+			self:ManipulateBonePosition(0, shakeVector)
+			self:ManipulateBonePosition(1, Vector(0, -grindAnimSin*2-self.grindFactor, 0))
+			self:ManipulateBonePosition(2, Vector(0, grindAnimCos*2+self.grindFactor, 0))
 		else
 			if self.sfxGrind then
 				self.sfxGrind:Stop()
