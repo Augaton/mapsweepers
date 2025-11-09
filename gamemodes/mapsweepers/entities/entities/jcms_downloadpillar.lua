@@ -303,7 +303,7 @@ if CLIENT then
 			end
 		else
 			local v2 = Vector(v)
-			v2.z = math.min(26681, jcms.EyePos_lowAccuracy.z + 24000)
+			v2.z = math.min(20681, jcms.EyePos_lowAccuracy.z + 20000)
 
 			local distToEyes = util.DistanceToLine(v, v2, EyePos())
 			local wmul = math.max(1, distToEyes/750)

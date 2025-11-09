@@ -34,7 +34,7 @@
 				missionData.powerMultiplier = 0
 			-- }}}
 
-			-- The computer {{{
+			-- Finding preliminary area for the computer {{{
 				-- // Area Weights {{{
 					local weightedAreas = {}
 					for i, area in ipairs(jcms.mapgen_MainZone()) do --Prioritise outdoor areas, ignore too small ones.
@@ -49,54 +49,6 @@
 
 				local computerArea = jcms.util_ChooseByWeight(weightedAreas)
 				assert(computerArea, "Can't place down the main computer. This map sucks, find a better one")
-				local _, computer = jcms.prefab_TryStamp("datadownload_computer", computerArea)
-
-				computer:SetNWBool("jcms_terminal_locked", false)
-				jcms.terminal_ToPurpose(computer)
-
-				computer.jcms_datadownload_cost = 500
-				
-				function computer:jcms_terminal_Callback(cmd, data, ply)
-					if tonumber(data) and not missionData.defenseOngoing and not missionData.defenseCompleted then
-						missionData.defenseOngoing = true
-
-						if missionData.defenseAttempts == 0 then
-							missionData.defenseProgress = 0
-						end
-						
-						missionData.defenseAttempts = missionData.defenseAttempts + 1
-
-						for i, pillar in ipairs(missionData.pillars) do
-							pillar:SetIsDisrupted(false)
-							pillar:SetHealth( pillar:GetMaxHealth() )
-							pillar:SetHealthFraction(1)
-						end
-
-						self:EmitSound("ambient/alarms/klaxon1.wav", 150, 108, 1)
-						util.ScreenShake(self:GetPos(), 3, 50, 1, 2048, true)
-
-						if self.soundDownload then
-							self.soundDownload:Stop()
-							self.soundDownload = nil
-						end
-
-						self.soundDownload = CreateSound(self, "ambient/alarms/combine_bank_alarm_loop1.wav")
-						self.soundDownload:PlayEx(1, 107)
-
-						if self.soundHum then
-							self.soundHum:Stop()
-							self.soundHum = nil
-						end
-
-						computer.soundHum = CreateSound(computer, "ambient/machines/combine_terminal_loop1.wav")
-						computer.soundHum:PlayEx(1, 107)
-
-						jcms.net_SendTip("all", true, "#jcms.datadownload_started", tonumber(missionData.defenseProgress) or 0)
-						return true, "upload"
-					end
-				end
-
-				missionData.computer = computer
 			-- }}}
 
 			-- // The Pillars {{{
@@ -150,6 +102,108 @@
 						table.insert(pillarPositions, chosenArea:GetCenter()) 
 					end
 				-- // }}}
+
+			-- // }}}
+
+			-- // Actually placing down the computer and finalizing things {{{
+
+				-- Weighing final areas {{{
+					-- Reusing weightedAreas here for the final weights.
+					local pillarAveragePos = Vector(0,0,0)
+					local pillarDistFromAverageMin, pillarDistFromAverageMax = math.huge, 0 
+					for i, v in ipairs(pillarPositions) do
+						local x, y, z = pillarAveragePos:Unpack()
+						pillarAveragePos:SetUnpacked( x + v.x/pillarCount, y + v.y/pillarCount, z + v.z/pillarCount )
+					end
+					for i, v in ipairs(pillarPositions) do
+						local dist = v:Distance(pillarAveragePos)
+						pillarDistFromAverageMin = math.min(dist, pillarDistFromAverageMin)
+						pillarDistFromAverageMax = math.max(dist, pillarDistFromAverageMax)
+					end
+					for area, oldWeight in pairs(weightedAreas) do
+						if oldWeight <= 0 then 
+							weightedAreas[area] = nil
+							continue
+						end
+
+						local areaCenter = area:GetCenter()
+						if areaCenter:DistToSqr(pillarAveragePos) >= (pillarDistFromAverageMax + 100)^2 then
+							weightedAreas[area] = math.min(oldWeight/2, 0.1)
+						else
+							local closestDist
+							for i, v in ipairs(pillarPositions) do
+								local dist = v:Distance(areaCenter)
+								if not closestDist or dist < closestDist then
+									closestDist = dist
+								end
+							end
+
+							if closestDist <= pillarDistFromAverageMin then
+								weightedAreas[area] = oldWeight/4
+							elseif closestDist >= pillarDistFromAverageMax then
+								weightedAreas[area] = oldWeight/8
+							else
+								local distanceFraction = (closestDist - pillarDistFromAverageMin)/(pillarDistFromAverageMax - pillarDistFromAverageMin)
+								local parabolic = math.max(0, -4*distanceFraction^2 + 4*distanceFraction)
+								weightedAreas[area] = oldWeight*0.8 + 2 + parabolic*20
+							end
+						end
+					end
+				-- }}}
+
+				STORED_WEIGHED_AREAS = weightedAreas
+				local finalComputerArea = jcms.util_ChooseByWeight(weightedAreas) or computerArea
+				if finalComputerArea == computerArea then
+					jcms.printf("Data Download computerArea (preliminary) equals to finalComputerArea!")
+				end
+				local _, computer = jcms.prefab_TryStamp("datadownload_computer", finalComputerArea)
+
+				computer:SetNWBool("jcms_terminal_locked", false)
+				jcms.terminal_ToPurpose(computer)
+
+				computer.jcms_datadownload_cost = 500
+				
+				function computer:jcms_terminal_Callback(cmd, data, ply)
+					if tonumber(data) and not missionData.defenseOngoing and not missionData.defenseCompleted then
+						missionData.defenseOngoing = true
+
+						if missionData.defenseAttempts == 0 then
+							missionData.defenseProgress = 0
+						end
+						
+						missionData.defenseAttempts = missionData.defenseAttempts + 1
+
+						for i, pillar in ipairs(missionData.pillars) do
+							pillar:SetIsDisrupted(false)
+							pillar:SetHealth( pillar:GetMaxHealth() )
+							pillar:SetHealthFraction(1)
+						end
+
+						self:EmitSound("ambient/alarms/klaxon1.wav", 150, 108, 1)
+						util.ScreenShake(self:GetPos(), 3, 50, 1, 2048, true)
+
+						if self.soundDownload then
+							self.soundDownload:Stop()
+							self.soundDownload = nil
+						end
+
+						self.soundDownload = CreateSound(self, "ambient/alarms/combine_bank_alarm_loop1.wav")
+						self.soundDownload:PlayEx(1, 107)
+
+						if self.soundHum then
+							self.soundHum:Stop()
+							self.soundHum = nil
+						end
+
+						computer.soundHum = CreateSound(computer, "ambient/machines/combine_terminal_loop1.wav")
+						computer.soundHum:PlayEx(1, 107)
+
+						jcms.net_SendTip("all", true, "#jcms.datadownload_started", tonumber(missionData.defenseProgress) or 0)
+						return true, "upload"
+					end
+				end
+
+				missionData.computer = computer
 
 				missionData.pillars = pillars
 				computer.pillars = pillars
@@ -401,9 +455,10 @@
 			local weightMul
 
 			if phase == 1 then
-				-- More snipers during prep.
+				-- More cops and hunters.
 				weightMul = ({
-					["combine_sniper"] = 2.5
+					["combine_metrocop"] = 1.5,
+					["combine_hunter"] = 1.75
 				})[npcType]
 			elseif phase == 2 then
 				-- More hunters, less BS enemies during the defense
@@ -413,12 +468,6 @@
 					["combine_suppressor"] = 0.5,
 					["combine_sniper"] = 0.75,
 					["combine_gunship"] = 0.5 --This isn't going to do anything because boss-spawns are guaranteed and combine only have one type - J
-				})[npcType]
-			else
-				-- More cops and hunters.
-				weightMul = ({
-					["combine_metrocop"] = 1.5,
-					["combine_hunter"] = 1.75
 				})[npcType]
 			end
 

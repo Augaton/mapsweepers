@@ -1062,6 +1062,24 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		end
 	end
 
+	function jcms.mapgen_DemonstrateWeighedList(list)
+		if type(list) == "table" then
+			timer.Simple(0.5, function()
+				local u = Vector(0, 0, 4)
+				local maxWeight = 0
+				for area, weight in pairs(list) do
+					maxWeight = math.max(maxWeight, weight)
+				end
+
+				for area, weight in pairs(list) do
+					local col = HSVToColor(weight/maxWeight*360, 1, weight>maxWeight/2 and 1 or 0.5)
+					debugoverlay.Triangle(area:GetCorner(2)+u, area:GetCorner(1)+u, area:GetCorner(0)+u, 3, col)
+					debugoverlay.Triangle(area:GetCorner(2)+u, area:GetCorner(0)+u, area:GetCorner(3)+u, 3, col)
+				end
+			end)
+		end
+	end
+
 	function jcms.mapgen_DemonstrateNavmeshDepths()
 		timer.Simple(0.5, function()
 			local u = Vector(0, 0, 4)
