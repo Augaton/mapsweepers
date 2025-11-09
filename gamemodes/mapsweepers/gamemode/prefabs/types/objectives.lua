@@ -274,36 +274,6 @@ local prefabs = jcms.prefabs
 -- // }}}
 
 -- // Data Download {{{
-	prefabs.datadownload_passwordclue = {
-		check = function(area)
-			if not jcms.mapgen_ValidArea(area) then return false end
-			local wallspots, normals = jcms.prefab_GetWallSpotsFromArea(area, 48, 128)
-			
-			if #wallspots > 0 then
-				local rng = math.random(#wallspots)
-				return true, { pos = wallspots[rng], normal = normals[rng] }
-			else
-				return false
-			end
-		end,
-
-		stamp = function(area, data)
-			local ent = ents.Create("jcms_terminal")
-			if not IsValid(ent) then return end
-
-			local v = Vector(data.pos)
-			v:Add(data.normal*24)
-			v.z = v.z - 48
-			ent:SetPos(v)
-			ent:SetAngles(data.normal:Angle())
-
-			ent:Spawn()
-			ent:InitAsTerminal("models/props_combine/combine_interface001.mdl", "passwordclue")
-			ent:SetSkin(1)
-			return ent
-		end
-	}
-
 	prefabs.datadownload_computer = {
 		check = function(area) --Handled by mission gen
 			return true
@@ -358,14 +328,8 @@ local prefabs = jcms.prefabs
 			local pos = area:GetCenter()
 
 			local pillar = ents.Create("jcms_downloadpillar")
-
-			local ang = pillar:GetAngles()
-			ang:RotateAroundAxis(ang:Forward(), 180)
-			pillar:SetAngles(ang + AngleRand(-10,10))
-
-			pos = pos - ang:Up() * 140
-			pillar:SetPos(pos)
-
+			pillar:SetPos(area:GetCenter())
+			pillar:SetAngles(Angle(0, math.random(8)*45, 0))
 			pillar:Spawn()
 
 			return pillar 

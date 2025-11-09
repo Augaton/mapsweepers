@@ -1068,6 +1068,13 @@ if CLIENT then
 
 				local formatted = net.ReadBool()
 				local name = net.ReadString()
+				local useBiggerFont = false
+
+				if name:sub(1, 1) == "^" then
+					name = name:sub(2, -1)
+					useBiggerFont = true
+				end
+
 				if formatted then
 					name = language.GetPhrase(name):format( language.GetPhrase(net.ReadString()) )
 				end
@@ -1093,6 +1100,10 @@ if CLIENT then
 				end
 
 				local loc = jcms.hud_AddLocator(id, name, at, locatorType, timeout, landmarkIcon)
+
+				if useBiggerFont then
+					loc.biggerFont = true
+				end
 
 				local hasPlayerWritten = net.ReadBool()
 				if hasPlayerWritten then

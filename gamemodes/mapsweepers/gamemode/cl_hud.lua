@@ -279,8 +279,8 @@
 				return wep:GetSpread() * 5000
 			elseif wep.GetBaseSpread and wep.SpreadRatio then
 				return wep.SpreadRatio * math.deg( wep:GetBaseSpread() ) * 42
-			elseif wep.Primary and wep.Primary.RPM and wep.Primary.Spread then
-				local spread = math.deg(wep.Primary.Spread) * 48
+			elseif wep.Primary and wep.Primary.RPM and (wep.Primary.Spread or wep.Primary.SpreadHip) then
+				local spread = math.deg(wep.Primary.Spread or wep.Primary.SpreadHip) * 48
 				return math.max(8,spread)
 			end
 		end
@@ -1354,7 +1354,7 @@
 							surface.SetDrawColor(clr)
 							surface.DrawTexturedRectRotated(x, y - 12, 24, 24, 0)
 						else
-							draw.SimpleTextOutlined(loc.name, "TargetID", x, y - 2, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, jcms.color_dark)
+							draw.SimpleTextOutlined(loc.name, loc.biggerFont and "jcms_medium" or "TargetID", x, y - 2, clr, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, jcms.color_dark)
 						end
 					end
 

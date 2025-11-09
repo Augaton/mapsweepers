@@ -19,12 +19,37 @@
 	Contact E-Mail: merekidorian@gmail.com
 --]]
 
-local function getGlitchMatrix(div, baseAddition)
-	baseAddition = baseAddition or 0
-	local matrix = Matrix()
-	matrix:Translate(Vector(0,0, baseAddition + (2 + (math.random() < 0.023 and math.random() or 0))/(div or 8)))
-	return matrix
-end
+-- Local stuff {{{
+
+	local function getGlitchMatrix(div, baseAddition)
+		baseAddition = baseAddition or 0
+		local matrix = Matrix()
+		matrix:Translate(Vector(0,0, baseAddition + (2 + (math.random() < 0.023 and math.random() or 0))/(div or 8)))
+		return matrix
+	end
+
+	local random_data = { 
+		'4d', '61', '6e', '20', '73', '74', '61', '6e', '64', '73', '20', '66', '61',
+		'63', '65', '20', '74', '6f', '20', '66', '61', '63', '65', '20', '77', '69',
+		'74', '68', '20', '74', '68', '65', '20', '69', '72', '72', '61', '74', '69',
+		'6f', '6e', '61', '6c', '2e', '20', '48', '65', '20', '66', '65', '65', '6c',
+		'73', '20', '77', '69', '74', '68', '69', '6e', '20', '68', '69', '6d', '20',
+		'68', '69', '73', '20', '6c', '6f', '6e', '67', '69', '6e', '67', '20', '66',
+		'6f', '72', '20', '68', '61', '70', '70', '69', '6e', '65', '73', '73', '20',
+		'61', '6e', '64', '20', '66', '6f', '72', '20', '72', '65', '61', '73', '6f',
+		'6e', '2e', '20', '54', '68', '65', '20', '61', '62', '73', '75', '72', '64',
+		'20', '69', '73', '20', '62', '6f', '72', '6e', '20', '6f', '66', '20', '74',
+		'68', '69', '73', '20', '63', '6f', '6e', '66', '72', '6f', '6e', '74', '61',
+		'74', '69', '6f', '6e', '20', '62', '65', '74', '77', '65', '65', '6e', '20',
+		'74', '68', '65', '20', '68', '75', '6d', '61', '6e', '20', '6e', '65', '65',
+		'64', '20', '61', '6e', '64', '20', '74', '68', '65', '20', '75', '6e', '72',
+		'65', '61', '73', '6f', '6e', '61', '62', '6c', '65', '20', '73', '69', '6c',
+		'65', '6e', '63', '65', '20', '6f', '66', '20', '74', '68', '65', '20', '77',
+		'6f', '72', '6c', '64', '2e', '20'
+	}
+
+-- }}}
+
 
 jcms.terminal_themes = {
 	jcorp = { Color(64, 0, 0, 200), Color(230, 0, 0), Color(31, 114, 147) },
@@ -735,243 +760,125 @@ jcms.terminal_modeTypes = {
 		end
 	end,
 
-	passwordclue = function(ent, mx, my, w, h, modedata)
-		local color_bg, color_fg, color_accent = jcms.terminal_GetColors(ent)
-
-		local str1 = [=[SHOW PASSWORD]=]
-		local str2 = [=[MAIN COMPUTER PROTECTION: OK]=]
-		local str3 = [=[PASSWORD ACTIVE]=]
-		local str4 = [=[INTRUDER DETECTED]=]
-		local str5 = [=[PASSWORD COMPROMISED]=]
-
-		local bId
-		local width = math.floor(w/7)
-		
-		surface.SetDrawColor(color_bg)
-		for i=1, 6 do
-			local sym = modedata:sub(i, i)
-			if tonumber(sym) then
-				surface.DrawRect(math.Remap(i, 1, 6, 0, w-width), h/2+24, width, 24)
-				draw.SimpleText(sym, "jcms_hud_big", math.Remap(i, 1, 6, 0, w-width)+width/2, h/2 + 48, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
-			else
-				surface.DrawOutlinedRect(math.Remap(i, 1, 6, 0, w-width), h/2, width, 48, 4)
-			end
-		end
-
-		if modedata == "" then
-			draw.SimpleText(str2, "jcms_hud_small", w/2, 48, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-			draw.SimpleText(str3, "jcms_hud_medium", w/2, 76, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-			
-			local bx, by, bw, bh = w/8, h/2 + 64, w*3/4, 48
-			if mx >= bx and my >= by and mx <= bx+bw and my <= by+bh then
-				bId = 0
-			end
-
-			surface.SetDrawColor(color_bg)
-			if bId == 0 then
-				surface.DrawRect(bx, by, bw, bh)
-			else
-				surface.DrawOutlinedRect(bx, by, bw, bh, 4)
-			end
-
-			cam.PushModelMatrix(getGlitchMatrix(), true)
-			render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
-			draw.SimpleText(str3, "jcms_hud_medium", w/2, 76, color_accent, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-			draw.SimpleText(str1, "jcms_hud_small", bx+bw/2, by+bh/2, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-			draw.SimpleText(str2, "jcms_hud_small", w/2, 48, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-		else
-			draw.SimpleText(str4, "jcms_hud_medium", w/2, 76, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-			draw.SimpleText(str5, "jcms_hud_small", w/2, h/2+64, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-			cam.PushModelMatrix(getGlitchMatrix(), true)
-			render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
-			draw.SimpleText(str4, "jcms_hud_medium", w/2, 76, CurTime()%0.5<0.25 and color_fg or color_accent, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-			draw.SimpleText(str5, "jcms_hud_small", w/2, h/2+64, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-		end
-
-		for i=1, 6 do
-			local sym = modedata:sub(i, i)
-			if tonumber(sym) then
-				draw.SimpleText(sym, "jcms_hud_big", math.Remap(i, 1, 6, 0, w-width)+width/2, h/2 + 48, color_accent, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
-			else
-				draw.SimpleText("?", "jcms_hud_big", math.Remap(i, 1, 6, 0, w-width)+width/2, h/2 + 48, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
-			end
-		end
-
-		render.OverrideBlend(false)
-		cam.PopModelMatrix()
-
-		return bId
-	end,
-
 	datadownloadcomputer = function(ent, mx, my, w, h, modedata)
 		local color_bg, color_fg, color_accent = jcms.terminal_GetColors(ent)
 		local green = Color(48, 255, 64)
 		
-		if modedata == "prep" then
+		if tonumber(modedata) then
+			local initCost = math.ceil(tonumber(modedata))
+			local canAfford = jcms.locPly:GetNWInt("jcms_cash", 0) >= initCost
+
 			local bId
+
+			local str1 = [=[data cross section]=]
+			local str2 = [=[READY FOR UPLOAD]=]
+			local str3a = [=[TARGET:]=]
+			local str3b = [=[J Corp Mothership #523-S]=]
+			local str4a = [=[STATUS:]=]
+			local str5 = [=[Awaiting confirmation]=]
+			local str6 = ([=[ACTIVATION FEE: %s J]=]):format( jcms.util_CashFormat(initCost) )
+
+			surface.SetDrawColor(color_bg)
+			surface.DrawRect(w/2, h/2, w/2, 4)
+			draw.SimpleText(str1, "jcms_hud_small", w/2, h/2, color_bg, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+
+			draw.SimpleText(str2, "jcms_hud_big", w/2, 0, color_bg, TEXT_ALIGN_CENTER)
 			
-			local str1 = [=[PREPARING TO UPLOAD DATA...]=]
-			local str2 = [=[UPLOAD TARGET:]=]
-			local str3 = [=[J CORP MOTHERSHIP #523-S]=]
-			local str4 = [=[AWAITING CONFIRMATION]=]
-			local str5 = [=[TARGET: ]=]
-			local str6 = [=[GROUND: ]=]
-			local str7 = [=[READY]=]
-			local str8 = [=[NOT READY]=]
+			local tw, _ = draw.SimpleText(str3a, "jcms_hud_medium", 0, 96, color_bg)
+			draw.SimpleText(str3b, "jcms_hud_medium", tw + 16, 96, color_bg)
 
-			render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
-				surface.SetDrawColor(color_bg)
-				for i=1, 3 do
-					local padx = math.random()*(i*24)
-					local pady = -padx*0.5
-					cam.PushModelMatrix(getGlitchMatrix(1, -math.random()), true)
-					jcms.hud_DrawNoiseRect(padx, pady, w-padx*2, h-pady*2, w +  i*256)
-					cam.PopModelMatrix()
+			local tw, _ = draw.SimpleText(str4a, "jcms_hud_medium", 0, 164, color_bg)
+			draw.SimpleText(str5, "jcms_hud_medium", tw + 16, 164, color_bg)
+
+			local t = CurTime()*7
+			local symbolId = math.floor( t % #random_data ) + 1
+
+			local bx, by, bw, bh = 0, h/2+32, w/2 - 64, h/3
+			if mx >= bx and my >= by and mx <= bx+bw and my <= by+bh then
+				bId = 0
+			end
+
+			surface.SetAlphaMultiplier(bId==0 and 0.8 or 0.3)
+			surface.SetDrawColor(color_bg)
+			surface.DrawRect(bx, by, bw, bh, 4)
+			surface.SetAlphaMultiplier(1)
+			
+			for row = 1, 3 do
+				for column = 1, 5 do
+					draw.SimpleText(random_data[symbolId] or "?", "jcms_hud_big", w/2 + column*108, h/2 + row*84, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+					symbolId = symbolId + 1
+					if symbolId > #random_data then
+						symbolId = 1
+					end
 				end
-			render.OverrideBlend(false)
-
-			draw.SimpleText(str1, "jcms_hud_small", 24, 64, color_bg)
-			local tw = draw.SimpleText(str2, "jcms_hud_small", 32, 100, color_bg)
-			draw.SimpleText(str3, "jcms_hud_medium", 48 + tw, 100, color_bg)
-			draw.SimpleText(str4, "jcms_hud_medium", 72, 300, color_bg)
-			local tw2 = draw.SimpleText(str5, "jcms_hud_small", 128, 372, color_bg)
-			local tw3 = draw.SimpleText(str6, "jcms_hud_small", 128, 420, color_bg)
-			draw.SimpleText(str7, "jcms_hud_small", 128 + tw2, 372, color_bg)
-			draw.SimpleText(str8, "jcms_hud_small", 128 + tw3, 420, color_bg)
+			end
 
 			cam.PushModelMatrix(getGlitchMatrix(), true)
 				render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
-					surface.DrawOutlinedRect(16, 280, w-128, 300, 2)
-					draw.SimpleText(str1, "jcms_hud_small", 24, 64, color_fg)
-					draw.SimpleText(str2, "jcms_hud_small", 32, 100, color_fg)
-					draw.SimpleText(str3, "jcms_hud_medium", 48 + tw, 100, color_accent)
-					draw.SimpleText(str4, "jcms_hud_medium", 72, 300, color_fg)
-					draw.SimpleText(str5, "jcms_hud_small", 128, 372, color_fg)
-					draw.SimpleText(str6, "jcms_hud_small", 128, 420, color_fg)
-					draw.SimpleText(str7, "jcms_hud_small", 128 + tw2, 372, green)
-					draw.SimpleText(str8, "jcms_hud_small", 128 + tw3, 420, color_accent)
+					draw.SimpleText(str1, "jcms_hud_small", w/2, h/2, color_fg, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+					draw.SimpleText(str2, "jcms_hud_big", w/2, 0, color_fg, TEXT_ALIGN_CENTER)
 
-					local sin = math.abs( math.sin(CurTime()*math.pi*2) )
-					local size = 96
-					local size2 = size + 8 + sin * 8
+					local tw, _ = draw.SimpleText(str3a, "jcms_hud_medium", 0, 96, color_fg)
+					draw.SimpleText(str3b, "jcms_hud_medium", tw + 16, 96, color_bg)
 
-					if math.DistanceSqr(w-300, h-170, mx, my) <= size*size then
-						bId = 0
-						size = size + 8
-						size2 = size2 + 16
-						surface.SetDrawColor(color_fg)
+					local tw, _ = draw.SimpleText(str4a, "jcms_hud_medium", 0, 164, color_fg)
+					draw.SimpleText(str5, "jcms_hud_medium", tw + 16, 164, t%3<1.5 and color_bg or green)
+
+					if not canAfford then
+						surface.SetDrawColor(color_bg)
+						jcms.hud_DrawStripedRect(bx, by, bw, bh, 64)
 					end
 
-					local jText = tostring(500) --TODO: Might want to make this networked later, hardcoded for now.
-					draw.SimpleText(jText, "jcms_hud_small", w - 325, h - 125, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-					surface.SetFont("jcms_hud_small")
-					local tw = surface.GetTextSize(jText)
-					jcms.draw_IconCash("jcms_hud_small", w-325 + tw, h-125, 4)
-
-					draw.SimpleText("#jcms.confirm", "jcms_hud_small", w - 300, h - 170, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-					
-					jcms.draw_Circle(w - 300, h - 170, size, size, bId==0 and 4 or 8 + sin*4, 32)
-					if bId == 0 then
-						surface.SetDrawColor(color_accent)
-					elseif sin > 0.5 then
-						surface.SetDrawColor(color_fg)
-					end
-					jcms.draw_Circle(w - 300, h - 170, size2, size2, 8, 32, 0, bId==0 and math.pi*2 or 2)
+					draw.SimpleText("#jcms.confirm", "jcms_hud_big", bx + bw/2, by + bh/2 - 16, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+					draw.SimpleText(str6, "jcms_hud_small", bx + bw/2, by + bh/2 + 16, canAfford and green or color_accent, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 				render.OverrideBlend(false)
 			cam.PopModelMatrix()
 
 			return bId
 		elseif modedata == "upload" then
 			local str1 = [=[UPLOADING]=]
-			draw.SimpleText(str1, "jcms_hud_superhuge", w/2, h/2, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			draw.SimpleText(str1, "jcms_hud_superhuge", w/2, h/4, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			surface.SetDrawColor(color_bg)
+			surface.DrawRect(32, h/2, w-64, 4)
+			surface.DrawRect(32, h/2 + 4, 6, 64)
+			surface.DrawRect(w-32-6, h/2 + 4, 6, 64)
 
 			render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
 			surface.SetAlphaMultiplier(0.7)
+			
+			local progress = 0
+			local obj = jcms.objectives[1]
+			if obj.n == 100 then
+				progress = obj.progress/obj.n or 0.75
+			end
+
 			for i=1, 4 do
 				cam.PushModelMatrix(getGlitchMatrix(i+2, math.random()), true)
-					draw.SimpleText(str1, "jcms_hud_superhuge", w/2 + math.Rand(-16, 16), h/2 + math.Rand(-16, 16), color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+					draw.SimpleText(str1, "jcms_hud_superhuge", w/2 + math.Rand(-16, 16), h/4 + math.Rand(-16, 16), color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				
+					surface.SetDrawColor(color_fg)
+					surface.DrawRect(32, h/2, w-64, 4)
+					surface.DrawRect(32, h/2 + 4, 6, 64)
+					surface.DrawRect(w-32-6, h/2 + 4, 6, 64)
+
+					surface.SetDrawColor(color_accent)
+					surface.DrawRect(42, h/2+16, (w-84)*progress, 48 - i*8)
 				cam.PopModelMatrix()
 			end
 			surface.SetAlphaMultiplier(1)
 			render.OverrideBlend(false)
-		else
-			local str1 = [=[UNIVERSAL UNION INTERDIMENSIONAL]=]
-			local str2 = [=[COMMUNICATIONS ACCESS COMPUTER]=]
-			local str3 = [=[INPUT MASTER PASSWORD]=]
-
-			cam.PushModelMatrix(getGlitchMatrix(1, -math.random()), true)
-				draw.SimpleText(str1, "jcms_hud_small", w/2, 64, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
-				draw.SimpleText(str2, "jcms_hud_medium", w/2, 64, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-				draw.SimpleText(str3, "jcms_hud_big", w/2, 164, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-			cam.PopModelMatrix()
+		elseif modedata == "done" then
+			local str1 = [=[TRANSFER COMPLETE]=]
+			draw.SimpleText(str1, "jcms_hud_superhuge", w/2, h/4, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
 			render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
-				surface.SetDrawColor(color_bg)
-				for i=1, 3 do
-					local padx = math.random()*(i*24)
-					local pady = -padx*0.5
-					cam.PushModelMatrix(getGlitchMatrix(1, -math.random()), true)
-					jcms.hud_DrawNoiseRect(padx, pady, w-padx*2, h-pady*2, w +  i*256)
-					cam.PopModelMatrix()
-				end
-
-				surface.DrawRect(32, 142, w-64, 4)
-
 				cam.PushModelMatrix(getGlitchMatrix(), true)
-					draw.SimpleText(str1, "jcms_hud_small", w/2, 64, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
-					draw.SimpleText(str2, "jcms_hud_medium", w/2, 64, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-					draw.SimpleText(str3, "jcms_hud_big", w/2, 164, color_accent, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+					surface.SetAlphaMultiplier( (math.sin(CurTime()*3) + 1)/2 )
+					draw.SimpleText(str1, "jcms_hud_superhuge", w/2, h/4, green, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+					surface.SetAlphaMultiplier(1)
 				cam.PopModelMatrix()
 			render.OverrideBlend(false)
-				
-				local currentIndex = #modedata + 1
-				
-				local bw = w/9
-				for i=1, 6 do
-					local sym = modedata:sub(i, i)
-					local bx = math.Remap(i, 0, 7, 0, w-bw)
-					surface.DrawOutlinedRect(bx, 280, bw, 128, 6)
-
-					render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
-					if currentIndex == i and CurTime()%0.5<0.25 then
-						surface.SetDrawColor(color_accent)
-						surface.DrawRect(bx + 16, 280 + 128 - 6, bw - 32, 12)
-						surface.SetDrawColor(color_bg)
-					end
-
-					if sym then
-						draw.SimpleText(sym, "jcms_hud_big", bx + bw/2, 280 + 64, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-					end
-					render.OverrideBlend(false)
-				end
-
-				local bw = 64
-				local by = 280 + 128 + 16
-				local bId
-				for i=0, 9 do
-					local bx = math.Remap(i, 0, 9, w/2-bw*5, w/2+bw*5)-bw/2
-					local hov = bId == nil and (mx >= bx and my>= by and mx <= bx+bw and my <= by+bw)
-					
-					if hov then
-						render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
-						surface.SetDrawColor(color_fg)
-						surface.DrawRect(bx, by + 5, bw, bw)
-						draw.SimpleText(i, "jcms_hud_medium", bx + bw/2, by + bw/2 + 7, color_accent, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-						bId = i
-						render.OverrideBlend(false)
-					else
-						surface.SetAlphaMultiplier(0.5)
-						surface.SetDrawColor(color_bg)
-						surface.DrawRect(bx, by, bw, bw)
-						surface.SetAlphaMultiplier(1)
-						render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
-						draw.SimpleText(i, "jcms_hud_medium", bx + bw/2, by + bw/2, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-						render.OverrideBlend(false)
-					end
-				end
-			render.OverrideBlend(false)
-
-			return bId
 		end
 	end,
 	

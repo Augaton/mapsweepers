@@ -36,8 +36,9 @@ function ENT:SetupDataTables()
 end
 
 function ENT:Initialize()
+	self:SetModel("models/jcms/jcorp_downloadpillar.mdl")
+
 	if SERVER then
-		self:SetModel("models/props_combine/combine_mortar01a.mdl")
 		self:PhysicsInitStatic(SOLID_VPHYSICS)
 		
 		self:SetMaxHealth(500)
@@ -67,8 +68,15 @@ function ENT:Initialize()
 	end
 
 	if CLIENT then
-		self.beamShape = {}
-		self.nextBeamShape = 0
+		local mins, maxs = self:GetRenderBounds()
+		local skyPos = jcms.util_GetSky(self:GetPos())
+
+		if skyPos then
+			maxs.z = math.max(skyPos.z, maxs.z + 32)
+		else
+			maxs.z = maxs.z + 1024
+		end
+		self:SetRenderBounds(mins, maxs)
 	end
 end
 
@@ -107,6 +115,8 @@ if SERVER then
 			if self:Health() >= self:GetMaxHealth() then
 				self.nextHealthThreshold = 0.5
 				self.nextDamageAllowed = CurTime() + 3
+
+				local wasDisrupted = self:GetIsDisrupted()
 				self:SetIsDisrupted(false)
 			end
 
@@ -135,6 +145,16 @@ if SERVER then
 			self:SetHealthFraction( self:Health() / self:GetMaxHealth() )
 			
 			if newHealth == 0 then
+				if not self:GetIsDisrupted() then
+					self:EmitSound("ambient/energy/newspark10.wav")
+					local ed = EffectData()
+					ed:SetEntity(self)
+					ed:SetMagnitude(20)
+					ed:SetScale(1)
+					util.Effect("TeslaHitBoxes", ed)
+				end
+				
+
 				self:SetIsDisrupted(true)
 			end
 		else
@@ -144,46 +164,98 @@ if SERVER then
 end
 
 if CLIENT then
-	ENT.mat_beam = Material("trails/laser")
-	ENT.mat_glow = Material("particle/fire")
+	ENT.mat_elec = Material("models/alyx_intro/emptool_glow")
 	ENT.mat_lamp = Material("effects/lamp_beam.vmt")
+	ENT.mat_cloud = CreateMaterial("jcms_downloadpillar_cloud___", "UnlitGeneric", {
+		["$basetexture"] = "models/props_combine/cit_cloud003",
+		["$nofog"] = 1,
+		["$additive"] = 1
+	})
 
 	ENT.labelColour1 = Color(32, 192, 255)
 	ENT.labelColour2 = Color(168, 230, 255)
 
-	function ENT:Think()
-		if not self:GetIsDisrupted() and CurTime() > self.nextBeamShape then
-			table.Empty(self.beamShape)
-			local pos = self:GetPos()
-			pos.z = pos.z - 50.8
-			for i=1, 48 do
-				table.insert(self.beamShape, Vector(pos))
-			
-				if i%2 == 1 then
-					pos.z = pos.z + math.random(16, 32)
-				else
-					local a = math.random()*math.pi*2
-					local dist = math.Rand(4, 6)
-					local cos, sin = math.cos(a), math.sin(a)
-					pos.x = pos.x + cos*dist
-					pos.y = pos.y + sin*dist
-					pos.z = pos.z + dist
-				end
-			end
+	ENT.disruptedColour1 = Color(255, 87, 87)
+	ENT.disruptedColour2 = Color(255, 215, 83)
 
-			self.nextBeamShape = CurTime() + math.Rand(0.05, 1)
+	ENT.healthbarMatName = "!jcms_downloadpillarhealthbar"
+	ENT.healthbarRT = GetRenderTarget("jcms_downloadpillarhealthbar_rt", 8, 200)
+	ENT.healthbarRTMat = CreateMaterial("jcms_downloadpillarhealthbar", "UnlitGeneric", {
+		["$basetexture"] = ENT.healthbarRT:GetName(),
+		["$pointsamplemagfilter"] = 1
+	})
+
+	ENT.downNormal = Vector(0, 0, -1)
+
+	function ENT:RenderScreen()
+		local active = self:GetIsActive()
+		local disrupted = self:GetIsDisrupted()
+		local healthFrac = self:GetHealthFraction()
+		local healthHeight = math.Round(healthFrac*200)
+
+		render.PushRenderTarget(self.healthbarRT)
+		cam.Start2D()
+		if active then
+			if disrupted then
+				if (CurTime()+0.03)%0.5<0.25 then
+					surface.SetDrawColor(99, 53, 0)
+					surface.DrawRect(0, 0, 8, 200 - healthHeight, 1)
+					surface.SetDrawColor(252, 255, 82)
+					surface.DrawRect(0, 200 - healthHeight, 8, healthHeight, 1)
+					surface.SetDrawColor(255, 211, 13)
+					surface.DrawOutlinedRect(0, 200 - healthHeight, 8, healthHeight, 1)
+				else
+					surface.SetDrawColor(99, 0, 30)
+					surface.DrawRect(0, 0, 8, 200 - healthHeight, 1)
+					surface.SetDrawColor(255, 169, 40)
+					surface.DrawRect(0, 200 - healthHeight, 8, healthHeight, 1)
+					surface.SetDrawColor(207, 124, 0)
+					surface.DrawOutlinedRect(0, 200 - healthHeight, 8, healthHeight, 1)
+				end
+			else
+				surface.SetDrawColor(15, 0, 99)
+				surface.DrawRect(0, 0, 8, 200 - healthHeight, 1)
+
+				if math.random() < healthFrac*2 then
+					surface.SetDrawColor(99, 255, 247)
+				else
+					surface.SetDrawColor(9, 218, 255)
+				end
+				surface.DrawRect(0, 200 - healthHeight, 8, healthHeight, 1)
+				surface.SetDrawColor(108, 135, 255)
+				surface.DrawOutlinedRect(0, 200 - healthHeight, 8, healthHeight, 1)
+			end
+		else
+			surface.SetDrawColor(9, 0, 43)
+			surface.DrawRect(0, 0, 8, 200, 1)
+			surface.SetDrawColor(0, 13, 71)
+			surface.DrawOutlinedRect(0, 0, 8, 200, 1)
 		end
+		cam.End2D()
+		render.PopRenderTarget()
 	end
 
-	function ENT:DrawTranslucent()
+	function ENT:Think()
+		-- TODO Sound
+	end
+
+	function ENT:Draw()
+		self:RenderScreen()
+		render.MaterialOverrideByIndex(1, self.healthbarRTMat)
+		self:DrawModel()
+		render.MaterialOverrideByIndex()
+	end
+
+	function ENT:DrawTranslucent(flags)
+		local t = CurTime() + self:EntIndex()*math.pi/7
+
 		local sym = self:GetLabelSymbol()
 		if sym then
-			local d = 17
+			local d = 14
 			local pos = self:GetPos()
 			local ang = self:GetAngles()
-			pos = pos + ang:Up() * 54
+			pos = pos + ang:Up() * 120
 			ang:RotateAroundAxis(ang:Forward(), 90)
-			ang:RotateAroundAxis(ang:Up(), 180)
 			pos:Add(ang:Up() * d)
 			
 			render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
@@ -201,41 +273,47 @@ if CLIENT then
 			render.OverrideBlend( false )
 		end
 
+		local v = self:GetPos()
+		local a = self:GetAngles()
+		local up = a:Up()
+		v:Add( a:Forward()*30.5 )
+		v:Add( a:Right()*-1 )
+		v:Add( up*19 )
+
 		if self:GetIsActive() then
-			local t = CurTime() + self:EntIndex()*math.pi/7
+			local sizeMul = math.sin(t*2)/2 + 1.5
+
+			local v2 = Vector(v)
+			v2.z = math.min(26681, jcms.EyePos_lowAccuracy.z + 24000)
+
+			local distToEyes = util.DistanceToLine(v, v2, EyePos())
+			local wmul = math.max(1, distToEyes/700)*sizeMul
 			if self:GetIsDisrupted() then
-				local blip = t%0.5<0.25
 				render.SetMaterial(self.mat_lamp)
-				local col = Color(blip and 255 or 0, blip and 30 or 255, blip and 32 or 255, 128)
-				if not self.beamShape[1] then return end --Lua-error fix
-
-				render.DrawBeam(self.beamShape[1], self.beamShape[#self.beamShape], 64, 0, 1, col)
+				render.DrawBeam(v, v2, 75, 0, 1, t%0.5<0.25 and self.disruptedColour1 or self.disruptedColour2)
 			else
-				render.SetMaterial(self.mat_beam)
+				render.SetMaterial(self.mat_elec)
+				render.DrawSphere(v, 4*sizeMul, 6, 5)
 
-				local progress = self:GetChargeFraction()
-
-				local n = #self.beamShape
-				local color1 = Color(255, 77+60*progress, 77+60*progress)
-				local color2 = Color(64, 235+20*progress, 245)
-				
-				local encounterVector
-				render.StartBeam(n)
-				for i, v in ipairs(self.beamShape) do
-					render.AddBeam(v, 24, i/n, i/n>progress and color2 or color1)
-
-					if not encounterVector and i/n>progress then
-						encounterVector = self.beamShape[i-1] or v
-					end
-				end
-				render.EndBeam()
-
-				render.SetMaterial(self.mat_glow)
-				render.DrawSprite(self.beamShape[n], 256, 64, progress >= 0.95 and color1 or color2)
-				if encounterVector then
-					render.DrawSprite(encounterVector, 128, 32, color1)
-				end
+				local size = 10000 + 1000*sizeMul
+				render.DrawBeam(v, v2, 5*wmul, 0, 30 - 10*sizeMul, self.labelColour1)
+				render.SetMaterial(self.mat_cloud)
+				render.DrawQuadEasy(v2, self.downNormal, size, size, self.labelColour1, t*32)
+				render.DrawQuadEasy(v2, self.downNormal, size*1.5, size*1.5, self.labelColour1, t*16)
 			end
+		else
+			local v2 = Vector(v)
+			v2.z = math.min(26681, jcms.EyePos_lowAccuracy.z + 24000)
+
+			local distToEyes = util.DistanceToLine(v, v2, EyePos())
+			local wmul = math.max(1, distToEyes/750)
+			local size = 1000
+			
+			render.SetMaterial(self.mat_lamp)
+			render.DrawBeam(v, v2, 6*wmul, 0, 1, self.labelColour1)
+
+			render.SetMaterial(self.mat_cloud)
+			render.DrawQuadEasy(v2, self.downNormal, size, size, self.labelColour1, t*40)
 		end
 	end
 end

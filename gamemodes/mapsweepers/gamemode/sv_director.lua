@@ -1232,6 +1232,7 @@
 		function jcms.director_ThinkPvp(d)
 			if jcms.util_IsPVP() and d.missionData.evacuating then 
 				--DESTROY EVERYTHING
+				-- So true jonahsoldier -M
 				local cTime = CurTime()
 
 				d.nukeStart = d.nukeStart or cTime
@@ -1292,7 +1293,6 @@
 							local knownKeys = known[ply]
 							if knownKeys[ key ] then
 								local tagId = jcms.director_TagGetId(tagData, key)
-								--jcms.net_SendLocator(ply, tagId, "", jcms.vectorOne, nil, 0.5)
 								knownKeys[ key ] = nil
 							end
 						end
@@ -1349,7 +1349,8 @@
 							local tagname = tagData.name or "#jcms.objective"
 							
 							local ent = isentity(key) and IsValid(key) and key
-							local locatorType = tagData.special and jcms.LOCATOR_SIGNAL or jcms.LOCATOR_GENERIC
+							local locatorType = tagData.type or jcms.LOCATOR_GENERIC
+
 							if ent then
 								jcms.net_SendLocator(ply, tagId, tagname, tagData.moving and ent or ent:WorldSpaceCenter(), locatorType, 1.5, tagData.landmarkIcon)
 							elseif tagData.pos and tagData.id then
