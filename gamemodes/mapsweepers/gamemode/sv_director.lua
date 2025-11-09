@@ -879,8 +879,11 @@
 
 		function jcms.director_TagIsVisible(key, tagData, ply)
 			local trace = ply:GetEyeTrace()
-			
-			if isentity(key) and IsValid(key) then
+			if tagData.alwaysVisible then
+				return true
+			elseif tagData.visFunc then
+				return not not tagData.visFunc(key, tagData, ply)
+			elseif isentity(key) and IsValid(key) then
 				if trace.Entity == key or (ply:Visible(key) and trace.Normal:Dot( key:WorldSpaceCenter() ) > 0) then
 					return true
 				end

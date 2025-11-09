@@ -181,14 +181,20 @@
 
 		tagEntities = function(director, missionData, tags)
 			local tagsActive = missionData.phase > 0
-			
+
 			if IsValid(missionData.computer) then
 				tags[missionData.computer] = { name = "#jcms.obj_datadownloadcomputer", moving = false, active = tagsActive, landmarkIcon = "computer" }
 			end
 
 			for i, pillar in ipairs(missionData.pillars) do
 				if IsValid(pillar) then
-					tags[pillar] = { name = "^" .. pillar:GetLabelSymbol(), moving = false, active = tagsActive, type = pillar:GetIsDisrupted() and jcms.LOCATOR_WARNING or jcms.LOCATOR_GENERIC }
+					tags[pillar] = { 
+						name = "^" .. pillar:GetLabelSymbol(),
+						alwaysVisible = missionData.phase == 2,
+						moving = false, 
+						active = tagsActive, 
+						type = pillar:GetIsDisrupted() and jcms.LOCATOR_WARNING or jcms.LOCATOR_GENERIC
+					}
 				end
 			end
 		end,
@@ -312,6 +318,11 @@
 							md.defenseCompleted = true
 							md.defenseOngoing = false
 							pillarsShouldBeActive = false
+
+							if IsValid(md.computer) and md.computer.soundHum then
+								md.computer.soundHum:Stop()
+								md.computer.soundHum = nil
+							end
 						end
 					else
 						pillarsShouldBeActive = false
@@ -323,6 +334,11 @@
 						end
 
 						md.defenseOngoing = false
+
+						if IsValid(md.computer) and md.computer.soundHum then
+							md.computer.soundHum:Stop()
+							md.computer.soundHum = nil
+						end
 					end
 				else
 					md.powerMultiplier = 0
@@ -355,14 +371,15 @@
 		swarmCalcCost = function(director, baseCost)
 			local md = director.missionData
 			
-			if md.evacuating then
-				return baseCost
-			else
+			if not md.evacuating then
 				local phase = md.phase
+				
 				if phase == 2 then
 					return baseCost > 0 and baseCost + 4 or 0 -- More shit during the defense phase
 				end
 			end
+
+			return baseCost
 		end,
 
 		swarmCalcDanger = function(d, swarmCost)
