@@ -60,9 +60,17 @@ local function updateJumpAbility(ply, newValue)
 end
 
 function class.SetupMove(ply, mv, cmd)
+	local coyoteTime = 0.175
+
 	if ply:GetObserverMode() == OBS_MODE_NONE and ply:Alive() and ply:GetMoveType() == MOVETYPE_WALK and not ply:OnGround() and ply:WaterLevel()<3 and not IsValid(ply:GetNWEntity("jcms_vehicle")) then
 		if ply.jcms_CanJump and mv:KeyPressed(IN_JUMP) then
-			updateJumpAbility(ply, false)
+			local coyoteTime = (CurTime() - ply.jcms_lastOnGround < coyoteTime) and not ply.jcms_HasJumped
+			if not coyoteTime then
+				updateJumpAbility(ply, false)
+			elseif SERVER then 
+				local foot = math.random() < 0.5 and "Left" or "Right"
+				ply:EmitSound(class.footstepSfx..foot , 50, 90, 0.75)
+			end
 
 			local vel = ply:GetVelocity()
 			vel:Mul( 0.12 )
@@ -81,7 +89,7 @@ function class.SetupMove(ply, mv, cmd)
 			vel:Add( jump )
 			mv:SetVelocity(vel)
 
-			if SERVER then
+			if SERVER and not coyoteTime then
 				sound.Play("weapons/grenade_launcher1.wav", ply:GetPos(), 70, 88, 1)
 				
 				-- Damage
@@ -127,6 +135,14 @@ function class.SetupMove(ply, mv, cmd)
 		end
 	else
 		updateJumpAbility(ply, true)
+		ply.jcms_HasJumped = false
+	end
+
+	if ply:IsOnGround() then 
+		ply.jcms_lastOnGround = CurTime()
+		if mv:KeyPressed(IN_JUMP) then
+			ply.jcms_HasJumped = true
+		end
 	end
 end
 
