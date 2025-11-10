@@ -770,13 +770,13 @@ jcms.terminal_modeTypes = {
 
 			local bId
 
-			local str1 = [=[data cross section]=]
-			local str2 = [=[READY FOR UPLOAD]=]
-			local str3a = [=[TARGET:]=]
-			local str3b = [=[J Corp Mothership #523-S]=]
-			local str4a = [=[STATUS:]=]
-			local str5 = [=[Awaiting confirmation]=]
-			local str6 = ([=[ACTIVATION FEE: %s J]=]):format( jcms.util_CashFormat(initCost) )
+			local str1 = "#jcms.datadownloadcomputer_quote"
+			local str2 = "#jcms.datadownloadcomputer_title"
+			local str3a = "#jcms.datadownloadcomputer_flavour1a"
+			local str3b = "#jcms.datadownloadcomputer_flavour1b"
+			local str4a = "#jcms.datadownloadcomputer_flavour2a"
+			local str5 = "#jcms.datadownloadcomputer_flavour2b"
+			local str6 = language.GetPhrase("jcms.datadownloadcomputer_fee"):format( jcms.util_CashFormat(initCost) )
 
 			surface.SetDrawColor(color_bg)
 			surface.DrawRect(w/2, h/2, w/2, 4)
@@ -837,7 +837,7 @@ jcms.terminal_modeTypes = {
 
 			return bId
 		elseif modedata == "upload" then
-			local str1 = [=[UPLOADING]=]
+			local str1 = "#jcms.datadownloadcomputer_uploading"
 			draw.SimpleText(str1, "jcms_hud_superhuge", w/2, h/4, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			surface.SetDrawColor(color_bg)
 			surface.DrawRect(32, h/2, w-64, 4)
@@ -869,7 +869,7 @@ jcms.terminal_modeTypes = {
 			surface.SetAlphaMultiplier(1)
 			render.OverrideBlend(false)
 		elseif modedata == "done" then
-			local str1 = [=[TRANSFER COMPLETE]=]
+			local str1 = "#jcms.datadownloadcomputer_done"
 			draw.SimpleText(str1, "jcms_hud_superhuge", w/2, h/4, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
 			render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)

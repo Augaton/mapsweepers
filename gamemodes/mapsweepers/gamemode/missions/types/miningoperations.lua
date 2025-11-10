@@ -292,7 +292,7 @@ jcms.missions.miningoperations = {
 					col = Color(255, 0, 0)
 				end
 
-				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_orecrate", 10, [=[Ore Crate]=], col, ply)
+				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_orecrate", 10, "#jcms.orecrate", col, ply)
 				crate.CrateType = 1
 
 				if CPPI then
@@ -323,7 +323,7 @@ jcms.missions.miningoperations = {
 					col = Color(255, 0, 0)
 				end
 
-				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_orecrate", 10, [=[Ore Crate]=], col, ply)
+				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_orecrate", 10, "#jcms.orecrate", col, ply)
 				crate.CrateType = 2
 
 				if CPPI then
@@ -354,7 +354,7 @@ jcms.missions.miningoperations = {
 					col = Color(255, 0, 0)
 				end
 
-				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_orecrate", 10, [=[Ore Crate]=], col, ply)
+				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_orecrate", 10, "#jcms.orecrate", col, ply)
 				crate.CrateType = 3
 
 				if CPPI then

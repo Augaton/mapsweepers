@@ -307,7 +307,7 @@ jcms.missions.datadownload = {
 
 		if phase == 1 then
 			local objectives = {}
-			if jcms.util_IsPVP() then --TODO: Russian Localisation
+			if jcms.util_IsPVP() then
 				table.insert(objectives, { type = "completedownloads", completed = false, progress = missionData.uploadsCompleted, total = missionData.uploadsRequired })
 			end
 

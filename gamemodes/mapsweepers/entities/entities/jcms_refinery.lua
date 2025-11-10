@@ -26,7 +26,7 @@ ENT.PrintName = "Refinery"
 ENT.Author = "Octantis Addons"
 ENT.Category = "Map Sweepers"
 ENT.Spawnable = false
-ENT.RenderGroup = RENDERGROUP_OPAQUE
+ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 
 function ENT:SetupDataTables()
 	self:NetworkVar("Bool", 0, "IsSecondary")
@@ -155,11 +155,46 @@ if SERVER then
 end
 
 if CLIENT then
+	ENT.colourRed = Color(255, 42, 42)
+
 	function ENT:OnRemove()
 		if self.sfxGrind then
 			self.sfxGrind:Stop()
 			self.sfxGrind = nil
 		end
+	end
+	
+	function ENT:DrawTranslucent()
+		self:DrawModel()
+		if not self:GetIsSecondary() then return end
+		
+		local eyeDist = jcms.EyePos_lowAccuracy:DistToSqr(self:GetPos())
+		if eyeDist >= 1500*1500 then return end
+
+		local tipPos = self:WorldSpaceCenter()
+		local tipAngle = self:GetAngles()
+
+		local str1 = "#jcms.personalrefinery_title"
+		local str2 = "#jcms.personalrefinery_desc1"
+		local str3 = "#jcms.personalrefinery_desc2"
+
+		tipAngle:RotateAroundAxis(tipAngle:Up(), 90)
+		tipAngle:RotateAroundAxis(tipAngle:Forward(), 90)
+		tipPos:Add( tipAngle:Up()*-28 )
+
+		local bx, by, bw, bh = -340, -330, 500, 230
+		render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
+		cam.Start3D2D(tipPos, tipAngle, 1/12)
+			surface.SetDrawColor(self.colourRed)
+			jcms.hud_DrawNoiseRect(bx-108, by, bw+216, bh, 2048)
+
+			if eyeDist <= 800*800 then
+				draw.SimpleText(str1, "jcms_hud_small", bx + bw/2, by + 16, self.colourRed, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				local _, th = draw.SimpleText(str3, "jcms_hud_medium", bx + bw/2, by + bh - 8, self.colourRed, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText(str2, "jcms_hud_medium", bx + bw/2, by + bh - th - 8, self.colourRed, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+			end
+		cam.End3D2D()
+		render.OverrideBlend( false )
 	end
 
 	function ENT:Think()
