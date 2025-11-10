@@ -19,8 +19,6 @@
 	Contact E-Mail: merekidorian@gmail.com
 --]]
 
--- Mining Operations {{{
-
 jcms.missions.miningoperations = {
 	faction = "antlion",
 	pvpAllowed = true,
@@ -369,4 +367,3 @@ jcms.missions.miningoperations = {
 
 }
 
--- }}}

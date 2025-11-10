@@ -20,429 +20,409 @@
 --]]
 
 
--- Data Download {{{
+jcms.missions.datadownload = {
+	faction = "combine",
+	pvpAllowed = true,
 
-	jcms.missions.datadownload = {
-		faction = "combine",
-		pvpAllowed = true,
+	generate = function(data, missionData)
+		missionData.uploadsRequired = jcms.util_IsPVP() and 3 or 1
+		missionData.uploadsCompleted = 0
 
-		generate = function(data, missionData)
-			missionData.uploadsRequired = jcms.util_IsPVP() and 3 or 1
-			missionData.uploadsCompleted = 0
+		-- Defense phase {{{
+			missionData.defenseOngoing = false
+			missionData.defenseCompleted = false
+			missionData.defenseAttempts = 0
+			missionData.defenseProgress = 0
+			missionData.powerMultiplier = 0
+		-- }}}
 
-			-- Defense phase {{{
-				missionData.defenseOngoing = false
-				missionData.defenseCompleted = false
-				missionData.defenseAttempts = 0
-				missionData.defenseProgress = 0
-				missionData.powerMultiplier = 0
-			-- }}}
+		-- Finding preliminary area for the computer {{{
+			-- // Area Weights {{{
+				local weightedAreas = {}
+				for i, area in ipairs(jcms.mapgen_MainZone()) do --Prioritise outdoor areas, ignore too small ones.
+					weightedAreas[area] = #area:GetVisibleAreas()
+					if area:GetSizeX() < 250 or area:GetSizeY() < 250 then
+						weightedAreas[area] = nil
+					elseif not jcms.mapgen_AreaFlat(area) then
+						weightedAreas[area] = nil
+					end
+				end
+			-- // }}}
 
-			-- Finding preliminary area for the computer {{{
-				-- // Area Weights {{{
+			local computerArea = jcms.util_ChooseByWeight(weightedAreas)
+			assert(computerArea, "Can't place down the main computer. This map sucks, find a better one")
+		-- }}}
+
+		-- // The Pillars {{{
+			-- // Prioritise areas near the computer {{{
+				--Outside the loop for optimisation
+				local computerPos = computerArea:GetCenter()
+				local defaultWeightedAreas = {}
+				for i, area in ipairs(jcms.mapgen_MainZone()) do
+					if area:GetSizeX() < 50 or area:GetSizeY() < 50 then
+						defaultWeightedAreas[area] = nil
+						continue
+					end
+
+					local dist = area:GetCenter():Distance(computerPos) 
+					if dist > 350 then --Not too close/on-top of us
+						defaultWeightedAreas[area] = 1 / math.sqrt(dist) --Close to the main computer
+					end
+				end
+			-- // }}}
+
+			-- // Generate Pillars {{{
+				local pillarCount = math.ceil(2 * jcms.runprogress_GetDifficulty() * (2/3))
+				local pillars = {}
+				local pillarPositions = {} --Optimisation
+
+				-- Note / TODO: We *could* make this like spreadprefabs & try to make them unable to see each-other.
+				for i=1, pillarCount do --Generate pillars
 					local weightedAreas = {}
-					for i, area in ipairs(jcms.mapgen_MainZone()) do --Prioritise outdoor areas, ignore too small ones.
-						weightedAreas[area] = #area:GetVisibleAreas()
-						if area:GetSizeX() < 250 or area:GetSizeY() < 250 then
-							weightedAreas[area] = nil
-						elseif not jcms.mapgen_AreaFlat(area) then
-							weightedAreas[area] = nil
+					for i, area in ipairs(jcms.mapgen_MainZone()) do --Try to spread pillars out
+						weightedAreas[area] = defaultWeightedAreas[area]
+						if not weightedAreas[area] then continue end
+
+						local centre = area:GetCenter()
+						local closestDist = math.huge
+		
+						for i, pillarPos in ipairs(pillarPositions) do --Don't spawn too close to others.
+							local dist = pillarPos:Distance(centre)
+							closestDist = (closestDist < dist and closestDist) or dist
 						end
+						
+						if not(closestDist == math.huge) then  
+							weightedAreas[area] = weightedAreas[area] * math.sqrt( math.min(closestDist, 1250) ) --doesn't matter after 1250u
+						end
+					end
+
+					local chosenArea = jcms.util_ChooseByWeight(weightedAreas)
+					assert(chosenArea, "Can't place down any computer pillars. This map sucks, find a better one")
+
+					local _, pillar = jcms.prefab_TryStamp("datadownload_pillar", chosenArea)
+					table.insert(pillars, pillar)
+					table.insert(pillarPositions, chosenArea:GetCenter()) 
+				end
+			-- // }}}
+
+		-- // }}}
+
+		-- // Actually placing down the computer and finalizing things {{{
+			-- Weighing final areas {{{
+				-- {{{ Calculate average pos of pillars (centre)
+					local pillarAveragePos = Vector(0,0,0)
+					for i, v in ipairs(pillarPositions) do
+						pillarAveragePos:Add(v) 
+					end
+					pillarAveragePos:Div(pillarCount)
+				-- // }}}
+
+				-- // Calculate min/max distance from average position {{{
+					local pillarDistFromAverageMin, pillarDistFromAverageMax = math.huge, 0 
+					for i, v in ipairs(pillarPositions) do
+						local dist = v:Distance(pillarAveragePos)
+						pillarDistFromAverageMin = math.min(dist, pillarDistFromAverageMin)
+						pillarDistFromAverageMax = math.max(dist, pillarDistFromAverageMax)
 					end
 				-- // }}}
 
-				local computerArea = jcms.util_ChooseByWeight(weightedAreas)
-				assert(computerArea, "Can't place down the main computer. This map sucks, find a better one")
+				-- Reusing weightedAreas here for the final weights.
+				for area, oldWeight in pairs(weightedAreas) do
+					local areaCenter = area:GetCenter()
+					if areaCenter:DistToSqr(pillarAveragePos) >= (pillarDistFromAverageMax + 100)^2 then --Really unlikely to spawn beyond the furthest pillar from the average.
+						weightedAreas[area] = math.min(oldWeight/2, 0.1)
+					else
+						local closestDist
+						for i, v in ipairs(pillarPositions) do
+							local dist = v:Distance(areaCenter)
+							if not closestDist or dist < closestDist then
+								closestDist = dist
+							end
+						end
+
+						if closestDist <= 350 then --Prevent computer from spawning directly next to a pillar.
+							weightedAreas[area] = nil
+						elseif closestDist <= pillarDistFromAverageMin then
+							weightedAreas[area] = oldWeight/4
+						elseif closestDist >= pillarDistFromAverageMax then
+							weightedAreas[area] = oldWeight/8
+						else
+							local distanceFraction = (closestDist - pillarDistFromAverageMin)/(pillarDistFromAverageMax - pillarDistFromAverageMin)
+							local parabolic = math.max(0, -4*distanceFraction^2 + 4*distanceFraction)
+							weightedAreas[area] = oldWeight*0.8 + 2 + parabolic*20
+						end
+					end
+				end
 			-- }}}
 
-			-- // The Pillars {{{
-				-- // Prioritise areas near the computer {{{
-					--Outside the loop for optimisation
-					local computerPos = computerArea:GetCenter()
-					local defaultWeightedAreas = {}
-					for i, area in ipairs(jcms.mapgen_MainZone()) do
-						if area:GetSizeX() < 50 or area:GetSizeY() < 50 then
-							defaultWeightedAreas[area] = nil
-							continue
-						end
-
-						local dist = area:GetCenter():Distance(computerPos) 
-						if dist > 350 then --Not too close/on-top of us
-							defaultWeightedAreas[area] = 1 / math.sqrt(dist) --Close to the main computer
-						end
+			-- // Placing the computer(s) {{{
+				local computers = {}
+				for i=1, (jcms.util_IsPVP() and 2 or 1) do
+					local finalComputerArea = jcms.util_ChooseByWeight(weightedAreas) or computerArea
+					if finalComputerArea == computerArea then
+						jcms.printf("Data Download computerArea (preliminary) equals to finalComputerArea!")
 					end
-				-- // }}}
 
-				-- // Generate Pillars {{{
-					local pillarCount = math.ceil(2 * jcms.runprogress_GetDifficulty() * (2/3))
-					local pillars = {}
-					local pillarPositions = {} --Optimisation
+					local _, computer = jcms.prefab_TryStamp("datadownload_computer", finalComputerArea)
 
-					-- Note / TODO: We *could* make this like spreadprefabs & try to make them unable to see each-other.
-					for i=1, pillarCount do --Generate pillars
-						local weightedAreas = {}
-						for i, area in ipairs(jcms.mapgen_MainZone()) do --Try to spread pillars out
-							weightedAreas[area] = defaultWeightedAreas[area]
-							if not weightedAreas[area] then continue end
+					computer:SetNWBool("jcms_terminal_locked", false)
+					jcms.terminal_ToPurpose(computer)
 
-							local centre = area:GetCenter()
-							local closestDist = math.huge
-			
-							for i, pillarPos in ipairs(pillarPositions) do --Don't spawn too close to others.
-								local dist = pillarPos:Distance(centre)
-								closestDist = (closestDist < dist and closestDist) or dist
+					computer.jcms_datadownload_cost = 500
+				
+					function computer:jcms_terminal_Callback(cmd, data, ply)
+						if tonumber(data) and not missionData.defenseOngoing and not missionData.defenseCompleted then
+							missionData.defenseOngoing = true
+
+							if missionData.defenseAttempts == 0 then
+								missionData.defenseProgress = 0
 							end
 							
-							if not(closestDist == math.huge) then  
-								weightedAreas[area] = weightedAreas[area] * math.sqrt( math.min(closestDist, 1250) ) --doesn't matter after 1250u
+							missionData.defenseAttempts = missionData.defenseAttempts + 1
+
+							for i, pillar in ipairs(missionData.pillars) do
+								pillar:SetIsDisrupted(false)
+								pillar:SetHealth( pillar:GetMaxHealth() )
+								pillar:SetHealthFraction(1)
+								pillar:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
 							end
+
+							self:EmitSound("ambient/alarms/klaxon1.wav", 150, 108, 1)
+							util.ScreenShake(self:GetPos(), 3, 50, 1, 2048, true)
+							
+							for j, comp in ipairs(missionData.computers) do
+								if comp.soundDownload then
+									comp.soundDownload:Stop()
+									comp.soundDownload = nil
+								end
+	
+								comp.soundDownload = CreateSound(comp, "ambient/alarms/combine_bank_alarm_loop1.wav")
+								comp.soundDownload:PlayEx(1, 107)
+	
+								if comp.soundHum then
+									comp.soundHum:Stop()
+									comp.soundHum = nil
+								end
+	
+								comp.soundHum = CreateSound(comp, "ambient/machines/combine_terminal_loop1.wav")
+								comp.soundHum:PlayEx(1, 107)
+
+								comp:SetNWString("jcms_terminal_modeData", "upload")
+								comp:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+							end
+
+							jcms.net_SendTip("all", true, "#jcms.datadownload_started", tonumber(missionData.defenseProgress) or 0)
+							return true, "upload"
 						end
-
-						local chosenArea = jcms.util_ChooseByWeight(weightedAreas)
-						assert(chosenArea, "Can't place down any computer pillars. This map sucks, find a better one")
-
-						local _, pillar = jcms.prefab_TryStamp("datadownload_pillar", chosenArea)
-						table.insert(pillars, pillar)
-						table.insert(pillarPositions, chosenArea:GetCenter()) 
 					end
-				-- // }}}
 
+					computer.pillars = pillars
+
+					table.insert(computers, computer)
+				end
 			-- // }}}
 
-			-- // Actually placing down the computer and finalizing things {{{
-				-- Weighing final areas {{{
-					-- {{{ Calculate average pos of pillars (centre)
-						local pillarAveragePos = Vector(0,0,0)
-						for i, v in ipairs(pillarPositions) do
-							pillarAveragePos:Add(v) 
-						end
-						pillarAveragePos:Div(pillarCount)
-					-- // }}}
-
-					-- // Calculate min/max distance from average position {{{
-						local pillarDistFromAverageMin, pillarDistFromAverageMax = math.huge, 0 
-						for i, v in ipairs(pillarPositions) do
-							local dist = v:Distance(pillarAveragePos)
-							pillarDistFromAverageMin = math.min(dist, pillarDistFromAverageMin)
-							pillarDistFromAverageMax = math.max(dist, pillarDistFromAverageMax)
-						end
-					-- // }}}
-
-					-- Reusing weightedAreas here for the final weights.
-					for area, oldWeight in pairs(weightedAreas) do
-						local areaCenter = area:GetCenter()
-						if areaCenter:DistToSqr(pillarAveragePos) >= (pillarDistFromAverageMax + 100)^2 then --Really unlikely to spawn beyond the furthest pillar from the average.
-							weightedAreas[area] = math.min(oldWeight/2, 0.1)
-						else
-							local closestDist
-							for i, v in ipairs(pillarPositions) do
-								local dist = v:Distance(areaCenter)
-								if not closestDist or dist < closestDist then
-									closestDist = dist
-								end
-							end
-
-							if closestDist <= 350 then --Prevent computer from spawning directly next to a pillar.
-								weightedAreas[area] = nil
-							elseif closestDist <= pillarDistFromAverageMin then
-								weightedAreas[area] = oldWeight/4
-							elseif closestDist >= pillarDistFromAverageMax then
-								weightedAreas[area] = oldWeight/8
-							else
-								local distanceFraction = (closestDist - pillarDistFromAverageMin)/(pillarDistFromAverageMax - pillarDistFromAverageMin)
-								local parabolic = math.max(0, -4*distanceFraction^2 + 4*distanceFraction)
-								weightedAreas[area] = oldWeight*0.8 + 2 + parabolic*20
-							end
-						end
+			-- // Setting Pillar Symbols {{{
+				local function getSymbol(i, totalCount)
+					if totalCount > 26 then
+						local letter = string.char(65 + (i-1)%26)
+						local loops = math.floor((i-1)/26)
+						return letter..loops
+					else
+						local letter = string.char(65 + (i-1)%26)
+						return letter
 					end
-				-- }}}
+				end
 
-				-- // Placing the computer(s) {{{
-					local computers = {}
-					for i=1, (jcms.util_IsPVP() and 2 or 1) do
-						local finalComputerArea = jcms.util_ChooseByWeight(weightedAreas) or computerArea
-						if finalComputerArea == computerArea then
-							jcms.printf("Data Download computerArea (preliminary) equals to finalComputerArea!")
-						end
-
-						local _, computer = jcms.prefab_TryStamp("datadownload_computer", finalComputerArea)
-
-						computer:SetNWBool("jcms_terminal_locked", false)
-						jcms.terminal_ToPurpose(computer)
-
-						computer.jcms_datadownload_cost = 500
+				for i, pillar in ipairs(pillars) do
+					pillar:SetLabelSymbol( getSymbol(i, #pillars) )
 					
-						function computer:jcms_terminal_Callback(cmd, data, ply)
-							if tonumber(data) and not missionData.defenseOngoing and not missionData.defenseCompleted then
-								missionData.defenseOngoing = true
-	
-								if missionData.defenseAttempts == 0 then
-									missionData.defenseProgress = 0
-								end
-								
-								missionData.defenseAttempts = missionData.defenseAttempts + 1
-	
-								for i, pillar in ipairs(missionData.pillars) do
-									pillar:SetIsDisrupted(false)
-									pillar:SetHealth( pillar:GetMaxHealth() )
-									pillar:SetHealthFraction(1)
-									pillar:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
-								end
-	
-								self:EmitSound("ambient/alarms/klaxon1.wav", 150, 108, 1)
-								util.ScreenShake(self:GetPos(), 3, 50, 1, 2048, true)
-								
-								for j, comp in ipairs(missionData.computers) do
-									if comp.soundDownload then
-										comp.soundDownload:Stop()
-										comp.soundDownload = nil
-									end
-		
-									comp.soundDownload = CreateSound(comp, "ambient/alarms/combine_bank_alarm_loop1.wav")
-									comp.soundDownload:PlayEx(1, 107)
-		
-									if comp.soundHum then
-										comp.soundHum:Stop()
-										comp.soundHum = nil
-									end
-		
-									comp.soundHum = CreateSound(comp, "ambient/machines/combine_terminal_loop1.wav")
-									comp.soundHum:PlayEx(1, 107)
-
-									comp:SetNWString("jcms_terminal_modeData", "upload")
-									comp:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
-								end
-	
-								jcms.net_SendTip("all", true, "#jcms.datadownload_started", tonumber(missionData.defenseProgress) or 0)
-								return true, "upload"
-							end
-						end
-
-						computer.pillars = pillars
-
-						table.insert(computers, computer)
-					end
-				-- // }}}
-
-				-- // Setting Pillar Symbols {{{
-					local function getSymbol(i, totalCount)
-						if totalCount > 26 then
-							local letter = string.char(65 + (i-1)%26)
-							local loops = math.floor((i-1)/26)
-							return letter..loops
-						else
-							local letter = string.char(65 + (i-1)%26)
-							return letter
-						end
-					end
-
-					for i, pillar in ipairs(pillars) do
-						pillar:SetLabelSymbol( getSymbol(i, #pillars) )
-						
-						local health = 500 --TODO: We *could* make this reduce based on difficulty.
-						pillar:SetMaxHealth(health)
-						pillar:SetHealth(health)
-					end
-					
-
-					missionData.computers = computers
-					missionData.pillars = pillars
-				-- // }}} 
-			-- // }}}
-
-			jcms.mapgen_PlaceNaturals(jcms.mapgen_AdjustCountForMapSize(24), weightOverride)
-			jcms.mapgen_PlaceEncounters()
-		end,
-
-		tagEntities = function(director, missionData, tags)
-			local tagsActive = missionData.phase > 0
-
-			for i, computer in ipairs(missionData.computers) do
-				if IsValid(computer) then
-					tags[computer] = { name = "#jcms.obj_datadownloadcomputer", moving = false, active = tagsActive, landmarkIcon = "computer" }
-				end
-			end
-
-			for i, pillar in ipairs(missionData.pillars) do
-				if IsValid(pillar) then
-					tags[pillar] = { 
-						name = "^" .. pillar:GetLabelSymbol(),
-						alwaysVisible = missionData.phase == 2,
-						moving = false, 
-						active = tagsActive, 
-						locatorIgnore = true,
-						type = pillar:GetIsDisrupted() and jcms.LOCATOR_WARNING or jcms.LOCATOR_GENERIC
-					}
-				end
-			end
-		end,
-
-		getObjectives = function(missionData)
-			local phase = 0 -- Evacuating
-
-			local computerValid = false
-			for i, computer in ipairs(missionData.computers) do
-				if IsValid(computer) then
-					computerValid = true
-					if not missionData.computerWasLocated then
-						for ply, knownTags in pairs(jcms.director.tags_perplayer) do
-							if knownTags[computer] then
-								missionData.computerWasLocated = true
-								break
-							end
-						end
-					end
-				end
-			end
-
-			if computerValid then
-				if missionData.defenseCompleted then
-					phase = 0 -- Evac
-				elseif missionData.defenseOngoing then
-					phase = 2 -- Combat
-				else
-					phase = 1 -- Preparing for defense
-				end
-			end
-			missionData.phase = phase
-
-
-			if phase == 1 then
-				local objectives = {}
-				if jcms.util_IsPVP() then --TODO: Russian Localisation
-					table.insert(objectives, { type = "completedownloads", completed = false, progress = missionData.uploadsCompleted, total = missionData.uploadsRequired })
-				end
-
-				table.insert(objectives, { type = "locatecomputer", completed = missionData.computerWasLocated })
-				table.insert(objectives, { type = "prepfordefense" })
-				table.insert(objectives, { type = "activatedownload" })
-
-				return objectives
-			elseif phase == 2 then
-				local objectives = {}
-				if jcms.util_IsPVP() then
-					table.insert(objectives, { type = "completedownloads", completed = false, progress = missionData.uploadsCompleted, total = missionData.uploadsRequired })
-				end
-
-				table.insert(objectives, { type = "uploadingatspeed", format = { missionData.powerMultiplier }, progress = missionData.defenseProgress*100, total = 100, percent = true })
-
-				for i, pillar in ipairs(missionData.pillars) do 
-					if not IsValid(pillar) then continue end
-
-					local isDisrupted = pillar:GetIsDisrupted()
-					table.insert(objectives, { type = isDisrupted and "repairpillarx" or "defendpillarx", format = { pillar:GetLabelSymbol() } })
-					table.insert(objectives, { type = "defendpillarx", style = 2, progress = math.ceil(pillar:Health() / pillar:GetMaxHealth() * 100), total = 100, completed = isDisrupted })
-				end
-
-				return objectives
-			else
-				missionData.evacuating = true
-			
-				if not IsValid(missionData.evacEnt) then
-					missionData.evacEnt = jcms.mission_DropEvac(jcms.mission_PickEvacLocation(), 20)
+					local health = 500 --TODO: We *could* make this reduce based on difficulty.
+					pillar:SetMaxHealth(health)
+					pillar:SetHealth(health)
 				end
 				
-				return jcms.mission_GenerateEvacObjective()
+
+				missionData.computers = computers
+				missionData.pillars = pillars
+			-- // }}} 
+		-- // }}}
+
+		jcms.mapgen_PlaceNaturals(jcms.mapgen_AdjustCountForMapSize(24), weightOverride)
+		jcms.mapgen_PlaceEncounters()
+	end,
+
+	tagEntities = function(director, missionData, tags)
+		local tagsActive = missionData.phase > 0
+
+		for i, computer in ipairs(missionData.computers) do
+			if IsValid(computer) then
+				tags[computer] = { name = "#jcms.obj_datadownloadcomputer", moving = false, active = tagsActive, landmarkIcon = "computer" }
 			end
-		end,
+		end
 
-		think = function(d)
-			local md = d.missionData
-			md.timeEstimate = 0
-			
-			local pillarsShouldBeActive = false
-			local downloadSucceeded = false
+		for i, pillar in ipairs(missionData.pillars) do
+			if IsValid(pillar) then
+				tags[pillar] = { 
+					name = "^" .. pillar:GetLabelSymbol(),
+					alwaysVisible = missionData.phase == 2,
+					moving = false, 
+					active = tagsActive, 
+					locatorIgnore = true,
+					type = pillar:GetIsDisrupted() and jcms.LOCATOR_WARNING or jcms.LOCATOR_GENERIC
+				}
+			end
+		end
+	end,
 
-			if md.defenseCompleted then
-				md.defenseProgress = 1
-				md.powerMultiplier = 0
+	getObjectives = function(missionData)
+		local phase = 0 -- Evacuating
+
+		local computerValid = false
+		for i, computer in ipairs(missionData.computers) do
+			if IsValid(computer) then
+				computerValid = true
+				if not missionData.computerWasLocated then
+					for ply, knownTags in pairs(jcms.director.tags_perplayer) do
+						if knownTags[computer] then
+							missionData.computerWasLocated = true
+							break
+						end
+					end
+				end
+			end
+		end
+
+		if computerValid then
+			if missionData.defenseCompleted then
+				phase = 0 -- Evac
+			elseif missionData.defenseOngoing then
+				phase = 2 -- Combat
 			else
-				if md.defenseOngoing then
-					pillarsShouldBeActive = true
+				phase = 1 -- Preparing for defense
+			end
+		end
+		missionData.phase = phase
 
-					if #d.npcs < 30 then 
-						d.swarmNext = (d.swarmNext or jcms.director_GetMissionTime()) - 1
-					end
 
-					for i, npc in ipairs(d.npcs) do
-						if not IsValid(npc) or not npc.GetEnemy or IsValid(npc:GetEnemy()) then continue end
-						
-						local target = md.pillars[math.random(#md.pillars)]
-						npc:SetEnemy(target)
-						npc:UpdateEnemyMemory(target, target:GetPos())
-					end
+		if phase == 1 then
+			local objectives = {}
+			if jcms.util_IsPVP() then --TODO: Russian Localisation
+				table.insert(objectives, { type = "completedownloads", completed = false, progress = missionData.uploadsCompleted, total = missionData.uploadsRequired })
+			end
 
-					local totalPillars = 0
-					local activePillars = 0
-					for i, pillar in ipairs(md.pillars) do 
-						if not IsValid(pillar) then continue end
+			table.insert(objectives, { type = "locatecomputer", completed = missionData.computerWasLocated })
+			table.insert(objectives, { type = "prepfordefense" })
+			table.insert(objectives, { type = "activatedownload" })
 
-						totalPillars = totalPillars + 1
-						if not pillar:GetIsDisrupted() then activePillars = activePillars + 1 end
-					end
+			return objectives
+		elseif phase == 2 then
+			local objectives = {}
+			if jcms.util_IsPVP() then
+				table.insert(objectives, { type = "completedownloads", completed = false, progress = missionData.uploadsCompleted, total = missionData.uploadsRequired })
+			end
 
-					if activePillars > 0 then
-						--5 Minutes at max power, scaling with difficulty
-						--Fewer pillars exponentially slows it.
+			table.insert(objectives, { type = "uploadingatspeed", format = { missionData.powerMultiplier }, progress = missionData.defenseProgress*100, total = 100, percent = true })
 
-						local progressPower = (activePillars / totalPillars)^2
+			for i, pillar in ipairs(missionData.pillars) do 
+				if not IsValid(pillar) then continue end
 
-						if md.powerMultiplier ~= 0 and md.powerMultiplier ~= progressPower then
-							if progressPower < md.powerMultiplier then
-								-- Lost power
-								jcms.net_SendTip("all", true, "#jcms.datadownload_destroyed", progressPower)
+				local isDisrupted = pillar:GetIsDisrupted()
+				table.insert(objectives, { type = isDisrupted and "repairpillarx" or "defendpillarx", format = { pillar:GetLabelSymbol() } })
+				table.insert(objectives, { type = "defendpillarx", style = 2, progress = math.ceil(pillar:Health() / pillar:GetMaxHealth() * 100), total = 100, completed = isDisrupted })
+			end
+
+			return objectives
+		else
+			missionData.evacuating = true
+		
+			if not IsValid(missionData.evacEnt) then
+				missionData.evacEnt = jcms.mission_DropEvac(jcms.mission_PickEvacLocation(), 20)
+			end
+			
+			return jcms.mission_GenerateEvacObjective()
+		end
+	end,
+
+	think = function(d)
+		local md = d.missionData
+		md.timeEstimate = 0
+		
+		local pillarsShouldBeActive = false
+		local downloadSucceeded = false
+
+		if md.defenseCompleted then
+			md.defenseProgress = 1
+			md.powerMultiplier = 0
+		else
+			if md.defenseOngoing then
+				pillarsShouldBeActive = true
+
+				if #d.npcs < 30 then 
+					d.swarmNext = (d.swarmNext or jcms.director_GetMissionTime()) - 1
+				end
+
+				for i, npc in ipairs(d.npcs) do
+					if not IsValid(npc) or not npc.GetEnemy or IsValid(npc:GetEnemy()) then continue end
+					
+					local target = md.pillars[math.random(#md.pillars)]
+					npc:SetEnemy(target)
+					npc:UpdateEnemyMemory(target, target:GetPos())
+				end
+
+				local totalPillars = 0
+				local activePillars = 0
+				for i, pillar in ipairs(md.pillars) do 
+					if not IsValid(pillar) then continue end
+
+					totalPillars = totalPillars + 1
+					if not pillar:GetIsDisrupted() then activePillars = activePillars + 1 end
+				end
+
+				if activePillars > 0 then
+					--5 Minutes at max power, scaling with difficulty
+					--Fewer pillars exponentially slows it.
+
+					local progressPower = (activePillars / totalPillars)^2
+
+					if md.powerMultiplier ~= 0 and md.powerMultiplier ~= progressPower then
+						if progressPower < md.powerMultiplier then
+							-- Lost power
+							jcms.net_SendTip("all", true, "#jcms.datadownload_destroyed", progressPower)
+						else
+							-- Gained power (pillars repaired)
+							if progressPower >= 1 then
+								jcms.net_SendTip("all", true, "#jcms.datadownload_allrepaired", math.min(1, progressPower))
 							else
-								-- Gained power (pillars repaired)
-								if progressPower >= 1 then
-									jcms.net_SendTip("all", true, "#jcms.datadownload_allrepaired", math.min(1, progressPower))
-								else
-									jcms.net_SendTip("all", true, "#jcms.datadownload_repaired", progressPower)
-								end
+								jcms.net_SendTip("all", true, "#jcms.datadownload_repaired", progressPower)
 							end
 						end
-						
-						md.powerMultiplier = progressPower
+					end
+					
+					md.powerMultiplier = progressPower
 
-						local scalar = (#d.npcs > 10) and jcms.runprogress_GetDifficulty() or 1
-						progressPower = progressPower * 1/((60*5) * scalar) * (jcms.util_IsPVP() and 4 or 1)
+					local scalar = (#d.npcs > 10) and jcms.runprogress_GetDifficulty() or 1
+					progressPower = progressPower * 1/((60*5) * scalar) * (jcms.util_IsPVP() and 4 or 1)
 
-						md.defenseProgress = math.Clamp(md.defenseProgress + progressPower, 0, 1)
-						md.timeEstimate = math.ceil( (1 - md.defenseProgress) / progressPower )--]]
+					md.defenseProgress = math.Clamp(md.defenseProgress + progressPower, 0, 1)
+					md.timeEstimate = math.ceil( (1 - md.defenseProgress) / progressPower )--]]
 
-						if md.defenseProgress >= 1 then
-							md.uploadsCompleted = md.uploadsCompleted + 1 
-
-							md.defenseOngoing = false
-							pillarsShouldBeActive = false
-							if md.uploadsCompleted >= md.uploadsRequired then
-								md.defenseCompleted = true
-							else
-								for i, pillar in ipairs(md.pillars) do
-									pillar:SetIsDisrupted(false)
-									pillar:SetHealth( pillar:GetMaxHealth() )
-									pillar:SetHealthFraction(1)
-								end
-								md.defenseProgress = 0
-								downloadSucceeded = true
-							end
-
-							for i, computer in ipairs(md.computers) do
-								if IsValid(computer) and computer.soundHum then
-									computer.soundHum:Stop()
-									computer.soundHum = nil
-								end
-							end
-						end
-					else
-						pillarsShouldBeActive = false
-
-						for i, pillar in ipairs(md.pillars) do
-							pillar:SetIsDisrupted(false)
-							pillar:SetHealth( pillar:GetMaxHealth() )
-							pillar:SetHealthFraction(1)
-						end
+					if md.defenseProgress >= 1 then
+						md.uploadsCompleted = md.uploadsCompleted + 1 
 
 						md.defenseOngoing = false
+						pillarsShouldBeActive = false
+						if md.uploadsCompleted >= md.uploadsRequired then
+							md.defenseCompleted = true
+						else
+							for i, pillar in ipairs(md.pillars) do
+								pillar:SetIsDisrupted(false)
+								pillar:SetHealth( pillar:GetMaxHealth() )
+								pillar:SetHealthFraction(1)
+							end
+							md.defenseProgress = 0
+							downloadSucceeded = true
+						end
 
 						for i, computer in ipairs(md.computers) do
 							if IsValid(computer) and computer.soundHum then
@@ -452,101 +432,117 @@
 						end
 					end
 				else
-					md.powerMultiplier = 0
-				end
+					pillarsShouldBeActive = false
 
-				for i, pillar in ipairs(md.pillars) do 
-					pillar:SetIsActive(pillarsShouldBeActive) 
-					pillar:SetChargeFraction(md.defenseProgress)
-				end
-			end
-			
-			for i, computer in ipairs(md.computers) do
-				if IsValid(computer) then
-					if computer:GetNWString("jcms_terminal_modeData") == "upload" and not md.defenseOngoing then
-						-- Resetting
-						if md.defenseProgress < 1 then
-							if not(downloadSucceeded) then
-								jcms.net_SendTip("all", true, "#jcms.datadownload_failed", tonumber(md.defenseProgress) or 0)
-							else
-								--TODO: Datadownload succeeded tip.
-							end
+					for i, pillar in ipairs(md.pillars) do
+						pillar:SetIsDisrupted(false)
+						pillar:SetHealth( pillar:GetMaxHealth() )
+						pillar:SetHealthFraction(1)
+					end
 
-							computer:SetNWString("jcms_terminal_modeData", tostring(computer.jcms_datadownload_cost))
-						else
-							computer:SetNWString("jcms_terminal_modeData", "done")
-						end
-						
-						local pvpTeam = computer:GetNWInt("jcms_pvpTeam", -1)
-						if not(pvpTeam == -1) then
-							jcms.director_PvpObjectiveCompletedTeam(pvpTeam, computer:GetPos())
-							computer:SetNWInt("jcms_pvpTeam", -1)
-						end
+					md.defenseOngoing = false
 
-						if computer.soundDownload then
-							computer.soundDownload:Stop()
-							computer.soundDownload = nil
+					for i, computer in ipairs(md.computers) do
+						if IsValid(computer) and computer.soundHum then
+							computer.soundHum:Stop()
+							computer.soundHum = nil
 						end
 					end
 				end
-			end
-		end,
-
-		swarmCalcCost = function(director, baseCost)
-			local md = director.missionData
-			
-			if not md.evacuating then
-				local phase = md.phase
-				
-				if phase == 2 then
-					return baseCost > 0 and baseCost + 4 or 0 -- More shit during the defense phase
-				end
-			end
-
-			return baseCost
-		end,
-
-		swarmCalcDanger = function(d, swarmCost)
-			local phase = d.missionData.phase
-			if phase == 2 then
-				return math.max(d.swarmDanger, jcms.NPC_DANGER_STRONG) -- Always strongs during defense
-			end
-		end,
-
-		--[[
-		swarmCalcBossCount = function(d, swarmCost)
-			if d.missionData.phase == 1 then
-				return 0 -- No bosses during preparation phase
-			end
-		end,--]]
-
-		npcTypeQueueCheck = function(d, swarmCost, dangerCap, npcType, npcData, basePassesCheck)
-			local phase = d.missionData.phase
-			local weightMul
-
-			if phase == 1 then
-				-- More cops and hunters.
-				weightMul = ({
-					["combine_metrocop"] = 1.5,
-					["combine_hunter"] = 1.75
-				})[npcType]
-			elseif phase == 2 then
-				-- More hunters, less BS enemies during the defense
-				weightMul = ({
-					["combine_metrocop"] = 1.66,
-					["combine_hunter"] = 2.5,
-					["combine_suppressor"] = 0.5,
-					["combine_sniper"] = 0.75,
-					["combine_gunship"] = 0.5 --This isn't going to do anything because boss-spawns are guaranteed and combine only have one type - J
-				})[npcType]
-			end
-
-			if weightMul then
-				return basePassesCheck, jcms.npc_GetScaledSwarmWeight(npcData) * weightMul
 			else
-				return basePassesCheck
+				md.powerMultiplier = 0
+			end
+
+			for i, pillar in ipairs(md.pillars) do 
+				pillar:SetIsActive(pillarsShouldBeActive) 
+				pillar:SetChargeFraction(md.defenseProgress)
 			end
 		end
-	}
+		
+		for i, computer in ipairs(md.computers) do
+			if IsValid(computer) then
+				if computer:GetNWString("jcms_terminal_modeData") == "upload" and not md.defenseOngoing then
+					-- Resetting
+					if md.defenseProgress < 1 then
+						if not(downloadSucceeded) then
+							jcms.net_SendTip("all", true, "#jcms.datadownload_failed", tonumber(md.defenseProgress) or 0)
+						else
+							--TODO: Datadownload succeeded tip.
+						end
 
--- }}}
+						computer:SetNWString("jcms_terminal_modeData", tostring(computer.jcms_datadownload_cost))
+					else
+						computer:SetNWString("jcms_terminal_modeData", "done")
+					end
+					
+					local pvpTeam = computer:GetNWInt("jcms_pvpTeam", -1)
+					if not(pvpTeam == -1) then
+						jcms.director_PvpObjectiveCompletedTeam(pvpTeam, computer:GetPos())
+						computer:SetNWInt("jcms_pvpTeam", -1)
+					end
+
+					if computer.soundDownload then
+						computer.soundDownload:Stop()
+						computer.soundDownload = nil
+					end
+				end
+			end
+		end
+	end,
+
+	swarmCalcCost = function(director, baseCost)
+		local md = director.missionData
+		
+		if not md.evacuating then
+			local phase = md.phase
+			
+			if phase == 2 then
+				return baseCost > 0 and baseCost + 4 or 0 -- More shit during the defense phase
+			end
+		end
+
+		return baseCost
+	end,
+
+	swarmCalcDanger = function(d, swarmCost)
+		local phase = d.missionData.phase
+		if phase == 2 then
+			return math.max(d.swarmDanger, jcms.NPC_DANGER_STRONG) -- Always strongs during defense
+		end
+	end,
+
+	--[[
+	swarmCalcBossCount = function(d, swarmCost)
+		if d.missionData.phase == 1 then
+			return 0 -- No bosses during preparation phase
+		end
+	end,--]]
+
+	npcTypeQueueCheck = function(d, swarmCost, dangerCap, npcType, npcData, basePassesCheck)
+		local phase = d.missionData.phase
+		local weightMul
+
+		if phase == 1 then
+			-- More cops and hunters.
+			weightMul = ({
+				["combine_metrocop"] = 1.5,
+				["combine_hunter"] = 1.75
+			})[npcType]
+		elseif phase == 2 then
+			-- More hunters, less BS enemies during the defense
+			weightMul = ({
+				["combine_metrocop"] = 1.66,
+				["combine_hunter"] = 2.5,
+				["combine_suppressor"] = 0.5,
+				["combine_sniper"] = 0.75,
+				["combine_gunship"] = 0.5 --This isn't going to do anything because boss-spawns are guaranteed and combine only have one type - J
+			})[npcType]
+		end
+
+		if weightMul then
+			return basePassesCheck, jcms.npc_GetScaledSwarmWeight(npcData) * weightMul
+		else
+			return basePassesCheck
+		end
+	end
+}
