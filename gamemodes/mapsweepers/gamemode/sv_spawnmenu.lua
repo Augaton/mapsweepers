@@ -693,10 +693,9 @@
 					col = Color(96, 255, 124)
 				end
 
-				local boosted = jcms.isPlayerEngineer(ply)
 				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_restock", 10, "#jcms.firstaid", col, ply)
 				crate:SetAmmoCashInside( 0 )
-				crate:SetHealthInside( boosted and 125 or 100 )
+				crate:SetHealthInside( 100 )
 				crate:SetOwnerNickname( ply:Nick() )
 				crate:SetLocalAngularVelocity( AngleRand(48, 128) )
 				crate:SetMaterial("models/jcms/"..faction.."_crate_heal")
@@ -733,9 +732,8 @@
 					col = Color(255, 0, 0)
 				end
 
-				local boosted = jcms.isPlayerEngineer(ply)
 				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_restock", 10, "#jcms.restock", col, ply)
-				crate:SetAmmoCashInside( 400 + (boosted and 200 or 0) )
+				crate:SetAmmoCashInside( 400 )
 				crate:SetHealthInside( 0 )
 				crate:SetOwnerNickname( ply:Nick() )
 				crate:SetLocalAngularVelocity( AngleRand(48, 128) )
