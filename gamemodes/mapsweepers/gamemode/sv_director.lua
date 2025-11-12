@@ -788,7 +788,7 @@
 			end,
 
 			[ jcms.HINT_RESPAWN ] = function(d, ply)
-				return jcms.orders.respawnbeacon and d.deadPlayers > 0 and not game.SinglePlayer()
+				return jcms.orders.respawnbeacon and d.deadPlayers > 0 and not game.SinglePlayer() and not jcms.util_IsPVP()
 			end,
 
 			[ jcms.HINT_ANTIAIR ] = function(d, ply)
@@ -1611,15 +1611,19 @@
 				jcms.director.deadPlayers = deadPlayers
 				local teamRespawns = jcms.director_RecalculateRespawnCounts() --Set the NW integer for each team's respawn count
 
-				local aliveTeams = 0
+				local aliveTeams = {} --Which team is alive (*only* useful if there's one, otherwise returns highest index team) 
+				local aliveTeamCount = 0
 				for pvpTeam=1, 8, 1 do
 					if (teamRespawns[pvpTeam] or 0) + (teamAlivePlayers[pvpTeam] or 0) > 0 then 
-						aliveTeams = aliveTeams + 1
+						aliveTeamCount = aliveTeamCount + 1
+						aliveTeams[pvpTeam] = true
+					else
+						aliveTeams[pvpTeam] = false
 					end
 				end
 
 				--Everyone dead or everyone evacuated
-				if (not d.debug) and ( (aliveTeams <= ( (jcms.util_IsPVP() and not jcms.cvar_pvpdebug:GetBool()) and 1 or 0)) or (livingPlayers == 0 and deadPlayers == 0) ) then
+				if (not d.debug) and ( (aliveTeamCount <= ( (jcms.util_IsPVP() and not jcms.cvar_pvpdebug:GetBool()) and 1 or 0)) or (livingPlayers == 0 and deadPlayers == 0) ) then
 					local victory = evacCount > 0
 
 					local missionTime = jcms.director_GetMissionTime()
@@ -1628,7 +1632,7 @@
 					if (not d.gameover) and (victory or not grace) then
 						d.gameover = true
 						d.victory = victory
-						jcms.mission_End(victory)
+						jcms.mission_End(victory, aliveTeams)
 					end
 				else
 					jcms.director_AnalyzeNPCs(d)

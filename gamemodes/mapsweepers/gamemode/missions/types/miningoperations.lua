@@ -216,7 +216,7 @@ jcms.missions.miningoperations = {
 			end
 		end
 
-		if totalValid > 0 and totalComplete < totalValid then
+		if totalValid > 0 and totalComplete == 0 then --totalComplete == 0 means pvp mode will start nuking as soon as the first refinery is finished.
 			local objectives =  {
 				{ type = "jantlion" },
 				{ type = "mineore" },

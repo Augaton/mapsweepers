@@ -147,10 +147,10 @@ if SERVER then
 		end
 	end)
 
-	function jcms.net_BroadcastToTeam(ply)
+	function jcms.net_BroadcastToTeam(teamId)
 		local allTeamPlys = {}
 		for i, recipient in ipairs(player.GetAll()) do
-			if jcms.team_SameTeam(ply, recipient) then 
+			if jcms.team_pvpSameTeam_optimised(recipient:GetNWInt("jcms_pvpTeam", -1), teamId) then
 				table.insert(allTeamPlys, recipient)
 			end
 		end
@@ -224,7 +224,7 @@ if SERVER then
 				net.WriteUInt(PLY_NOTIF, bits_ply)
 				net.WriteUInt(activity, 3)
 				net.WriteString(thing)
-			jcms.net_BroadcastToTeam(ply)
+			jcms.net_BroadcastToTeam(ply:GetNWInt("jcms_pvpTeam", -1))
 		end
 	end
 
@@ -380,7 +380,7 @@ if SERVER then
 		net.Send(ply)
 	end
 	
-	function jcms.net_SendMissionEnding(jCorpWon, lateToThePartyPlayer) -- TODO Send a faster end-screen to those who had just joined.
+	function jcms.net_SendMissionEnding(jCorpWon, lateToThePartyPlayer, teamId) -- TODO Send a faster end-screen to those who had just joined.
 		net.Start("jcms_msg")
 			net.WriteBool(false)
 			net.WriteEntity(game.GetWorld())
@@ -444,6 +444,8 @@ if SERVER then
 		
 		if lateToThePartyPlayer then
 			net.Send(lateToThePartyPlayer)
+		elseif teamId then 
+			jcms.net_BroadcastToTeam(teamId)
 		else
 			net.Broadcast()
 		end
@@ -527,7 +529,7 @@ if SERVER then
 			if not IsValid(fromPly) then
 				net.Broadcast()
 			else
-				jcms.net_BroadcastToTeam(fromPly)
+				jcms.net_BroadcastToTeam(fromPly:GetNWInt("jcms_pvpTeam", -1))
 			end
 		else
 			net.Send(to)

@@ -276,7 +276,7 @@
 		return maps
 	end
 
-	function jcms.mission_End(victory)
+	function jcms.mission_End(victory, aliveTeams)
 		-- Voting {{{
 			jcms.director.votes = {}
 			
@@ -291,7 +291,13 @@
 
 		-- Sending info {{{
 			local postMissionStats = jcms.director_GetPostMissionStats()
-			jcms.net_SendMissionEnding(victory)
+			if jcms.util_IsPVP() then
+				for teamId, alive in ipairs(aliveTeams) do
+					jcms.net_SendMissionEnding(alive, nil, teamId)
+				end
+			else
+				jcms.net_SendMissionEnding(victory)
+			end
 		-- }}}
 
 		-- Rewards & Progress {{{
