@@ -1330,6 +1330,10 @@ end
 								ply:SetNWInt("jcms_desiredteam", 1)
 								jcms.playerspawn_RespawnAs(ply, "spectator")
 								ply.jcms_lastDeathTime = CurTime()
+
+								if jcms.util_IsPVP() then
+									ply.jcms_isNPC = true
+								end
 							elseif state == "evacuated" then
 								-- We've evacuated before. Now we're just spectating with the option to be an NPC.
 								ply:SetNWInt("jcms_desiredteam", 1)
@@ -1573,6 +1577,9 @@ end
 		ply:SetObserverMode(OBS_MODE_NONE)
 		ply:UnLock()
 		ply:GodDisable()
+		if jcms.util_IsPVP() then		
+			ply.jcms_isNPC = true
+		end
 
 		ply:SetNWBool("jcms_ready", false)
 		ply:SetTeam(1)
@@ -2364,13 +2371,14 @@ end
 		elseif restriction == 1 then
 			canJoinNpcs = jcms.director and jcms.director.evacuated[ply]
 		end
+
+		if jcms.util_IsPVP() then
+			canJoinNpcs = false -- Can't join NPCs if we're in PVP.
+		end
 		
 		local team = tonumber(args[1]) or tostring(args[1])
 
 		if ply:GetObserverMode() == OBS_MODE_FIXED then
-			if jcms.util_IsPVP() then
-				canJoinNpcs = false -- Can't join NPCs from the lobby if we're in PVP.
-			end
 
 			if team == 0 or team == "none" then
 				-- Leaving the lobby is not as scary as it sounds

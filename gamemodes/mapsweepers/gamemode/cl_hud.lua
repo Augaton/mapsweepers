@@ -234,7 +234,7 @@
 		jcms.hud_UpdateNotifs()
 		jcms.hud_UpdateLocators()
 
-		if jcms.locPly:KeyDown(IN_RELOAD) and plyObserverMode == OBS_MODE_CHASE and jcms.locPly:GetNWInt("jcms_desiredteam", 0) < 2 then
+		if jcms.locPly:KeyDown(IN_RELOAD) and plyObserverMode == OBS_MODE_CHASE and jcms.locPly:GetNWInt("jcms_desiredteam", 0) < 2 and not jcms.util_IsPVP() then
 			jcms.hud_npcConfirmation = math.Clamp( jcms.hud_npcConfirmation + FrameTime(), 0, 1 )
 
 			if not jcms.hud_npcConfirmed and jcms.hud_npcConfirmation >= 1 then
@@ -2584,7 +2584,7 @@
 				end
 			cam.End3D2D()
 
-			if not game.SinglePlayer() and jcms.locPly:GetNWInt("jcms_desiredteam", 0) < 2 then
+			if not game.SinglePlayer() and jcms.locPly:GetNWInt("jcms_desiredteam", 0) < 2 and not jcms.util_IsPVP() then
 				local restriction = jcms.cvar_npcteam_restrict:GetInt()
 				local evacuated = jcms.vm_evacd > 0.5
 				local canSwitch = (restriction == 0) or (restriction == 1 and evacuated)
