@@ -965,7 +965,7 @@ jcms.npc_types.rebel_odessa = {
 	proficiency = WEAPON_PROFICIENCY_VERY_GOOD
 }
 
-jcms.npc_types.rebel_alyx = { --todo: Stun when hit w/stunstick
+jcms.npc_types.rebel_alyx = { 
 	portalSpawnWeight = 0,
 	faction = "rebel",
 	

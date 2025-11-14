@@ -20,9 +20,9 @@
 --]]
 DEFINE_BASECLASS("gamemode_base")
 
-include "sh_debugtools.lua"
+include "_main/sh_debugtools.lua"
 
-include "sh_bspReader.lua" --Data from the BSP. We probably(?) want to use this in mapgen and missions, so I put it at the top. - J
+include "_main/sh_bspReader.lua" --Data from the BSP. We probably(?) want to use this in mapgen and missions, so I put it at the top. - J
 do --TODO: PCALL
 	local bspReadStart = SysTime()
 	bspReader.readLeafData()
@@ -33,21 +33,21 @@ do --TODO: PCALL
 	print("[MapSweepers] BSP Data read in: " .. tostring( math.Round(SysTime() - bspReadStart, 3) ) .. " seconds")
 end
 
-include "sh_ainReader.lua" --i like eating binrary numbrs- j
+include "_main/sh_ainReader.lua" --i like eating binrary numbrs- j
 ainReader.readNodeData()
 
 include "shared.lua"
-include "sh_net.lua"
-include "sh_hints.lua"
-include "sv_director.lua"
-include "sh_controls.lua"
-include "sv_terminal.lua"
-include "sv_spawnmenu.lua"
-include "sv_mapgen.lua"
-include "sv_addoncompatibility.lua"
-include "sh_announcer.lua"
-include "sh_factions.lua"
-include "sh_statistics.lua"
+include "_main/sh_net.lua"
+include "_main/sh_hints.lua"
+include "_main/server/sv_director.lua"
+include "_main/sh_controls.lua"
+include "_main/server/sv_terminal.lua"
+include "_main/server/sv_spawnmenu.lua"
+include "_main/server/sv_mapgen.lua"
+include "_main/server/sv_addoncompatibility.lua"
+include "_main/sh_announcer.lua"
+include "_main/sh_factions.lua"
+include "_main/sh_statistics.lua"
 
 -- // Mission Includes {{{
 	do 

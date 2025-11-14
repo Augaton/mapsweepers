@@ -19,29 +19,29 @@
 	Contact E-Mail: merekidorian@gmail.com
 --]]
 
-include "sh_debugtools.lua"
+include "_main/sh_debugtools.lua"
 
-include "sh_bspReader.lua" --Not sure if we even need this data on client. Will include data read-ins if/when necessary. - J
+include "_main/sh_bspReader.lua" --Not sure if we even need this data on client. Will include data read-ins if/when necessary. - J
 
 include "shared.lua"
-include "sh_net.lua"
-include "cl_hud.lua"
-include "cl_hud_npc.lua"
-include "sh_controls.lua"
-include "cl_flashlights.lua"
-include "cl_terminal.lua"
-include "cl_objectives.lua"
-include "cl_spawnmenu.lua"
-include "cl_offgame.lua"
-include "cl_paint.lua"
+include "_main/sh_net.lua"
+include "_main/client/ui/cl_hud.lua"
+include "_main/client/ui/cl_hud_npc.lua"
+include "_main/sh_controls.lua"
+include "_main/client/cl_flashlights.lua"
+include "_main/client/cl_terminal.lua"
+include "_main/client/ui/cl_objectives.lua"
+include "_main/client/ui/cl_spawnmenu.lua"
+include "_main/client/ui/cl_offgame.lua"
+include "_main/client/ui/cl_paint.lua"
 include "missions/cl_missions.lua"
-include "sh_announcer.lua"
-include "sh_hints.lua"
-include "sh_factions.lua"
-include "sh_statistics.lua"
-include "cl_codex.lua"
+include "_main/sh_announcer.lua"
+include "_main/sh_hints.lua"
+include "_main/sh_factions.lua"
+include "_main/sh_statistics.lua"
+include "_main/client/cl_codex.lua"
 include "npcs/cl_bestiary.lua"
-include "cl_addoncompatibility.lua"
+include "_main/client/cl_addoncompatibility.lua"
 
 -- // Class Includes {{{
 	do
