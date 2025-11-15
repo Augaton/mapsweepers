@@ -547,6 +547,13 @@ end
 			end)
 		end
 	end)
+
+	hook.Add("PlayerCanSeePlayersChat", "jcms_teamChat", function(text, teamOnly, listener, speaker)
+		return not teamOnly or jcms.team_SameTeam(listener, speaker)
+	end)
+	hook.Add("PlayerCanHearPlayersVoice", "jcms_teamChat", function(listener, speaker)
+		return not jcms.util_IsPVP() or jcms.team_SameTeam(listener, speaker)
+	end)
 -- // }}}
 
 -- // Run Progress {{{
