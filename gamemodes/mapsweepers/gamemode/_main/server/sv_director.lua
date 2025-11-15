@@ -1251,7 +1251,12 @@
 					end
 					
 					local targetArea = jcms.util_ChooseByWeight(weightedAreas)
-					jcms.util_skyNuke(targetArea:GetCenter())
+
+					local targetPos = targetArea:GetCenter()
+					local nearestSwp = jcms.GetNearestSweeper(targetPos) 
+					targetPos.z = nearestSwp:GetPos().z
+
+					jcms.util_skyNuke(targetPos)
 
 					d.nextNuke = cTime + 60
 				end

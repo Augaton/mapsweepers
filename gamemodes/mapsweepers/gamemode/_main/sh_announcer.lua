@@ -65,8 +65,8 @@ end)
 		--Not technically necessary but I want to make this as brain-dead easy for people as possible.
 		local announcerFiles, _ = file.Find( "mapsweepers/gamemode/announcers_custom/*.lua", "LUA")
 		for i, v in ipairs(announcerFiles) do 
-			AddCSLuaFile("announcers_custom/" .. v)
-			local cVo, cVoW = include("announcers_custom/" .. v)
+			AddCSLuaFile("mapsweepers/gamemode/announcers_custom/" .. v)
+			local cVo, cVoW = include("mapsweepers/gamemode/announcers_custom/" .. v)
 			local name = string.StripExtension( v )
 
 			jcms.announcer_vo_types[name] = { ["vo"] = cVo, ["voW"] = cVoW }
