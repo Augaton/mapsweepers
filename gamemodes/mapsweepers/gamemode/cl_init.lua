@@ -70,7 +70,7 @@ include "_main/client/cl_addoncompatibility.lua"
 
 
 if jcms.inTutorial then
-	include "cl_tutorial.lua"
+	include "_main/client/cl_tutorial.lua"
 end 
 
 --Optimisation. Getting locPly from a lua table is cheaper than the function.
