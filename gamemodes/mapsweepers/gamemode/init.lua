@@ -2615,7 +2615,7 @@ end
 			for i, oply in ipairs( player.GetAll() ) do
 				oply:SetNWBool("jcms_ready", false)
 				oply:SetNWInt("jcms_desiredteam", 0)
-				oply:SetNWInt("jcms_pvpTeam", -1)
+				oply:SetNWInt("jcms_pvpTeam", nil)
 			end
 
 			local newState = not game.GetWorld():GetNWBool("jcms_pvpmode", false)
