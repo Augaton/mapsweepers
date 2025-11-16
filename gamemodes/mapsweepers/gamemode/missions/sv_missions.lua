@@ -114,6 +114,8 @@
 						jcms.net_SendOrder("respawnbeacon", jcms.orders.respawnbeacon)
 					end
 				end
+				
+				jcms.net_SendOrder("respawnbeacon", jcms.orders.respawnbeacon) --TODO: Temp/Debug
 
 				-- // Mission-Specific Orders {{{
 					for k, order in pairs(jcms.orders) do 

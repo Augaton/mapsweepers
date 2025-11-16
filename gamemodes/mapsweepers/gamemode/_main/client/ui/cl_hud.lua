@@ -2042,6 +2042,8 @@
 		end
 	end
 
+
+
 	jcms.hud_infoTargetFuncs = {
 		["player"] = function(ply, blend)
 			if ply:Team() == 1 then
@@ -2345,7 +2347,25 @@
 				render.OverrideBlend(false)
 				surface.SetAlphaMultiplier(1)
 			end
-		end
+		end,
+
+		["jcms_orecrate"] = function(ent, blend)
+			if ent:GetHeldCapacity() > 0 then
+				local x, y = 0, -512
+
+				surface.SetAlphaMultiplier(blend)
+
+				local text = language.GetPhrase("jcms.orecrate_tip")
+				draw.SimpleText(text, "jcms_hud_big", x, y, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+				
+				render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
+					local off = 2
+					draw.SimpleText(text, "jcms_hud_big", x+off, y-off, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+				render.OverrideBlend(false)
+				
+				surface.SetAlphaMultiplier(1)
+			end
+		end,
 	}
 	jcms.hud_infoTargetFuncs.jcms_turret_smrls = jcms.hud_infoTargetFuncs.jcms_turret
 

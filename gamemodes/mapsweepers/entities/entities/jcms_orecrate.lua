@@ -65,6 +65,21 @@ ENT.CrateTypes = {
 	},
 }
 
+ENT.VomitVectors = { --Directions to try place ores in when releasing
+	Vector(0, 0, 1)
+}
+for i=1, 8 do
+	local vec = Vector(1,0,0)
+	vec:Rotate( Angle((i-1) * 45, 5, 0) )
+	table.insert(ENT.VomitVectors, vec)
+
+	local vec2 = Vector(vec)
+	vec2:Rotate( Angle(0,30, 0) )
+	table.insert(ENT.VomitVectors, vec2)
+end
+
+--PrintTable(ENT.VomitVectors)
+
 ENT.EjectionCooldown = 1 --How long until we can eat again after ejecting
 ENT.AttachCooldown = 1 --How long until we can attach after being grabbed off a vehicle
 
@@ -176,11 +191,28 @@ if SERVER then
 		self:EmitSound("vehicles/tank_readyfire1.wav", 75)
 		self:EmitSound("vehicles/tank_turret_stop1.wav", 75)--]]
 
+		local selfPos = self:WorldSpaceCenter() + Vector(0,0,15)
+		local trData = {
+			start = selfPos,
+			filter = self,
+			mins = Vector(10, 10, 10),
+			maxs = Vector(10, 10, 10)
+		}
+
 		self.lastEjected = CurTime()
 
-		for i, oreData in ipairs(self.crate_contents) do 
+		local orePositions = {}
+		for i, oreData in ipairs(self.crate_contents) do
+			local dirVec = self.VomitVectors[ (i-1) % #self.VomitVectors + 1 ]
+			trData.endpos = selfPos + dirVec * 45
+
+			local tr = util.TraceHull(trData)
+			table.insert(orePositions, tr.HitPos)
+		end
+
+		for i, oreData in ipairs(self.crate_contents) do
 			local ore = ents.Create("jcms_orechunk")
-			ore:SetPos(self:WorldSpaceCenter())
+			ore:SetPos(orePositions[i])
 
 			ore:SetModel(oreData.model)
 			ore:SetOreType(oreData.type)
@@ -273,6 +305,7 @@ if SERVER then
 end
 
 if CLIENT then
+	ENT.jcms_infoStrictAngles = true
 	ENT.ModelUIScales = {
 		["models/items/item_item_crate.mdl"] = {
 			x = 1,
