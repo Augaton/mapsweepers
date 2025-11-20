@@ -180,6 +180,22 @@
 	--todo: Maybe playbackrate scaling could be used to scale up the threat of fodder lategame?
 -- // }}}
 
+-- // Sounds {{{
+	sound.Add( { --Literally just SolidMetal.BulletImpact with a higher soundLevel
+		name = "jcms_MetalImpact_Loud",
+		channel = CHAN_VOICE,
+		volume = 1.0,
+		level = 90,
+		pitch = 100,
+		sound = {
+			"physics/metal/metal_solid_impact_bullet1.wav",
+			"physics/metal/metal_solid_impact_bullet2.wav",
+			"physics/metal/metal_solid_impact_bullet3.wav",
+			"physics/metal/metal_solid_impact_bullet4.wav",
+		}
+	} )
+-- // }}}
+
 jcms.npc_commanders["antlion"] = {
 	placePrefabs = function(c, data)
 		--Faction prefabs
@@ -388,6 +404,8 @@ jcms.npc_types.antlion_guard = {
 		
 		npc:SetNWString("jcms_boss", "antlion_guard")
 		jcms.npc_SetupAntlionBurrowCheck(npc)
+
+		npc:SetBloodColor(DONT_BLEED)
 	end,
 
 	takeDamage = function(npc, dmg)
@@ -409,22 +427,25 @@ jcms.npc_types.antlion_guard = {
 		local dot = attkNorm:Dot(-npcAng)
 		local angDiff = math.acos(dot)
 
-		if angDiff < math.pi/4 then --Heavy damage resist from the front, weak from behind.
-			npc:EmitSound("SolidMetal.BulletImpact", 100, 100, 1)
+		local effectdata = EffectData()
+		effectdata:SetEntity(npc)
+		effectdata:SetOrigin(dmgInfo:GetDamagePosition() - attkNorm)
+		effectdata:SetStart(dmgInfo:GetDamagePosition() + attkNorm )
+		effectdata:SetSurfaceProp(2)
+		effectdata:SetDamageType(dmgInfo:GetDamageType())
 
-			local effectdata = EffectData()
-			effectdata:SetEntity(npc)
-			effectdata:SetOrigin(dmgInfo:GetDamagePosition() - attkNorm)
-			effectdata:SetStart(dmgInfo:GetDamagePosition() + attkNorm )
-			effectdata:SetSurfaceProp(2)
-			effectdata:SetDamageType(dmgInfo:GetDamageType())
+		if angDiff < math.pi/4 then --Heavy damage resist from the front, weak from behind.
+			npc:EmitSound("jcms_MetalImpact_Loud")
 
 			util.Effect("impact", effectdata)
-
 			effectdata:SetNormal(attkNorm)
 			util.Effect("MetalSpark", effectdata)
 
 			dmgInfo:ScaleDamage(0.25) --Slightly more forgiving than 0 damage.
+		else
+			effectdata:SetColor(1)
+			effectdata:SetScale(0.5)
+			util.Effect("BloodImpact", effectdata)
 		end
 	end,
 
