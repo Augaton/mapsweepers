@@ -210,6 +210,10 @@ jcms.npc_commanders["zombie"] = {
 					npc:Remove()
 					--We replace the old npc ref with the new one for the effect.
 					npc = jcms.npc_Spawn(upgrade, npc:GetPos())
+
+					if upgrade == "zombie_minitank" then 
+						npc.bounty = 45 --Keep the old cost for flashpoint ones, they're meant to be a hinderance.
+					end
 				end
 
 				local ed = EffectData()
@@ -555,7 +559,7 @@ jcms.npc_types.zombie_minitank = {
     swarmWeight = 0.0000000001, --0.3,
 
 	class = "npc_poisonzombie",
-	bounty = 45,
+	bounty = 350, --If the match has gone on this long it's honestly probably a good idea to just start giving people more cash.
 
 	preSpawn = function(npc)
 		npc:SetSaveValue("m_nCrabCount", 0)
@@ -735,7 +739,7 @@ jcms.npc_types.zombie_combine = {
 	bounty = 40,
 
 	postSpawn = function(npc)
-		local hp = math.ceil(npc:GetMaxHealth()*1.75)
+		local hp = math.ceil(npc:GetMaxHealth()*1.5)
 		npc:SetMaxHealth(hp)
 		npc:SetHealth(hp)
 	end,
@@ -746,6 +750,8 @@ jcms.npc_types.zombie_combine = {
 		if #jcms.GetSweepersInRange(npc:GetPos(), 600) > 0 then return end
 		npc:Fire("StartSprint") --Force us to run until we're closer.
 	end,
+
+	--TODO: Try to make sure grenades are out of the way or able to be grabbed after death (force in opposite direction of view yaw?) 
 	
 	damageEffect = function(npc, target, dmgInfo)
 		if dmgInfo:IsDamageType( DMG_BLAST, DMG_BLAST_SURFACE ) then 
@@ -810,7 +816,7 @@ jcms.npc_types.zombie_spawner = {
 	swarmWeight = 1,
 
 	class = "npc_jcms_zombiespawner",
-	bounty = 250,
+	bounty = 350,
 	
 	isStatic = true, 
 
@@ -859,7 +865,7 @@ jcms.npc_types.zombie_charple = {
 	swarmWeight = 0.0000001,
 
 	class = "npc_fastzombie",
-	bounty = 20,
+	bounty = 22,
 
 	postSpawn = function(npc)
 		npc:SetBodygroup( 1, 0 ) --Remove our headcrab

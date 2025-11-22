@@ -2570,6 +2570,7 @@ end
 	end)
 
 	concommand.Add("jcms_setorderdetails", function(ply, cmd, args)
+		--Format: order, cost, cooldown
 		if not ply:IsPlayer() or ply:IsAdmin() then
 			local class = tostring(args[1])
 			local orderData = jcms.orders[class]
