@@ -559,7 +559,7 @@ jcms.npc_types.zombie_minitank = {
     swarmWeight = 0.0000000001, --0.3,
 
 	class = "npc_poisonzombie",
-	bounty = 350, --If the match has gone on this long it's honestly probably a good idea to just start giving people more cash.
+	bounty = 225, --If the match has gone on this long it's honestly probably a good idea to just start giving people more cash.
 
 	preSpawn = function(npc)
 		npc:SetSaveValue("m_nCrabCount", 0)
@@ -751,8 +751,20 @@ jcms.npc_types.zombie_combine = {
 		npc:Fire("StartSprint") --Force us to run until we're closer.
 	end,
 
-	--TODO: Try to make sure grenades are out of the way or able to be grabbed after death (force in opposite direction of view yaw?) 
-	
+	takeDamage = function(npc, dmg)
+		timer.Simple(0, function()
+			if IsValid(npc) then
+				for i, ent in ipairs(ents.FindInSphere(npc:GetAttachment( 8 ).Pos, 1)) do --8 = Grenade attach pos
+					if ent:GetClass() == "npc_grenade_frag" then
+						if not IsValid(ent:GetParent()) then --Don't apply if we're still in-hand
+							ent:SetSaveValue("m_flDetonateTime", 2.5) --Additional grace
+						end
+					end
+				end
+			end
+		end)
+	end,
+
 	damageEffect = function(npc, target, dmgInfo)
 		if dmgInfo:IsDamageType( DMG_BLAST, DMG_BLAST_SURFACE ) then 
 			return --Don't buff grenade damage

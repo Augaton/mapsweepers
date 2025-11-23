@@ -389,6 +389,30 @@ end
 			npcTbl.jcms_ScaleDamage(npc, hitGroup, dmgInfo)
 		end
 	end)
+
+	hook.Add( "FindUseEntity", "jcms_pickupOverride", function( ply, defaultEnt )
+		--Allow us to pick grenades up through NPCs.
+		if IsValid(defaultEnt) then return end
+
+		local ep = ply:EyePos()
+		local endpos = ply:EyeAngles():Forward()
+		endpos:Mul(32768)
+		endpos:Add(ep)
+
+		local tr = util.TraceLine({
+			start = ep,
+			endpos = endpos,
+
+			mask = MASK_PLAYERSOLID_BRUSHONLY
+		})
+		if tr.StartPos:DistToSqr(tr.HitPos) > 100^2 then return end
+
+		for i, ent in ipairs(ents.FindInSphere(tr.HitPos, 15)) do 
+			if ent:GetClass() == "npc_grenade_frag" then 
+				return ent
+			end
+		end
+	end )
 	
 	hook.Add("PostEntityTakeDamage", "jcms_Adjustments", function(ent, dmg)
 		local entTbl = ent:GetTable()
