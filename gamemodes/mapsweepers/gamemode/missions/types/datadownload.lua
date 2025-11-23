@@ -168,7 +168,7 @@ jcms.missions.datadownload = {
 					computer:SetNWBool("jcms_terminal_locked", false)
 					jcms.terminal_ToPurpose(computer)
 
-					computer.jcms_datadownload_cost = 500
+					computer.jcms_datadownload_cost = jcms.util_IsPVP() and 1000 or 500
 				
 					function computer:jcms_terminal_Callback(cmd, data, ply)
 						if tonumber(data) and not missionData.defenseOngoing and not missionData.defenseCompleted then

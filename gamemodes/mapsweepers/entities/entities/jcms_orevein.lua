@@ -190,7 +190,7 @@ if SERVER then
 
 				if not didBreakSound then
 					if doPickSound then
-						self:EmitSound("weapons/crowbar/crowbar_impact1.wav", 100, math.Rand(120, 125))
+						self:EmitSound("weapons/crowbar/crowbar_impact1.wav", 75, math.Rand(120, 125))
 					end
 					self:EmitSound("Breakable.Concrete")
 				end
