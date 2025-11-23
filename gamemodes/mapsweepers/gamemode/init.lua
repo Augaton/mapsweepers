@@ -396,7 +396,7 @@ end
 
 		local ep = ply:EyePos()
 		local endpos = ply:EyeAngles():Forward()
-		endpos:Mul(32768)
+		endpos:Mul(100)
 		endpos:Add(ep)
 
 		local tr = util.TraceLine({
@@ -405,7 +405,7 @@ end
 
 			mask = MASK_PLAYERSOLID_BRUSHONLY
 		})
-		if tr.StartPos:DistToSqr(tr.HitPos) > 100^2 then return end
+		if not tr.Hit then return end
 
 		for i, ent in ipairs(ents.FindInSphere(tr.HitPos, 15)) do 
 			if ent:GetClass() == "npc_grenade_frag" then 
