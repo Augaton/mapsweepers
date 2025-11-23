@@ -1583,17 +1583,19 @@
 			local off = 3
 
 			-- PVP Team
-			local pvpTeam = jcms.locPly:GetNWInt("jcms_pvpTeam", -1)
-			if pvpTeam > 0 then
-				local mat = jcms.hud_GetPVPTeamMat(pvpTeam)
-				surface.SetMaterial(mat)
-				surface.SetDrawColor(jcms.color_dark_alt)
-				surface.DrawTexturedRectRotated(-42, 30, 48, 48, 0)
+			if jcms.util_IsPVP() then
+				local pvpTeam = jcms.locPly:GetNWInt("jcms_pvpTeam", -1)
+				if pvpTeam > 0 then
+					local mat = jcms.hud_GetPVPTeamMat(pvpTeam)
+					surface.SetMaterial(mat)
+					surface.SetDrawColor(jcms.color_dark_alt)
+					surface.DrawTexturedRectRotated(-42, 30, 48, 48, 0)
 
-				render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
-					surface.SetDrawColor(jcms.color_bright_alt)
-					surface.DrawTexturedRectRotated(-42 + off, 30 + off, 48, 48, 0)
-				render.OverrideBlend( false )
+					render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
+						surface.SetDrawColor(jcms.color_bright_alt)
+						surface.DrawTexturedRectRotated(-42 + off, 30 + off, 48, 48, 0)
+					render.OverrideBlend( false )
+				end
 			end
 
 			-- Cash
