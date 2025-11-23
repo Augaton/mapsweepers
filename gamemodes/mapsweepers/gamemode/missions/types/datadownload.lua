@@ -152,6 +152,15 @@ jcms.missions.datadownload = {
 							weightedAreas[area] = oldWeight*0.8 + 2 + parabolic*20
 						end
 					end
+
+					if weightedAreas[area] and weightedAreas[area] > 0 then
+						local hasSkyAtAll, isUnderSky = jcms.util_GetSky(areaCenter)
+						if not hasSkyAtAll then
+							weightedAreas[area] = weightedAreas[area] / 5
+						elseif not isUnderSky then
+							weightedAreas[area] = weightedAreas[area] / 3
+						end
+					end
 				end
 			-- }}}
 
@@ -324,13 +333,36 @@ jcms.missions.datadownload = {
 
 			table.insert(objectives, { type = "uploadingatspeed", format = { missionData.powerMultiplier }, progress = missionData.defenseProgress*100, total = 100, percent = true })
 
-			for i, pillar in ipairs(missionData.pillars) do 
-				if not IsValid(pillar) then continue end
+			if #missionData.pillars <= 5 then
+				for i, pillar in ipairs(missionData.pillars) do 
+					if not IsValid(pillar) then continue end
 
-				local isDisrupted = pillar:GetIsDisrupted()
-				table.insert(objectives, { type = isDisrupted and "repairpillarx" or "defendpillarx", format = { pillar:GetLabelSymbol() } })
-				table.insert(objectives, { type = "defendpillarx", style = 2, progress = math.ceil(pillar:Health() / pillar:GetMaxHealth() * 100), total = 100, completed = isDisrupted })
+					local isDisrupted = pillar:GetIsDisrupted()
+					table.insert(objectives, { type = isDisrupted and "repairpillarx" or "defendpillarx", format = { pillar:GetLabelSymbol() } })
+					table.insert(objectives, { type = "defendpillarx", style = 2, progress = math.ceil(pillar:Health() / pillar:GetMaxHealth() * 100), total = 100, completed = isDisrupted })
+				end
+			else
+				local pillarCount = 0
+				local disruptedCount = 0
+
+				for i, pillar in ipairs(missionData.pillars) do 
+					if not IsValid(pillar) then continue end
+					pillarCount = pillarCount + 1
+					if pillar:GetIsDisrupted() then
+						disruptedCount = disruptedCount + 1
+					end
+				end
+
+				table.insert(objectives, { type = "defendpillars", progress = pillarCount - disruptedCount, total = pillarCount })
+				if disruptedCount > 0 then
+					missionData.maxDisruptedCount = math.max(missionData.maxDisruptedCount or disruptedCount, disruptedCount)
+					table.insert(objectives, { type = "repairpillars", progress = missionData.maxDisruptedCount - disruptedCount, total = missionData.maxDisruptedCount, completed = true })
+				else
+					missionData.maxDisruptedCount = nil
+				end
 			end
+
+			table.insert(objectives, { type = "timeestimate", progress = missionData.timeEstimate, style = 1 })
 
 			return objectives
 		else
@@ -405,7 +437,7 @@ jcms.missions.datadownload = {
 					progressPower = progressPower * 1/((60*5) * scalar) * (jcms.util_IsPVP() and 4 or 1)
 
 					md.defenseProgress = math.Clamp(md.defenseProgress + progressPower, 0, 1)
-					md.timeEstimate = math.ceil( (1 - md.defenseProgress) / progressPower )--]]
+					md.timeEstimate = math.ceil( (1 - md.defenseProgress) / progressPower )
 
 					if md.defenseProgress >= 1 then
 						md.uploadsCompleted = md.uploadsCompleted + 1 

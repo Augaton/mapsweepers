@@ -164,7 +164,8 @@ if SERVER then
 end
 
 if CLIENT then
-	ENT.mat_elec = Material("models/alyx_intro/emptool_glow")
+	ENT.mat_elec = Material("sprites/physbeama")
+	ENT.mat_flare = Material("sprites/orangeflare1_gmod")
 	ENT.mat_lamp = Material("effects/lamp_beam.vmt")
 	ENT.mat_cloud = CreateMaterial("jcms_downloadpillar_cloud___", "UnlitGeneric", {
 		["$basetexture"] = "models/props_combine/cit_cloud003",
@@ -177,6 +178,11 @@ if CLIENT then
 
 	ENT.disruptedColour1 = Color(255, 87, 87)
 	ENT.disruptedColour2 = Color(255, 215, 83)
+
+	ENT.pvpColors = {
+		[1] = Color(255, 32, 32),
+		[2] = Color(255, 195, 32)
+	}
 
 	ENT.healthbarMatName = "!jcms_downloadpillarhealthbar"
 	ENT.healthbarRT = GetRenderTarget("jcms_downloadpillarhealthbar_rt", 8, 200)
@@ -235,8 +241,24 @@ if CLIENT then
 		render.PopRenderTarget()
 	end
 
+	function ENT:OnRemove()
+		if self.soundTransmit then
+			self.soundTransmit:Stop()
+			self.soundTransmit = nil
+		end
+	end
+
 	function ENT:Think()
-		-- TODO Sound
+		if self:GetIsActive() and not self:GetIsDisrupted() then
+			if not self.soundTransmit then
+				self.soundTransmit = CreateSound(self, "ambient/levels/labs/teleport_active_loop1.wav")
+				self.soundTransmit:PlayEx(1, 137)
+			end
+		elseif self.soundTransmit then
+			self.soundTransmit:Stop()
+			self.soundTransmit = nil
+			self:EmitSound("ambient/energy/power_off1.wav", 75, 137, 1)
+		end
 	end
 
 	function ENT:Draw()
@@ -292,14 +314,16 @@ if CLIENT then
 				render.SetMaterial(self.mat_lamp)
 				render.DrawBeam(v, v2, 75, 0, 1, t%0.5<0.25 and self.disruptedColour1 or self.disruptedColour2)
 			else
-				render.SetMaterial(self.mat_elec)
-				render.DrawSphere(v, 4*sizeMul, 6, 5)
-
+				local col = self.pvpColors[ self:GetNWInt("jcms_pvpTeam", -1) ] or self.labelColour1
+				local offset = (t*4)%1
 				local size = 10000 + 1000*sizeMul
-				render.DrawBeam(v, v2, 5*wmul, 0, 30 - 10*sizeMul, self.labelColour1)
+				render.SetMaterial(self.mat_flare)
+				render.DrawQuadEasy(v, jcms.vectorUp, math.random(16, 38), math.random(24, 38), col, math.random()*360)
+				render.SetMaterial(self.mat_elec)
+				render.DrawBeam(v, v2, 10*wmul, -offset, 30 - 10*sizeMul - offset, col)
 				render.SetMaterial(self.mat_cloud)
-				render.DrawQuadEasy(v2, self.downNormal, size, size, self.labelColour1, t*32)
-				render.DrawQuadEasy(v2, self.downNormal, size*1.5, size*1.5, self.labelColour1, t*16)
+				render.DrawQuadEasy(v2, self.downNormal, size, size, col, t*32)
+				render.DrawQuadEasy(v2, self.downNormal, size*1.5, size*1.5, col, t*16)
 			end
 		else
 			local v2 = Vector(v)
