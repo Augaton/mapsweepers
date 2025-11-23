@@ -78,8 +78,6 @@ for i=1, 8 do
 	table.insert(ENT.VomitVectors, vec2)
 end
 
---PrintTable(ENT.VomitVectors)
-
 ENT.EjectionCooldown = 1 --How long until we can eat again after ejecting
 ENT.AttachCooldown = 1 --How long until we can attach after being grabbed off a vehicle
 
@@ -98,7 +96,6 @@ if SERVER then
 		local crateType = self.CrateTypes[self.CrateType]
 		self:SetModel(crateType.model)
 		self:SetMaterial("models/props_combine/metal_combinebridge001")
-		self:UpdateForFaction("jcorp") --TODO
 		self:PhysicsInit(SOLID_VPHYSICS)
 
 		self:SetMaxCapacity(crateType.capacity)
@@ -353,6 +350,10 @@ if CLIENT then
 			local x, y, w, h, p = -276*scaleX, 0*scaleY, 530*scaleX, 170*scaleY, 16
 			
 			local r, g, b = 255, 0, 0
+			if self:GetNWInt("jcms_pvpTeam", -1) == 2 then 
+				r, g, b = 241, 198, 0
+			end
+
 			surface.SetDrawColor(r, g, b)
 			
 			local ch = w - p*2

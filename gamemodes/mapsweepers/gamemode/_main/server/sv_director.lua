@@ -1254,7 +1254,9 @@
 
 					local targetPos = targetArea:GetCenter()
 					local nearestSwp = jcms.GetNearestSweeper(targetPos) 
-					targetPos.z = nearestSwp:GetPos().z
+					if not nearestSwp:InVehicle() and not IsValid(nearestSwp:GetNWEntity("jcms_vehicle", NULL)) then --Don't match Z-level of players in VTOLs
+						targetPos.z = nearestSwp:GetPos().z
+					end
 
 					jcms.util_skyNuke(targetPos)
 

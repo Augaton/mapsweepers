@@ -295,6 +295,11 @@ jcms.missions.miningoperations = {
 				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_orecrate", 10, "#jcms.orecrate", col, ply)
 				crate.CrateType = 1
 
+				if IsValid(ply) then
+					crate:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
+				jcms.util_TryUpdateForPVP(crate)
+
 				if CPPI then
 					crate:CPPISetOwner( game.GetWorld() )
 				end
@@ -326,6 +331,11 @@ jcms.missions.miningoperations = {
 				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_orecrate", 10, "#jcms.orecrate", col, ply)
 				crate.CrateType = 2
 
+				if IsValid(ply) then
+					crate:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
+				jcms.util_TryUpdateForPVP(crate)
+
 				if CPPI then
 					crate:CPPISetOwner( game.GetWorld() )
 				end
@@ -356,6 +366,11 @@ jcms.missions.miningoperations = {
 
 				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_orecrate", 10, "#jcms.orecrate", col, ply)
 				crate.CrateType = 3
+
+				if IsValid(ply) then
+					crate:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+				end
+				jcms.util_TryUpdateForPVP(crate)
 
 				if CPPI then
 					crate:CPPISetOwner( game.GetWorld() )
