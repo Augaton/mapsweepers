@@ -414,6 +414,7 @@ jcms.missions.datadownload = {
 						pillarsShouldBeActive = false
 						if md.uploadsCompleted >= md.uploadsRequired then
 							md.defenseCompleted = true
+							downloadSucceeded = true
 						else
 							for i, pillar in ipairs(md.pillars) do
 								pillar:SetIsDisrupted(false)
@@ -459,6 +460,8 @@ jcms.missions.datadownload = {
 			end
 		end
 		
+		local pvpRespawnGiven = false
+		table.Shuffle(md.computers)
 		for i, computer in ipairs(md.computers) do
 			if IsValid(computer) then
 				if computer:GetNWString("jcms_terminal_modeData") == "upload" and not md.defenseOngoing then
@@ -476,10 +479,11 @@ jcms.missions.datadownload = {
 					end
 					
 					local pvpTeam = computer:GetNWInt("jcms_pvpTeam", -1)
-					if not(pvpTeam == -1) then
+					if not(pvpTeam == -1) and downloadSucceeded and not pvpRespawnGiven then
 						jcms.director_PvpObjectiveCompletedTeam(pvpTeam, computer:GetPos())
-						computer:SetNWInt("jcms_pvpTeam", -1)
+						pvpRespawnGiven = true 
 					end
+					computer:SetNWInt("jcms_pvpTeam", -1)
 
 					if computer.soundDownload then
 						computer.soundDownload:Stop()
