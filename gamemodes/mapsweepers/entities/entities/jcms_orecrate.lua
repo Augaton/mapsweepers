@@ -191,12 +191,11 @@ if SERVER then
 		self:EmitSound("vehicles/tank_readyfire1.wav", 75)
 		self:EmitSound("vehicles/tank_turret_stop1.wav", 75)--]]
 
-		local selfPos = self:WorldSpaceCenter() + Vector(0,0,15)
+		local selfPos = self:WorldSpaceCenter() + Vector(0,0,35)
+		local filter = {self}
 		local trData = {
 			start = selfPos,
-			filter = self,
-			mins = Vector(10, 10, 10),
-			maxs = Vector(10, 10, 10)
+			filter = filter,
 		}
 
 		self.lastEjected = CurTime()
@@ -206,20 +205,18 @@ if SERVER then
 			local dirVec = self.VomitVectors[ (i-1) % #self.VomitVectors + 1 ]
 			trData.endpos = selfPos + dirVec * 45
 
-			local tr = util.TraceHull(trData)
-			table.insert(orePositions, tr.HitPos)
-		end
-
-		for i, oreData in ipairs(self.crate_contents) do
 			local ore = ents.Create("jcms_orechunk")
-			ore:SetPos(orePositions[i])
-
 			ore:SetModel(oreData.model)
 			ore:SetOreType(oreData.type)
 			ore.jcms_miner = oreData.owner
-
 			ore:Spawn()
+
+			local tr = util.TraceEntity(trData, ore)
+			ore:SetPos(tr.HitPos) 
+
 			ore:GetPhysicsObject():Wake()
+
+			table.insert(filter, ore)
 		end
 
 		self.crate_contents = {}
