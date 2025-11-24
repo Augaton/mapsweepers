@@ -1635,24 +1635,28 @@ end
 					spawnpoints[ #spawnpoints ] = nil
 				else
 					local zone = jcms.mapdata.zoneList[jcms.mapdata.largestZone]
-					table.Shuffle(zone)
-					
+
+					local areaWeightsDropPod = {}
+					local areaWeightsTeleportIn = {}
+
 					for i, area in ipairs(zone) do
-						if not jcms.mapgen_ValidArea(area) then continue end 
-						if area:GetSizeX() < 128 or area:GetSizeY() < 128 then continue end
+						if area:IsUnderwater() then continue end
+						if area:IsDamaging() then continue end
+						local sx, sy = area:GetSizeX(), area:GetSizeY()
+						if sx < 100 or sy < 100 then continue end
 
-						local desiredSpawnPos = area:GetCenter() + area:GetRandomPoint()
-						desiredSpawnPos:Mul(0.5)
+						local randomSpot = jcms.mapgen_AreaPointAwayFromEdges(area, 50)
+						local skyPos, isSkyClear = jcms.util_GetSky(randomSpot)
 
-						local upVec = Vector(0,0,5)
-						local tr = util.TraceEntityHull({
-							start = desiredSpawnPos + upVec,
-							endpos = desiredSpawnPos + upVec
-						}, ply)
-						if tr.Hit then continue end 
-
-						spawnPos = desiredSpawnPos
+						if isSkyClear then
+							areaWeightsDropPod[randomSpot] = math.sqrt(sx * sy)
+						else
+							areaWeightsTeleportIn[randomSpot] = sx * sy
+						end
 					end
+					
+					local chosenLocation = jcms.util_ChooseByWeight(areaWeightsDropPod) or jcms.util_ChooseByWeight(areaWeightsTeleportIn)
+					spawnPos = chosenLocation or spawnPos
 				end
 			end
 		end
