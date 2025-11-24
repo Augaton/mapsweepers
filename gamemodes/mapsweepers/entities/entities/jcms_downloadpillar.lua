@@ -311,8 +311,11 @@ if CLIENT then
 			local distToEyes = util.DistanceToLine(v, v2, EyePos())
 			local wmul = math.max(1, distToEyes/700)*sizeMul
 			if self:GetIsDisrupted() then
+				local disruptColor = t%0.5<0.25 and self.disruptedColour1 or self.disruptedColour2
+				render.SetMaterial(self.mat_flare)
+				render.DrawQuadEasy(v, jcms.vectorUp, math.random(36, 42), math.random(36, 42), disruptColor, math.random()*360)
 				render.SetMaterial(self.mat_lamp)
-				render.DrawBeam(v, v2, 75, 0, 1, t%0.5<0.25 and self.disruptedColour1 or self.disruptedColour2)
+				render.DrawBeam(v, v2, 75, 0, 1, disruptColor)
 			else
 				local col = self.pvpColors[ self:GetNWInt("jcms_pvpTeam", -1) ] or self.labelColour1
 				local offset = (t*4)%1
