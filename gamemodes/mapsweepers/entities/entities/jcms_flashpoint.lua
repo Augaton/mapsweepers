@@ -33,8 +33,8 @@ function ENT:Initialize()
 		self:SetModel("models/jcms/jcorp_flashpoint.mdl")
 		self:PhysicsInitStatic(SOLID_VPHYSICS)
 
-		self.chargeThinkInterval = (math.random(20,35) * 60)/100 --will auto charge itself in 30-45 mins as a fallback
-		self:NextThink(CurTime() + 10 * 60) --Only start charging 10m in, avoids confusing people
+		self.chargeThinkInterval = (math.random(20, 35) * 60)/100 --will auto charge itself in 30-45 mins as a fallback
+		self.nextSlowThink = CurTime() + 10 * 60 --Only start charging 10m in, avoids confusing people
 	end
 	
 	if CLIENT then
@@ -58,6 +58,26 @@ end
 if SERVER then
 	ENT.Radius = 2200
 
+	function ENT:ReleaseMoreNPCs()
+		if not jcms.director.faction then return end
+
+		local function getNPCType()
+			local weights = {}
+			local hasEpisodes = jcms.HasEpisodes()
+			
+			for npctype, data in pairs(jcms.npc_types) do
+				if data.portalSpawnWeight and (data.faction == "everyone" or data.faction == jcms.director.faction) and (not data.episodes or hasEpisodes) then
+					weights[npctype] = data.portalSpawnWeight
+				end
+			end
+
+			local randomtype = jcms.util_ChooseByWeight(weights)
+			return randomtype or "antlion_drone"
+		end
+
+		jcms.npc_PortalReleaseXNPCs(self, 5, self:GetPos() + Vector(0,0,270), jcms.director.faction, getNPCType)
+	end
+
 	function ENT:ChargeFlashpoint(npc, attacker)
 		local addedCharge = math.ceil(npc.jcms_bounty or 0)
 		if npc.jcms_danger == jcms.NPC_DANGER_RAREBOSS then 
@@ -74,6 +94,8 @@ if SERVER then
 			ed:SetOrigin(npc:WorldSpaceCenter())
 			ed:SetEntity(self)
 			util.Effect("jcms_chargebeam", ed)
+
+			self.lastChargeTime = CurTime()
 
 			if self:GetCharge() >= self:GetMaxCharge() and not self:GetIsComplete() then
 				self:ReleaseBoss()
@@ -118,14 +140,43 @@ if SERVER then
 		end
 	end
 
-	function ENT:Think()
-		self:SetCharge( math.min(self:GetCharge() + math.ceil(self:GetMaxCharge()/100), self:GetMaxCharge()) )
-
-		if not self:GetIsComplete() and self:GetCharge() >= self:GetMaxCharge() then
-			self:ReleaseBoss()
+	function ENT:SlowThink()
+		if self.nextSlowThink and (CurTime() < self.nextSlowThink) then
+			return
 		end
 
-		self:NextThink(CurTime() + self.chargeThinkInterval)
+		self:SetCharge( math.min(self:GetCharge() + math.ceil(self:GetMaxCharge()/100), self:GetMaxCharge()) )
+
+		self.nextSlowThink = CurTime() + self.chargeThinkInterval
+	end
+
+	function ENT:Think()
+		self:SlowThink()
+
+		if self:GetCharge() >= self:GetMaxCharge() then
+			if not self:GetIsComplete() then
+				self:ReleaseBoss()
+			end
+		elseif jcms.director then
+			if (self.lastChargeTime and (CurTime() - self.lastChargeTime > 45)) or (self.lastChargeTime == nil and (jcms.director_GetMissionTime() > 120)) then
+				local flashpointPos = self:WorldSpaceCenter()
+				local shouldDeploy = false
+
+				for i, swp in ipairs(jcms.GetAliveSweepers()) do
+					if swp:WorldSpaceCenter():DistToSqr( flashpointPos ) < 2000^2 then
+						shouldDeploy = true
+						break
+					end
+				end
+
+				if shouldDeploy then
+					self.lastChargeTime = CurTime() + 5
+					self:ReleaseMoreNPCs()
+				end
+			end
+		end
+
+		self:NextThink(CurTime() + 1)
 		return true
 	end
 
