@@ -977,6 +977,7 @@
 			cooldown = 240,
 			slotPos = 1,
 			argparser = "respawn_beacon",
+			pvpBlacklisted = true,
 			
 			func = function(ply, pos, angle)
 				local beacon = ents.Create("jcms_respawnbeacon")

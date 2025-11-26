@@ -106,17 +106,20 @@
 						end
 					end
 
-					if jcms.cvar_pvpnobeacons:GetBool() then
-						jcms.orders.respawnbeacon.pvpBlacklisted = true
-						jcms.net_RemoveOrder("respawnbeacon")
-					else
-						jcms.orders.respawnbeacon.pvpBlacklisted = false
-						jcms.net_SendOrder("respawnbeacon", jcms.orders.respawnbeacon)
+					for k, order in pairs(jcms.orders) do
+						if order.pvpBlacklisted then
+							jcms.net_RemoveOrder(k)
+						end
+					end
+				else
+					--Suboptimal, but this works I guess.
+					for k, order in pairs(jcms.orders) do
+						if order.pvpBlacklisted then
+							jcms.net_SendOrder(k, order)
+						end
 					end
 				end
 				
-				jcms.net_SendOrder("respawnbeacon", jcms.orders.respawnbeacon) --TODO: Temp/Debug
-
 				-- // Mission-Specific Orders {{{
 					for k, order in pairs(jcms.orders) do 
 						if order.missionSpecific then 
