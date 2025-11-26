@@ -1670,7 +1670,7 @@ end
 -- // }}}
 
 -- // Maps {{{
-	local map_blacklist = { --CSS and TF2 maps have navmeshes, but they're incompatible with gmod.
+	jcms.mapBlacklist = { --CSS and TF2 maps have navmeshes, but they're incompatible with gmod.
 		--CSS
 			["cs_assault"] = true,
 			["cs_compound"] = true,
@@ -1939,6 +1939,20 @@ end
 		["gm_coast_bridge_prewar"] = true
 	}
 
+
+	function jcms.blacklistMap(map)
+		jcms.mapBlacklist[map] = true
+		jcms.validMaps[map] = false
+	end
+	
+	concommand.Add("jcms_blacklistMap", function(ply, cmd, args)
+		if not(not ply:IsPlayer() or ply:IsAdmin()) then return end
+		
+		local map = tostring(args[1]) or ""
+		jcms.blacklistMap(map)
+	end, nil, "Manually blacklist an unplayable or broken map")
+
+
 	concommand.Add("jcms_addValidMap", function(ply, cmd, args)
 		if not(not ply:IsPlayer() or ply:IsAdmin()) then return end
 		
@@ -1948,6 +1962,7 @@ end
 
 	function jcms.addValidMap(map)
 		jcms.validMaps[map] = true
+		jcms.mapBlacklist[map] = false
 	end
 
 	function jcms.generateValidMapOptions()
@@ -1959,7 +1974,7 @@ end
 		for i, map in ipairs(maps) do
 			map = map:gsub("%.bsp", "")
 			if
-				not map_blacklist[map] and
+				not jcms.mapBlacklist[map] and
 				(jcms.validMaps[map] or --Known as valid
 				((map ~= game.GetMap()) --or detected as valid (unreliable)
 				and file.Exists("maps/" .. map .. ".nav", "GAME")
@@ -2942,6 +2957,25 @@ end
 
 			local dataStr = util.TableToJSON(jcms.validMaps)
 			file.Write(validMapsFile, dataStr)
+		end)
+	end
+
+	do 
+		local blacklistFile = "mapsweepers/server/blacklistedMaps.json"
+		hook.Add("InitPostEntity", "jcms_RestoreBlacklistMaps", function()
+			if file.Exists(blacklistFile, "DATA") then
+				local dataTxt = file.Read(blacklistFile, "DATA")
+				local dataTbl = util.JSONToTable(dataTxt)
+
+				table.Merge(jcms.mapBlacklist, dataTbl, true)
+			end
+		end)
+
+		hook.Add("ShutDown", "jcms_SaveBlacklistMaps", function()
+			if not jcms.fullyLoaded then return end
+
+			local dataStr = util.TableToJSON(jcms.mapBlacklist)
+			file.Write(blacklistFile, dataStr)
 		end)
 	end
 
