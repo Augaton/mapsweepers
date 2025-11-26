@@ -500,7 +500,7 @@ jcms.npc_types.antlion_burrowerguard = {
 		npc:SetMaxHealth(hp)
 		npc:SetHealth(hp)
 		
-		npc:SetNWString("jcms_boss", "antlion_guard")
+		npc:SetNWString("jcms_boss", "antlion_burrowerguard")
 		jcms.npc_SetupAntlionBurrowCheck(npc)
 
 		npc:SetModelScale(0.75, 0)

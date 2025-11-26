@@ -1626,7 +1626,7 @@ jcms.offgame = jcms.offgame or NULL
 				if GetConVar("gmod_language"):GetString():lower() == "ru" then
 					-- TODO Codex & bestiary translations are coming in future versions
 					local disclaimer = scroller:Add("DLabel")
-					disclaimer:SetText("ВНИМАНИЕ: перевод Кодекса и Бестиария на русский пока отложены. Прошу потерпеть! -MerekiDor")
+					disclaimer:SetText("ВНИМАНИЕ: перевод Кодекса на русский пока отложен. Прошу потерпеть! -MerekiDor")
 					disclaimer:SetPos(24, 8)
 					disclaimer:SizeToContents()
 					disclaimer:SetTextColor(jcms.color_bright)
