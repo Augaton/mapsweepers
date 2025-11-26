@@ -988,6 +988,16 @@ local nmt = FindMetaTable("NPC")
 		return players
 	end
 
+	function jcms.PVPGetTeamPlayers( pvpTeam )
+		local plys = {}
+		for i, ply in player.Iterator() do
+			if jcms.team_pvpSameTeam_optimised(pvpTeam, ply:GetNWInt("jcms_pvpTeam", -1)) then
+				table.insert(plys, ply) 
+			end
+		end
+		return plys
+	end
+
 	jcms.cvar_noepisodes = GetConVar("jcms_noepisodes")
 	function jcms.HasEpisodes()
 		return not jcms.cvar_noepisodes:GetBool()

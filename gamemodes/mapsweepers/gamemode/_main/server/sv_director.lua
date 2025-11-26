@@ -1621,7 +1621,7 @@
 				local aliveTeams = {} --Which team is alive (*only* useful if there's one, otherwise returns highest index team) 
 				local aliveTeamCount = 0
 				for pvpTeam=1, 8, 1 do
-					if (teamRespawns[pvpTeam] or 0) + (teamAlivePlayers[pvpTeam] or 0) > 0 then 
+					if (teamRespawns[pvpTeam] or 0) + (teamAlivePlayers[pvpTeam] or 0) > 0 and #jcms.PVPGetTeamPlayers( pvpTeam ) > 0 then --Has respawns or alive players, has actual members.
 						aliveTeamCount = aliveTeamCount + 1
 						aliveTeams[pvpTeam] = true
 					else
