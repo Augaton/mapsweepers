@@ -146,6 +146,54 @@ function class.SetupMove(ply, mv, cmd)
 	end
 end
 
+
+if SERVER then 
+	function class.TakeDamage(ply, dmg)
+		timer.Simple(0, function()
+			if not IsValid(ply) then return end
+
+			local armour = ply:Armor()
+			local maxArmour = ply:GetMaxArmor()
+			if armour >= maxArmour/2 or armour <= 0 then return end
+
+			local frac = 1 - armour / (maxArmour/2)
+			ply:EmitSound("buttons/blip1.wav", 75, 100 + 150*frac, 0.25 + 0.65 * frac )
+		end)
+	end
+
+	function class.Think(ply)
+		local cTime = CurTime()
+		if (ply.jcms_reconNextSlowThink or 0) > cTime then return end
+
+		local activeWep = ply:GetActiveWeapon()
+		activeWep.jcms_holsterReloadTime = nil
+
+		for i, wep in ipairs(ply:GetWeapons()) do 
+			if wep == activeWep then continue end
+
+			wep.jcms_holsterReloadTime = wep.jcms_holsterReloadTime or (cTime +  jcms.gunstats_GetReloadTime(wep:GetWeaponViewModel()) * 2)
+			
+			if wep.jcms_holsterReloadTime < cTime and wep:Clip1() < wep:GetMaxClip1() then
+				local ammoType = wep:GetPrimaryAmmoType()
+				local reserveAmmo = ply:GetAmmoCount(ammoType)
+				if reserveAmmo == 0 then continue end
+
+				local clip1, maxclip1 = wep:Clip1(), wep:GetMaxClip1()
+				local reloadAmnt = math.min(reserveAmmo, maxclip1 - clip1)
+
+				ply:RemoveAmmo( reloadAmnt, ammoType )
+				wep:SetClip1(clip1 + reloadAmnt)
+
+				--items/itempickup.wav
+				--items/ammopickup.wav
+				ply:EmitSound("items/itempickup.wav")
+			end
+		end
+
+		ply.jcms_reconNextSlowThink = cTime + 0.25
+	end
+end
+
 if CLIENT then
 	class.stats = {
 		offensive = "0",

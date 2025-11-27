@@ -672,29 +672,7 @@ local nmt = FindMetaTable("NPC")
 
 			if SERVER and gunData.ViewModel and gunData.ViewModel ~= "" then
 				--Note: This function gets called in render hooks, so we either need to cache this or only have the data serverside.
-				local dummyEnt
-				--if SERVER then
-					dummyEnt = ents.Create("prop_physics")
-					--[[
-				else
-					dummyEnt = ents.CreateClientProp( "prop_physics" )
-				end
-				--]]
-
-				dummyEnt:SetModel(gunData.ViewModel)
-				local seqId = dummyEnt:SelectWeightedSequenceSeeded( ACT_VM_RELOAD, 0 ) --If anyone's given their weapons randomised reload speeds they're bastards. - J
-				if seqId < 0 then
-					for i, sqname in ipairs(dummyEnt:GetSequenceList()) do
-						if sqname:lower():find("reload") == 1 then
-							seqId = i
-							break
-						end
-					end
-				end
-
-				local dur = dummyEnt:SequenceDuration(seqId)
-				dummyEnt:Remove()
-
+				local dur = jcms.gunstats_GetReloadTime( gunData.ViewModel )
 				stats.reloadtime = dur
 			else
 				stats.reloadtime = 0
@@ -738,6 +716,25 @@ local nmt = FindMetaTable("NPC")
 
 			return jcms.gunMats[ class ]
 		end
+	end
+
+	function jcms.gunstats_GetReloadTime( viewModelName )
+		local viewModelEnt = ents.Create("prop_physics")
+		viewModelEnt:SetModel(viewModelName)
+
+		local seqId = viewModelEnt:SelectWeightedSequenceSeeded( ACT_VM_RELOAD, 0 ) --If anyone's given their weapons randomised reload speeds they're bastards. - J
+		if seqId < 0 then
+			for i, sqname in ipairs(viewModelEnt:GetSequenceList()) do
+				if sqname:lower():find("reload") == 1 then
+					seqId = i
+					break
+				end
+			end
+		end
+
+		local dur = viewModelEnt:SequenceDuration(seqId)
+		viewModelEnt:Remove()
+		return dur
 	end
 
 	function jcms.gunstats_CountGivenAmmoFromLoadoutCount(stats, count) -- How much ammo is given for a weapon bought X times.

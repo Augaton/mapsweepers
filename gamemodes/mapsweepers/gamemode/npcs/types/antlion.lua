@@ -474,7 +474,7 @@ jcms.npc_types.antlion_burrowerguard = {
 	
 	class = "npc_antlionguard",
 	suppressSwarmPortalEffect = true,
-	bounty = 300,
+	bounty = 275,
 	
 	danger = jcms.NPC_DANGER_BOSS,
 	cost = 5,
@@ -496,7 +496,7 @@ jcms.npc_types.antlion_burrowerguard = {
 		--Will need to apply to all guards (default, cyber, ultracyber)
 		jcms.npc_GetRowdy(npc)
 		
-		local hp = math.ceil(npc:GetMaxHealth()*0.75)
+		local hp = math.ceil(npc:GetMaxHealth()*0.8)
 		npc:SetMaxHealth(hp)
 		npc:SetHealth(hp)
 		

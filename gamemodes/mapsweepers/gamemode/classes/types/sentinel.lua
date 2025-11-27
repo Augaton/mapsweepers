@@ -288,8 +288,6 @@ if SERVER then
 	end
 
 	function class.Think(ply)
-		if CLIENT then return end
-
 		if CurTime() - ply.sentinel_lastDmgBlocked < 2 then
 			if not(ply.sentinel_breathSound:IsPlaying()) then 
 				ply.sentinel_breathSound:PlayEx(1, 80)
