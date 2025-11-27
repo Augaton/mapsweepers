@@ -367,6 +367,7 @@
 			for i, ply in ipairs(player.GetAll()) do
 				ply:SetNWInt("jcms_desiredteam", 0)
 				ply:SetNWBool("jcms_ready", false)
+				ply:SetNWInt("jcms_pvpTeam", -1)
 
 				if victory then
 					jcms.statistics_AddMissionStatus(ply, jcms.director.missionType, jcms.director.faction, true)

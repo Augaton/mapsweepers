@@ -873,7 +873,7 @@
 				mine:SetModel("models/props_combine/combine_mine01.mdl")
 				mine:SetModelScale(0.25)
 				mine:PhysicsInit(SOLID_VPHYSICS)
-				mine:SetColor( ((IsValid(ply) and ply:GetNWInt("jcms_pvpTeam",-1) == 2) and Color(241, 212, 14)) or Color(255, 32, 32) )
+				mine:SetColor( ((IsValid(ply) and ply:GetNWInt("jcms_pvpTeam", -1) == 2) and Color(241, 212, 14)) or Color(255, 32, 32) )
 
 				if IsValid(ply) then
 					mine:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))

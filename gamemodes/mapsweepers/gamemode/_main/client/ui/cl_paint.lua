@@ -463,10 +463,11 @@
 			end
 			
 			local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
+			local sameTeamAsMe = pvpTeam == jcms.locPly:GetNWInt("jcms_pvpTeam", -1)
 			local iconSize = lowres and 16 or 32
 			local xOffset = pvpTeam > 0 and iconSize or 0
 
-			local _, nameheight = draw.SimpleText(ply:Nick(), "jcms_small_bolder", baseX + iconSize + xOffset + 10, baseY + 4, jcms.color_bright)
+			local _, nameheight = draw.SimpleText(ply:Nick(), "jcms_small_bolder", baseX + iconSize + xOffset + 10, baseY + (lowres and 0 or 4), jcms.color_bright)
 			local specialText = jcms.hud_GetSpecialText(ply)
 			if specialText then
 				local str = "#jcms.specialtext_" .. specialText
@@ -478,7 +479,7 @@
 					color = jcms.color_bright
 				end
 
-				draw.SimpleText(str, "DefaultSmall", baseX + xOffset + iconSize + 8, baseY + nameheight + (lowres and 0 or 2), color)
+				draw.SimpleText(str, lowres and "DefaultVerySmall" or "DefaultSmall", baseX + xOffset + iconSize + 8, baseY + nameheight + (lowres and -4 or 2), color)
 			end
 
 			local desiredclass = ply:GetNWString("jcms_desiredclass", "")
@@ -492,8 +493,12 @@
 			surface.SetAlphaMultiplier(genuinely and 1 or 0.25)
 			surface.SetDrawColor(jcms.color_bright)
 			if pvpTeam > 0 then
-				surface.SetMaterial(p.classMats[ desiredclass ])
-				surface.DrawTexturedRect(baseX + iconSize + 4, baseY + 4, iconSize, iconSize)
+				if sameTeamAsMe then
+					surface.SetMaterial(p.classMats[ desiredclass ])
+					surface.DrawTexturedRect(baseX + iconSize + 4, baseY + 4, iconSize, iconSize)
+				else
+					draw.SimpleText("?", "jcms_hud_small", baseX + iconSize*1.7, baseY + iconSize*0.6, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				end
 
 				surface.SetAlphaMultiplier(1)
 				surface.SetDrawColor( jcms.hud_GetPVPTeamColor(pvpTeam) )
@@ -510,62 +515,76 @@
 			col.g = (col.g + 255)/2
 			col.b = (col.b + 255)/2
 
-			local index = 0
-			local weaponListX = w*0.4
+			if sameTeamAsMe then
+				local index = 0
+				local weaponListX = w*0.4
 
-			local mx, my = p:LocalCursorPos()
-			local selectionIndex = (my >= 0 and my <= h) and math.floor( (mx - baseX - weaponListX) / (iconSize+2) ) or -1
-			local selectionWeapon = nil
+				local mx, my = p:LocalCursorPos()
+				local selectionIndex = (my >= 0 and my <= h) and math.floor( (mx - baseX - weaponListX) / (iconSize+2) ) or -1
+				local selectionWeapon = nil
 
-			local weps = ply:GetWeapons()
-			for _, weapon in ipairs(weps) do
-				local class = weapon:GetClass()
-				if class == "weapon_stunstick" then continue end
+				local weps = ply:GetWeapons()
+				for _, weapon in ipairs(weps) do
+					local class = weapon:GetClass()
+					if class == "weapon_stunstick" then continue end
 
-				local size = iconSize
-				local sizePad = size + 2
-				
-				if selectionIndex ~= index then
-					surface.SetDrawColor(jcms.color_pulsing)
-					jcms.hud_DrawNoiseRect(baseX + weaponListX + index*sizePad, size - 22, size - 4, 24)
+					local size = iconSize
+					local sizePad = size + 2
+					
+					if selectionIndex ~= index then
+						local gunmat = jcms.gunstats_GetMat(class)
+						surface.SetDrawColor(jcms.color_pulsing)
+						jcms.hud_DrawNoiseRect(baseX + weaponListX + index*sizePad, size - 22, size - 4, 24)
 
-					surface.SetDrawColor(jcms.color_bright)
-					surface.DrawRect(baseX + weaponListX + index*sizePad, size + 8, size - 4, 1)
-					surface.SetMaterial(jcms.gunstats_GetMat(class))
-					surface.DrawTexturedRectRotated(baseX + weaponListX + index*sizePad + 4 + size/2, size/2 + 4, size, size, 0)
-					surface.SetDrawColor(col)
-					surface.DrawTexturedRectRotated(baseX + weaponListX + index*sizePad + size/2, size/2, size, size, 0)
-				else
-					selectionWeapon = weapon
-				end
-
-				index = index + 1
-
-				if (baseX + weaponListX + index*sizePad) > w-iconSize*2 and weps[_+1] then
-					draw.SimpleTextOutlined("+", "jcms_hud_small", w-iconSize, h/2, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, jcms.color_dark)
-					break
-				end
-			end
-
-			if IsValid(selectionWeapon) then
-				local class = selectionWeapon:GetClass()
-
-				local sizePad = iconSize + 2
-				local size = iconSize*1.5
-				surface.SetMaterial(jcms.gunstats_GetMat(class))
-				surface.SetDrawColor(jcms.color_bright)
-				surface.DrawTexturedRectRotated(baseX + weaponListX + selectionIndex*sizePad + 4 + sizePad/2, size/2 + 4, size, size, 0)
-				surface.SetDrawColor(color_white)
-				surface.DrawTexturedRectRotated(baseX + weaponListX + selectionIndex*sizePad + sizePad/2, size/2, size, size, 0)
-
-				if p.gunStats then
-					if not p.gunStats[ class ] then
-						p.gunStats[ class ] = jcms.gunstats_GetExpensive(class)
+						surface.SetDrawColor(jcms.color_bright)
+						surface.DrawRect(baseX + weaponListX + index*sizePad, size + 8, size - 4, 1)
+						if not gunmat:IsError() then
+							surface.SetMaterial(jcms.gunstats_GetMat(class))
+							surface.DrawTexturedRectRotated(baseX + weaponListX + index*sizePad + 4 + size/2, size/2 + 4, size, size, 0)
+							surface.SetDrawColor(col)
+							surface.DrawTexturedRectRotated(baseX + weaponListX + index*sizePad + size/2, size/2, size, size, 0)
+						else
+							surface.SetDrawColor(jcms.color_bright)
+							surface.DrawOutlinedRect(baseX + weaponListX + index*sizePad, 0, size, size)
+						end
+					else
+						selectionWeapon = weapon
 					end
 
-					local stats = p.gunStats[ class ]
-					if stats then
-						draw.SimpleTextOutlined(stats.name, "jcms_small", baseX + weaponListX + selectionIndex*sizePad + sizePad/2, 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, jcms.color_dark)
+					index = index + 1
+
+					if (baseX + weaponListX + index*sizePad) > w-iconSize*2 and weps[_+1] then
+						draw.SimpleTextOutlined("+", lowres and "jcms_medium" or "jcms_hud_small", w - iconSize - (lowres and 8 or 0), h/2, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, jcms.color_dark)
+						break
+					end
+				end
+
+				if IsValid(selectionWeapon) then
+					local class = selectionWeapon:GetClass()
+					local gunmat = jcms.gunstats_GetMat(class)
+
+					local sizePad = iconSize + 2
+					local size = iconSize*1.5
+					if not gunmat:IsError() then
+						surface.SetMaterial(gunmat)
+						surface.SetDrawColor(jcms.color_bright)
+						surface.DrawTexturedRectRotated(baseX + weaponListX + selectionIndex*sizePad + 4 + sizePad/2, size/2 + 4, size, size, 0)
+						surface.SetDrawColor(color_white)
+						surface.DrawTexturedRectRotated(baseX + weaponListX + selectionIndex*sizePad + sizePad/2, size/2, size, size, 0)
+					else
+						surface.SetDrawColor(jcms.color_bright)
+						surface.DrawOutlinedRect(baseX + weaponListX + selectionIndex*sizePad + 4 + sizePad/2 - size/2, 0, size, size)
+					end
+
+					if p.gunStats then
+						if not p.gunStats[ class ] then
+							p.gunStats[ class ] = jcms.gunstats_GetExpensive(class)
+						end
+
+						local stats = p.gunStats[ class ]
+						if stats then
+							draw.SimpleTextOutlined(stats.name, "jcms_small", baseX + weaponListX + selectionIndex*sizePad + sizePad/2, 1, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, jcms.color_dark)
+						end
 					end
 				end
 			end
@@ -1079,7 +1098,6 @@
 				local winstreak = jcms.util_GetCurrentWinstreak()
 				local difficulty = jcms.util_GetCurrentDifficulty()
 
-				
 				if (missionType ~= "") then
 					local name = (isPVP and "PVP " or "") .. language.GetPhrase("#jcms." .. (missionData and missionData.basename or missionType))
 					local desc = language.GetPhrase("#jcms." .. (missionData and missionData.basename or missionType).."_desc")
@@ -1248,41 +1266,111 @@
 			-- }}}
 
 			-- Main Panels {{{
-				local npcPanelY = lowres and 270 or 320
-				if IsValid(p.plyPnlSweeper) then
-					p.plyPnlSweeper:SetPos(w - p.plyPnlSweeper:GetWide() - 16, npcPanelY)
+				if jcms.util_IsPVP() then
+					local npcPanelY = lowres and 300 or 378
+					
+					local pw, ph = lowres and 360 or 520, lowres and 38 or 48
+					local px, py = w - pw - 16, npcPanelY - ph - 4
 
-					local canvasHeight = p.plyPnlSweeper:GetCanvas():GetTall()
-					local overflow = canvasHeight > p.plyPnlSweeper:GetTall()
-					if overflow then
-						surface.SetDrawColor(jcms.color_pulsing)
-						local x = p.plyPnlSweeper:GetX()
-						local y = p.plyPnlSweeper:GetY()
-						surface.DrawRect(x - 32, y - 4, p.plyPnlSweeper:GetWide(), 1)
-						surface.DrawRect(x - 32, y + p.plyPnlSweeper:GetTall() + 4, p.plyPnlSweeper:GetWide(), 1)
-						npcPanelY = p.plyPnlSweeper:GetY() + p.plyPnlSweeper:GetTall() + 16
-					else
-						npcPanelY = p.plyPnlSweeper:GetY() + canvasHeight + 16
-					end
-				end
-
-				if IsValid(p.plyPnlNPC) then
-					p.plyPnlNPC:SetPos(w - p.plyPnlNPC:GetWide() - 24, npcPanelY)
-
-					local topmostPly = p.plyPnlNPC:GetCanvas():GetChild(0)
-
-					if IsValid(topmostPly) then
-						draw.SimpleText("#jcms.npcshud", "jcms_medium", w - 418 + topmostPly:GetX(), p.plyPnlNPC:GetY(), jcms.color_bright)
+					if IsValid(p.plyPnlSweeper) then
+						p.plyPnlSweeper:SetSize(lowres and 400 or 550, lowres and ScrH() * 0.25 or ScrH() * 0.35)
+						p.plyPnlSweeper:SetPos(w - p.plyPnlSweeper:GetWide() - 16, npcPanelY)
+						py = p.plyPnlSweeper:GetY() - ph - 4
 					end
 
-					local overflow = p.plyPnlNPC:GetCanvas():GetTall() > p.plyPnlNPC:GetTall()
-					if overflow then
-						surface.SetDrawColor(jcms.color_bright)
-						local x = p.plyPnlNPC:GetX()
-						local y = p.plyPnlNPC:GetY()
-						surface.DrawRect(x - 32, y - 4, p.plyPnlNPC:GetWide(), 1)
-						surface.DrawRect(x - 32, y + p.plyPnlNPC:GetTall() + 4, p.plyPnlNPC:GetWide(), 1)
+					if IsValid(p.plyPnlNPC) then
+						p.plyPnlNPC:SetPos(w, h)
 					end
+
+					local team1Count, team2Count = 0, 0
+					for i, ply in ipairs(player.GetAll()) do
+						if ply:GetNWInt("jcms_desiredteam", 0) == 1 then
+							local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
+
+							if pvpTeam == 1 then
+								team1Count = team1Count + 1
+							elseif pvpTeam == 2 then
+								team2Count = team2Count + 1
+							end
+						end
+					end
+
+					local balance = 0
+					local myTeam = jcms.locPly:GetNWInt("jcms_pvpTeam", -1)
+					if myTeam ~= -1 and team1Count ~= team2Count then
+						if (myTeam == 1 and team2Count > team1Count) or (myTeam == 2 and team1Count > team2Count) then
+							balance = -1
+						else
+							balance = 1
+						end
+					end
+
+					local yoff = balance == 0 and ph/2 or ph/3
+
+					local font = lowres and "DefaultSmall" or "jcms_small_bolder"
+					local respawns = 5
+					local text = ("%dv%d"):format(team1Count, team2Count)
+					local tw, th = draw.SimpleText(text, "jcms_hud_small", px, py+yoff, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+					draw.SimpleText(text, "jcms_hud_small", px, py+yoff, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+
+					if balance ~= 0 then
+						draw.SimpleText(balance<0 and "#jcms.pvp_number_disadvantage" or "#jcms.pvp_number_advantage", "DefaultSmall", px + tw/2, py+ph/3 + th/2, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+					end
+					
+					local icoSize = 32
+					surface.SetDrawColor(myTeam == 1 and jcms.color_bright or jcms.color_pulsing)
+					surface.SetMaterial( jcms.hud_GetPVPTeamMat(1) )
+					surface.DrawTexturedRect(px-icoSize-8, py+yoff-icoSize/2, icoSize, icoSize)
+				
+					surface.SetDrawColor(myTeam == 2 and jcms.color_bright or jcms.color_pulsing)
+					surface.SetMaterial( jcms.hud_GetPVPTeamMat(2) )
+					surface.DrawTexturedRect(px+tw+8, py+yoff-icoSize/2, icoSize, icoSize)
+
+					local tw = draw.SimpleText(" " .. language.GetPhrase("jcms.pvp_desc1b"):format(respawns), font, px + pw, py, jcms.color_bright_alt, TEXT_ALIGN_RIGHT)
+					draw.SimpleText("#jcms.pvp_desc1a", font, px + pw - tw, py, jcms.color_bright, TEXT_ALIGN_RIGHT)
+					draw.SimpleText("#jcms.pvp_desc2", font, px + pw, py + ph/2, jcms.color_bright, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+					draw.SimpleText("#jcms.pvp_desc3", font, px + pw, py + ph, jcms.color_bright, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+				else
+					-- PvE player lists
+
+					local npcPanelY = lowres and 260 or 320
+					if IsValid(p.plyPnlSweeper) then
+						p.plyPnlSweeper:SetSize(lowres and 400 or 550, lowres and ScrH() * 0.15 or ScrH() * 0.25)
+						p.plyPnlSweeper:SetPos(w - p.plyPnlSweeper:GetWide() - 16, npcPanelY)
+
+						local canvasHeight = p.plyPnlSweeper:GetCanvas():GetTall()
+						local overflow = canvasHeight > p.plyPnlSweeper:GetTall()
+						if overflow then
+							surface.SetDrawColor(jcms.color_pulsing)
+							local x = p.plyPnlSweeper:GetX()
+							local y = p.plyPnlSweeper:GetY()
+							surface.DrawRect(x - 32, y - 4, p.plyPnlSweeper:GetWide(), 1)
+							surface.DrawRect(x - 32, y + p.plyPnlSweeper:GetTall() + 4, p.plyPnlSweeper:GetWide(), 1)
+							npcPanelY = p.plyPnlSweeper:GetY() + p.plyPnlSweeper:GetTall() + 16
+						else
+							npcPanelY = p.plyPnlSweeper:GetY() + canvasHeight + 16
+						end
+					end
+
+					if IsValid(p.plyPnlNPC) then
+						p.plyPnlNPC:SetPos(w - p.plyPnlNPC:GetWide() - 24, npcPanelY)
+
+						local topmostPly = p.plyPnlNPC:GetCanvas():GetChild(0)
+
+						if IsValid(topmostPly) then
+							draw.SimpleText("#jcms.npcshud", "jcms_medium", w - 418 + topmostPly:GetX(), p.plyPnlNPC:GetY(), jcms.color_bright)
+						end
+
+						local overflow = p.plyPnlNPC:GetCanvas():GetTall() > p.plyPnlNPC:GetTall()
+						if overflow then
+							surface.SetDrawColor(jcms.color_bright)
+							local x = p.plyPnlNPC:GetX()
+							local y = p.plyPnlNPC:GetY()
+							surface.DrawRect(x - 32, y - 4, p.plyPnlNPC:GetWide(), 1)
+							surface.DrawRect(x - 32, y + p.plyPnlNPC:GetTall() + 4, p.plyPnlNPC:GetWide(), 1)
+						end
+					end
+
 				end
 
 				if IsValid(p.controlPanel) then
@@ -1334,7 +1422,7 @@
 
 					surface.SetAlphaMultiplier(0.3)
 					surface.SetDrawColor(timerCol)
-					local tw, th = w - missionNameX - 36, 32
+					local tw, th = w - missionNameX - 36, difficulty >= 1.6 and 16 or 24
 					local tx, ty = missionNameX, 48
 					jcms.hud_DrawNoiseRect(tx + 4, ty + 2, tw - 8, th - 4, 32)
 
@@ -1346,11 +1434,11 @@
 					if ongoing then
 						local time = string.FormattedTime( missionTime )
 						local formatted = string.format("%02i:%02i:%02i", time.h, time.m, time.s)
-						draw.SimpleText("#jcms.missioninprogress", "jcms_medium", tx + th/2, ty + th/2, timerCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-						draw.SimpleText(formatted, "jcms_hud_small", tx + tw - th/2, ty+th/2, timerCol, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+						draw.SimpleText("#jcms.missioninprogress", "jcms_small", tx + th/2, ty + th/2, timerCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+						draw.SimpleText(formatted, "jcms_small_bolder", tx + tw - th/2, ty+th/2, timerCol, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
 					else
-						draw.SimpleText(timeRemains < 5 and "#jcms.missionbegins" or "#jcms.countdowntomission", "jcms_medium", tx + th/2, ty + th/2, timerCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-						draw.SimpleText(string.FormattedTime(timeRemains, "%02i:%02i"), "jcms_hud_small", tx + tw - th/2, ty+th/2, timerCol, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+						draw.SimpleText(timeRemains < 5 and "#jcms.missionbegins" or "#jcms.countdowntomission", "jcms_small", tx + th/2, ty + th/2, timerCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+						draw.SimpleText(string.FormattedTime(timeRemains, "%02i:%02i"), "jcms_small_bolder", tx + tw - th/2, ty+th/2, timerCol, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
 					end
 				else
 					if p.didTimerBeep then

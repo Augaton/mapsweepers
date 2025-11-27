@@ -1011,7 +1011,8 @@
 				else
 					if ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE and jcms.team_JCorp_player(ply) then
 						livingCount = livingCount + 1
-						local pvpTeam = ply:GetNWInt("jcms_pvpTeam", 1) --Default 1 to work with normal mode.
+						local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
+						if pvpTeam == -1 then pvpTeam = 1 end --Default 1 to work with normal mode.
 						teamAlivePlayers[pvpTeam] = (teamAlivePlayers[pvpTeam] or 0) + 1
 
 						local area = navmesh.GetNavArea(ply:GetPos(), 200)
@@ -1118,7 +1119,8 @@
 							
 							jcms.director_InvalidateRespawnVector(beacon, teamId)
 							livingCount = livingCount + 1 --Needed because otherwise we check this on the same frame and think everyone's dead. 
-							local pvpTeam = ply:GetNWInt("jcms_pvpTeam", 1) --Default 1 to work with normal mode.
+							local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1) --Default 1 to work with normal mode.
+							if pvpTeam == -1 then pvpTeam = 1 end --Default 1 to work with normal mode.
 							teamAlivePlayers[pvpTeam] = (teamAlivePlayers[pvpTeam] or 0) + 1
 						end
 					end

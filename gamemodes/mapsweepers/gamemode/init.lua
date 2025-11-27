@@ -2418,6 +2418,7 @@ end
 			if team == 0 or team == "none" then
 				-- Leaving the lobby is not as scary as it sounds
 				ply:SetNWInt("jcms_desiredteam", 0)
+				ply:SetNWInt("jcms_pvpTeam", -1)
 			elseif team == 1 or team == "sweeper" or team == "jcorp" then
 				-- Sweeper
 				ply:SetNWInt("jcms_desiredteam", 1)
@@ -2644,7 +2645,7 @@ end
 			for i, oply in ipairs( player.GetAll() ) do
 				oply:SetNWBool("jcms_ready", false)
 				oply:SetNWInt("jcms_desiredteam", 0)
-				oply:SetNWInt("jcms_pvpTeam", nil)
+				oply:SetNWInt("jcms_pvpTeam", -1)
 			end
 
 			local newState = not game.GetWorld():GetNWBool("jcms_pvpmode", false)

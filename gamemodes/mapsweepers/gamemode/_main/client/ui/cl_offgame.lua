@@ -336,7 +336,7 @@ jcms.offgame = jcms.offgame or NULL
 
 			-- Players list {{{
 				pnl.plyPnlSweeper = pnl:Add("DScrollPanel")
-				pnl.plyPnlSweeper:SetSize(550, ScrH() * 0.25)
+				pnl.plyPnlSweeper:SetSize(jcms.util_IsLowRes() and 400 or 550, jcms.util_IsLowRes() and ScrH() * 0.15 or ScrH() * 0.25)
 				pnl.plyPnlSweeper:SetPos(-1000, -1000)
 				pnl.plyPnlSweeper:SetPaintBackground(false)
 				pnl.plyPnlSweeper.list = {}
@@ -350,9 +350,6 @@ jcms.offgame = jcms.offgame or NULL
 				end
 				function pnl.plyPnlSweeper:Think()
 					local lowres = jcms.util_IsLowRes()
-					if lowres then
-						self:SetWide(350)
-					end
 
 					local index = 0
 					local mismatchDetected = false
