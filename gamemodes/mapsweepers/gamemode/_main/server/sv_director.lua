@@ -76,6 +76,44 @@
 				-- }}}
 			}
 
+			if jcms.util_IsPVP() then 
+				jcms.director.sweeperSpawnpoints = {} 
+
+				-- // Pre-generate spawns to be spaced out a bit {{{
+					local defaultWeights = {}
+					local areaPositions = {}
+					for i, area in ipairs( jcms.mapgen_MainZone() ) do 
+						defaultWeights[area] = math.sqrt(area:GetSizeX() * area:GetSizeY())
+						areaPositions[area]  = area:GetCenter()
+					end
+					local avoidVectors = {}
+
+					for i, ply in player.Iterator() do 
+						local areaWeights = {}
+						for i, area in ipairs(jcms.mapgen_MainZone()) do
+							--Default weight
+							areaWeights[area] = defaultWeights[area] 
+
+							--Get closest avoidVec
+							local closestDist = math.huge
+							for i, otherPos in ipairs(avoidVectors) do
+								local dist = areaPositions[area]:Distance( otherPos )
+								closestDist = (closestDist < dist and closestDist) or dist
+							end
+							
+							--Avoid avoidVecs
+							if not(closestDist == math.huge) then 
+								areaWeights[area] = areaWeights[area] * closestDist
+							end
+						end
+
+						local area = jcms.util_ChooseByWeight(areaWeights)
+						table.insert(jcms.director.sweeperSpawnpoints, areaPositions[area])
+						table.insert(avoidVectors, areaPositions[area])
+					end
+				-- // }}}
+			end
+
 			jcms.director.missionStartTime = CurTime()
 		end
 

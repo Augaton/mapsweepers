@@ -97,12 +97,38 @@
 				jcms.director.fullyInited = true
 
 				if jcms.util_IsPVP() then
+					local defaultWeights = {}
+					local areaPositions = {}
+					for i, area in ipairs( jcms.mapgen_MainZone() ) do 
+						defaultWeights[area] = math.sqrt(area:GetSizeX() * area:GetSizeY())
+						areaPositions[area]  = area:GetCenter()
+					end
+					
+					local avoidVectors = {}
+
 					for teamId=1, 2 do
 						for i=1, math.ceil(player.GetCount()/2) do
-							--TODO: Weighted
-							local largest = jcms.mapgen_MainZone()
-							local area = largest[math.random(#largest)]
-							jcms.director_InsertRespawnVector(area:GetCenter(), teamId) 
+							local areaWeights = {}
+							for i, area in ipairs(jcms.mapgen_MainZone()) do
+								--Default weight
+								areaWeights[area] = defaultWeights[area] 
+
+								--Get closest avoidVec
+								local closestDist = math.huge
+								for i, otherPos in ipairs(avoidVectors) do
+									local dist = areaPositions[area]:Distance( otherPos )
+									closestDist = (closestDist < dist and closestDist) or dist
+								end
+								
+								--Avoid avoidVecs
+								if not(closestDist == math.huge) then 
+									areaWeights[area] = areaWeights[area] * math.sqrt(closestDist)
+								end
+							end
+
+							local area = jcms.util_ChooseByWeight(areaWeights)
+							jcms.director_InsertRespawnVector(areaPositions[area], teamId) 
+							table.insert(avoidVectors, areaPositions[area])
 						end
 					end
 
