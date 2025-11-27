@@ -152,6 +152,39 @@ if SERVER then
 			self:ForcePlayerDrop()
 			self:AttachToVehicle(hitEnt, self:FindAttachSlot(hitEnt))
 		end
+
+		-- Make emptier noises when no ore is inside.
+		local stuffed = math.Clamp(self:GetHeldCapacity() / self:GetMaxCapacity(), 0, 1)
+
+		if data.Speed > 250 then
+			if stuffed <= 0.25 then
+				self:EmitSound("Metal_Box.ImpactHard")
+			else
+				self:EmitSound("Metal_Barrel.ImpactHard")
+			end
+
+			if stuffed > 0 then
+				if math.random() < 1-stuffed then
+					self:EmitSound("Rock.ImpactHard")
+				end
+
+				if stuffed > 0.75 then
+					self:EmitSound("Boulder.ImpactHard")
+				end
+			end
+		elseif data.Speed > 100 then
+			if stuffed <= 0.4 then
+				self:EmitSound("Metal_Box.ImpactSoft")
+			else
+				self:EmitSound("Metal_Barrel.ImpactSoft")
+
+				if stuffed > 0 then
+					if math.random() < stuffed then
+						self:EmitSound("Rock.ImpactSoft")
+					end
+				end
+			end
+		end
 	end
 	
 	function ENT:OnTakeDamage(dmg)
