@@ -186,7 +186,7 @@ if CLIENT then
 
 	ENT.healthbarMatName = "!jcms_downloadpillarhealthbar"
 	ENT.healthbarRT = GetRenderTarget("jcms_downloadpillarhealthbar_rt", 8, 200)
-	ENT.healthbarRTMat = CreateMaterial("jcms_downloadpillarhealthbar", "UnlitGeneric", {
+	ENT.healthbarRTMat = CreateMaterial("jcms_downloadpillarhealthbar", "VertexLitGeneric", {
 		["$basetexture"] = ENT.healthbarRT:GetName(),
 		["$pointsamplemagfilter"] = 1
 	})

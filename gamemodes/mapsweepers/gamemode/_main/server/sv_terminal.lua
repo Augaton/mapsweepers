@@ -457,15 +457,27 @@ jcms.terminal_modeTypes = {
 			end
 
 			if not ent:GetNWBool("jcms_terminal_locked") then 
-				local redVector = Vector(1, 0.25, 0.25)
+				local newColorVector = Vector(1, 0.25, 0.25)
+
+				if IsValid(ent.jcms_hackedBy) then
+				jcms.director_PvpObjectiveCompleted(ent.jcms_hackedBy, ent:GetPos())
+
+					local pvpTeam = ent.jcms_hackedBy:GetNWInt("jcms_pvpTeam", -1)
+					if pvpTeam ~= -1 then
+						local pvpTeamColor = jcms.util_GetPVPColor(ent.jcms_hackedBy)
+						newColorVector:SetUnpacked(
+							(200 + pvpTeamColor.r)/2/255,
+							(200 + pvpTeamColor.g)/2/255,
+							(200 + pvpTeamColor.b)/2/255
+						)
+					end
+				end
+
 				for i, nodeEnt in ipairs(ent.track) do 
-					nodeEnt:SetEnergyColour(redVector)
+					nodeEnt:SetEnergyColour(newColorVector)
 				end
 				ent.isComplete = true
 				
-				if IsValid(ent.jcms_hackedBy) then
-					jcms.director_PvpObjectiveCompleted(ent.jcms_hackedBy, ent:GetPos())
-				end
 					
 				if IsValid(ent.prevTerminal) then --Re-generate our predecessor, so it updates/unlocks.
 					jcms.terminal_ToPurpose(ent.prevTerminal)
@@ -854,7 +866,8 @@ function jcms.terminal_Unlock(ent, hacker, intrusive)
 	ent:EmitSound("buttons/lever8.wav", 70, 106, 0.99)
 
 	if intrusive then
-		ent:SetNWString("jcms_terminal_theme", "jcorp")
+		local theme = jcms.util_GetFactionNamePVP(hacker)
+		ent:SetNWString("jcms_terminal_theme", theme)
 	end
 	
 	if IsValid(hacker) and hacker:IsPlayer() then

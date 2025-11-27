@@ -168,8 +168,33 @@ if SERVER then
 end
 
 if CLIENT then
+	jcms.device_colors = {
+		[1] = {
+			bright1 = Color(255, 32, 32, 200),
+			bright2 = Color(255, 32, 32),
+			brightDim = Color(255, 0, 0, 32),
+			dark1 = Color(64, 0, 0),
+		},
+
+		[2] = {
+			bright1 = Color(255, 233, 32, 200),
+			bright2 = Color(255, 233, 32),
+			brightDim = Color(255, 233, 0, 32),
+			dark1 = Color(64, 48, 0),
+		}
+	}
+
+	function jcms.device_GetColor(name, team)
+		team = team or 1
+		local teamTable = jcms.device_colors[ team ] or jcms.device_colors[1]
+
+		return teamTable[ name ] or color_white
+	end
+
 	jcms.device_render = {
 		autohacker = function(self)
+			local pvpTeam = self:GetNWInt("jcms_pvpTeam", -1)
+
 			local v = self:WorldSpaceCenter()
 			local a = self:GetAngles()
 			a:RotateAroundAxis(a:Right(), -90)
@@ -183,21 +208,21 @@ if CLIENT then
 			render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
 			cam.Start3D2D(v, a, 1/32)
 				local size1 = 230
-				surface.SetDrawColor(255, 32, 32, 200)
+				surface.SetDrawColor(jcms.device_GetColor("bright1", pvpTeam))
 				jcms.draw_Circle(0, 0, size1, size1, 24, math.ceil(progress*32), offset, offset+math.pi*2*progress)
 			cam.End3D2D()
 			
 			v = v + a:Up()
 			cam.Start3D2D(v, a, 1/32)
 				local size2 = size1 + 24
-				surface.SetDrawColor(255, 0, 0, 32)
+				surface.SetDrawColor(jcms.device_GetColor("brightDim", pvpTeam))
 				jcms.draw_Circle(0, 0, size2, size2, 12, math.ceil(progress2*32), -offset, math.pi*2*progress2-offset)
 			cam.End3D2D()
 			render.OverrideBlend( false, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
 			
 			v = v + a:Up()*8
-			local col = Color(255, 32, 32)
-			local colDark = Color(64, 0, 0)
+			local col = jcms.device_GetColor("bright2", pvpTeam)
+			local colDark = jcms.device_GetColor("dark1", pvpTeam)
 			cam.Start3D2D(v, a, 1/24)
 				draw.SimpleText(math.Round(progress*100).."%", "jcms_hud_big", 0, 0, colDark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 				draw.SimpleText(math.Round(progress*100).."%", "jcms_hud_big", -2, -2, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
@@ -213,9 +238,9 @@ if CLIENT then
 			local time = CurTime()
 			local progress = math.TimeFraction(self:GetTimeStart(), self:GetTimeToComplete(), time)
 			
-			local color = Color(255, 0, 0)
-			local color_pulsing = Color(255, (1-time%1)*255, 0, 100)
-			local color_dark = Color(50, 0, 0)
+			local color = jcms.device_GetColor("bright2", pvpTeam)
+			local color_pulsing = jcms.device_GetColor("bright1", pvpTeam)
+			local color_dark = jcms.device_GetColor("dark1", pvpTeam)
 
 			if progress < 1 then
 				local cellCount = 6
@@ -227,11 +252,11 @@ if CLIENT then
 							local a = math.Distance(x, y, midCell, midCell) + (-time*8)%(math.pi*2)
 							local osc = (math.sin(a) / 2 + 0.5)^2
 							
-							surface.SetDrawColor(255, 0, 0, osc*100)
+							surface.SetDrawColor(color.r, color.g, color.b, osc*100)
 							local rs = 48
 							local rx, ry = (x-midCell-0.5)*rs, (y-midCell-0.5)*rs
 							jcms.hud_DrawNoiseRect(rx, ry, rs, rs, 1024*osc)
-							surface.SetDrawColor(255, 0, 0, 50 + osc*50)
+							surface.SetDrawColor(color.r, color.g, color.b, 50 + osc*50)
 							surface.DrawOutlinedRect(rx+2, ry+2, rs-4, rs-4, 1+osc)
 						end
 					end
@@ -357,7 +382,7 @@ if SERVER then
 						ed:SetOrigin(self:GetPos())
 						ed:SetRadius(26)
 						ed:SetNormal(Vector(0, 0, 1))
-						ed:SetFlags(2)
+						ed:SetFlags(self:GetNWInt("jcms_pvpTeam", -1) == 2 and 7 or 2)
 						util.Effect("jcms_blast", ed)
 					end
 				end)
@@ -388,7 +413,7 @@ if SERVER then
 						ed:SetOrigin(self:GetPos())
 						ed:SetRadius(26)
 						ed:SetNormal(Vector(0, 0, 1))
-						ed:SetFlags(2)
+						ed:SetFlags(self:GetNWInt("jcms_pvpTeam", -1) == 2 and 7 or 2)
 						util.Effect("jcms_blast", ed)
 					end
 				end)

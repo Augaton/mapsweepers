@@ -39,6 +39,7 @@ function ENT:SetupDataTables()
 	self:NetworkVar("Float", 1, "HealthFraction")
 
 	self:NetworkVar("Int", 0, "RequiredSwps")
+	self:NetworkVar("Int", 1, "SecuredByTeam")
 
 	if SERVER then 
 		self:SetCharge(0)
@@ -240,6 +241,10 @@ if SERVER then
 		self.alarmSound:Stop()
 		self:SetIsComplete(true)
 
+		if IsValid(self.jcms_activator) then
+			self:SetSecuredByTeam(self.jcms_activator:GetNWInt("jcms_pvpTeam", -1))
+		end
+
 		--self:AddFlags(FL_NOTARGET)
 		for i, bullseye in ipairs(self.bullseyes) do 
 			if not IsValid(bullseye) then continue end 
@@ -332,7 +337,7 @@ if CLIENT then
 		end
 
 		if self:GetIsComplete() then 
-			local col = jcms.util_ColorFromInteger( jcms.util_colorIntegerJCorp )
+			local col = jcms.util_ColorFromInteger( self:GetSecuredByTeam() == 2 and jcms.util_colorIntegerMafia or jcms.util_colorIntegerJCorp )
 			
 			render.SetBlend(0.25)
 			render.SetColorModulation((col.r/200), (col.g/200), (col.b/200))

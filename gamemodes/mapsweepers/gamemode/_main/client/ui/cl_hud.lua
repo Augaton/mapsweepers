@@ -507,7 +507,8 @@
 			["$basetexture"] = healthbar_decor_rt:GetName(),
 			["$translucent"] = 1,
 			["$vertexcolor"] = 1,
-			["$vertexalpha"] = 1
+			["$vertexalpha"] = 1,
+			["$selfillum"] = 1
 		} )
 
 		function jcms.draw_HUDHealthbar_Decor() --Fewer draw operations/more optimised.

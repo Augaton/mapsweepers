@@ -1072,7 +1072,8 @@ if CLIENT then
 			local f = 1 - clip / maxClip
 			local x, y, w, h, p = -276, 0, 530, 170, 16
 			
-			local r, g, b = 255, 0, 0
+
+			local r, g, b = jcms.device_GetColor("bright1", self:GetNWInt("jcms_pvpTeam", -1)):Unpack()
 			if selfTbl:GetHackedByRebels() then 
 				r, g, b = 162, 81, 255
 			end
