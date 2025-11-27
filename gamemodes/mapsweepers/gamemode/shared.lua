@@ -706,7 +706,7 @@ local nmt = FindMetaTable("NPC")
 	if CLIENT then
 		function jcms.gunstats_GetMat(class)
 			if not jcms.gunMats[ class ] then
-				wepstats = jcms.gunstats_GetExpensive(class)
+				local wepstats = jcms.gunstats_GetExpensive(class)
 
 				jcms.gunMats[class] = Material(wepstats and wepstats.icon or "vgui/entities/"..class..".png")
 				if jcms.gunMats[class]:IsError() then

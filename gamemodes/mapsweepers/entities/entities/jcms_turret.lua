@@ -397,10 +397,6 @@ function ENT:Initialize()
 		self.jcms_stunEnd = CurTime()
 	end
 	
-	if CLIENT then
-		self.muzzleMatrix = Matrix()
-	end
-	
 	self.turretAngle = Angle(0, 0, 0)
 end
 
