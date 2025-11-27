@@ -54,16 +54,23 @@
 			draw.SimpleText("/ ".. math.ceil( math.max(0,ply:Armor()) ), "jcms_medium", sw/3-barw/2+8+64, sh-128-4-24, colArmor, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
 		end
 		surface.SetAlphaMultiplier(1)
+
+		if jcms.util_IsPVP() then
+			local bop = math.abs( math.sin(CurTime()*5) )*6
+			draw.SimpleText("#jcms.pvp_npctip", jcms.util_IsLowRes() and "jcms_small_bolder" or "jcms_medium", sw/2, sh - 16 - bop, colArmor, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+		end
 	end
 
 	function jcms.hud_npc_DrawTargetIDs(col, colAlt)
+		local myPVPTeam = jcms.locPly:GetNWInt("jcms_pvpTeam", -1)
+
 		local sw, sh = ScrW(), ScrH()
 		local ep = EyePos()
 
 		local minDist, minDistPly, minDistPlySV
 
 		for i, ply in ipairs(player.GetAll()) do
-			if ply:Team() == 1 and ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE then
+			if ply:Team() == 1 and ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE and (myPVPTeam == -1 or ply:GetNWInt("jcms_pvpTeam", -1) ~= myPVPTeam) then
 				local v = ply:WorldSpaceCenter()
 				local sv = v:ToScreen()
 				local dist = ep:Distance(v)
@@ -196,6 +203,8 @@
 	end
 
 	function jcms.hud_npc_DrawSweeperStatus(col, colAlt)
+		local myPVPTeam = jcms.locPly:GetNWInt("jcms_pvpTeam", -1)
+
 		if not jcms.classmats then
 			jcms.classmats = {}
 		end
@@ -212,6 +221,7 @@
 
 		local count = #sweepers
 		for i, sweeper in ipairs(sweepers) do
+			if not (myPVPTeam == -1 or sweeper:GetNWInt("jcms_pvpTeam", -1) ~= myPVPTeam) then continue end
 			local x = Lerp(scoreboardAnim, sw/2 - 20 * (count - 1) + (i-1) * 40, 300)
 			local y = Lerp(scoreboardAnim, 16, 100 + i*64)
 			if sweeper:Alive() and sweeper:GetObserverMode() == OBS_MODE_NONE then
@@ -219,8 +229,6 @@
 				if not jcms.classmats[ class ] then
 					jcms.classmats[ class ] = Material("jcms/classes/"..class..".png")
 				end
-
-				surface.SetMaterial(jcms.classmats[class])
 				
 				local healthFrac = math.Clamp(sweeper:Health()/sweeper:GetMaxHealth(), 0, 1)
 				local armorFrac = math.Clamp(sweeper:Armor()/sweeper:GetMaxArmor(), 0, 1)
@@ -241,12 +249,17 @@
 				surface.SetDrawColor(colAlt)
 				surface.DrawRect(x - 16, y+46, armorWidth*armorFrac, 4, 1)
 				
-				if armorFrac <= 0 then
-					surface.SetDrawColor(col)
-					surface.DrawTexturedRectRotated(x + math.random()*4 - 2, y + 16 + math.random()*4 - 2, 32, 32, math.random()*2-1)
+				if sweeper:Team() == 2 then
+					draw.SimpleText("NPC", "jcms_small_bolder", x, y + 16, colAlt, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 				else
-					surface.SetDrawColor(colAlt)
-					surface.DrawTexturedRectRotated(x, y + 16, 32, 32, 0)
+					surface.SetMaterial(jcms.classmats[class])
+					if armorFrac <= 0 then
+						surface.SetDrawColor(col)
+						surface.DrawTexturedRectRotated(x + math.random()*4 - 2, y + 16 + math.random()*4 - 2, 32, 32, math.random()*2-1)
+					else
+						surface.SetDrawColor(colAlt)
+						surface.DrawTexturedRectRotated(x, y + 16, 32, 32, 0)
+					end
 				end
 			else
 				draw.SimpleText(sweeper:GetNWBool("jcms_evacuated") and "^" or "X", "jcms_medium", x, y + 16, colAlt, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)

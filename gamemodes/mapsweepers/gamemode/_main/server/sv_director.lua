@@ -160,7 +160,6 @@
 		function jcms.director_PvpObjectiveCompletedTeam(teamId, pos, nonLocal) --Skips getting player team 
 			if not jcms.util_IsPVP() then return end
 
-
 			local areas
 			if nonLocal then 
 				areas = jcms.mapgen_MainZone()

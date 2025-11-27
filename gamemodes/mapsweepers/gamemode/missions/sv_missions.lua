@@ -502,14 +502,21 @@
 	end
 	
 	function jcms.mission_GenerateEvacObjective()
+		local d = jcms.director
+		
 		if jcms.util_IsPVP() then
+			local missionData = d.missionData
+			if missionData and not missionData.evacTip then
+				jcms.net_SendTip("all", true, "#jcms.gotoevac_pvp", 1)
+				missionData.evacTip = 0
+			end
+
 			return {
 				{type = "j", 0,0},
 				{type = "die", 0,0}
 			}
 		end
 
-		local d = jcms.director
 		local totalCount = 0
 		local evacCount = 0
 		local evacChargePercent = 1

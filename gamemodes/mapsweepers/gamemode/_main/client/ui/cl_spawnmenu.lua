@@ -599,6 +599,10 @@ end
 
 	function jcms.paint_scoreboard_Player(p, w, h)
 		local i, ply = p.i, p.ply
+		local myTeam = jcms.locPly:GetNWInt("jcms_pvpTeam", -1)
+		local theirTeam = ply:GetNWInt("jcms_pvpTeam", -1)
+		local canShowInfo = (theirTeam == -1) or (myTeam == theirTeam)
+
 		surface.SetDrawColor(jcms.color_bright)
 		surface.DrawRect(16, h-1, w-32, 1)
 
@@ -617,17 +621,19 @@ end
 			jcms.classmats = {}
 		end
 
-		local tgclass = ply:GetNWString("jcms_class")
+		if canShowInfo then
+			local tgclass = ply:GetNWString("jcms_class")
 
-		if not jcms.classmats[ tgclass ] then
-			jcms.classmats[ tgclass ] = Material("jcms/classes/"..tgclass..".png")
-		end
+			if not jcms.classmats[ tgclass ] then
+				jcms.classmats[ tgclass ] = Material("jcms/classes/"..tgclass..".png")
+			end
 
-		local classmat = evacuated and jcms.mat_evac or jcms.classmats[ tgclass ]
-		if classmat and not classmat:IsError() then
-			surface.SetMaterial(classmat)
-			surface.SetDrawColor(jcms.color_bright)
-			surface.DrawTexturedRect(5+ox, 2+oy, 16, 16)
+			local classmat = evacuated and jcms.mat_evac or jcms.classmats[ tgclass ]
+			if classmat and not classmat:IsError() then
+				surface.SetMaterial(classmat)
+				surface.SetDrawColor(jcms.color_bright)
+				surface.DrawTexturedRect(5+ox, 2+oy, 16, 16)
+			end
 		end
 
 		local nick = ply:Nick()
@@ -636,9 +642,10 @@ end
 		draw.SimpleText(nick, nw >= 100 and "DefaultVerySmall" or "jcms_small_bolder", 25+ox, h/2-1+oy, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 
 		local pingString = ply:IsBot() and "BOT" or ply:Ping().."ms"
-		local cashString = jcms.util_CashFormat(ply:GetNWInt("jcms_cash", 0)) .. "J"
 		draw.SimpleText(pingString, "jcms_small", w - 4 + ox, h/2-1 + oy, jcms.color_pulsing, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
-		if isSweeper then
+		
+		if isSweeper and canShowInfo then
+			local cashString = jcms.util_CashFormat(ply:GetNWInt("jcms_cash", 0)) .. "J"
 			draw.SimpleText(cashString, "jcms_small", w - 4 - 58 + ox, h/2-1 + oy, jcms.color_bright, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
 		elseif isNPC then
 			draw.SimpleText("NPC", "jcms_small", w - 4 - 58 + ox, h/2-1 + oy, jcms.color_bright, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
@@ -651,7 +658,7 @@ end
 			render.OverrideBlend( false )
 		end
 		
-		if not (dead or evacuated) and isSweeper then
+		if not (dead or evacuated) and isSweeper and canShowInfo then
 			local healthWidth = ply:GetMaxHealth()/2
 			local healthFrac = math.Clamp(ply:Health() / ply:GetMaxHealth(), 0, 1)
 			local armorWidth = ply:GetMaxArmor()/2
@@ -677,6 +684,20 @@ end
 	function jcms.paint_scoreboard_Controls(p, w, h)
 		surface.SetDrawColor(jcms.color_pulsing)
 		jcms.hud_DrawHollowPolyButton(0, 0, w, h)
+	end
+
+	function jcms.paint_scoreboard_Header(p, w, h)
+		surface.SetDrawColor(p:GetBackgroundColor())
+		jcms.hud_DrawFilledPolyButton(0, 0, w, h)
+
+		local name = language.GetPhrase("jcms.pvp_team" .. p.pvpTeam)
+		draw.SimpleText(name, "jcms_medium", w/2, h/2, color_black, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+		local mat = jcms.hud_GetPVPTeamMat(p.pvpTeam)
+		surface.SetDrawColor(0, 0, 0, 200)
+		surface.SetMaterial(mat)
+		surface.DrawTexturedRect(16, 2, h-4, h-4)
+		surface.DrawTexturedRect(w-16-h+4, 2, h-4, h-4)
 	end
 
 	function jcms.scoreboard_SetupPlayerElement(elem)
@@ -728,59 +749,136 @@ end
 		p_left.plyDict = {}
 		p_left:DockPadding(8, 24, 8, 8)
 
-		local sweepers = p_left:Add("DScrollPanel")
-		sweepers:Dock(TOP)
-		sweepers:SetTall(250)
-		sweepers:DockMargin(0, 0, 0, 4)
-		sweepers.Paint = jcms.paint_scoreboard_ScrollPanel
-		if IsValid(sweepers.VBar) then
-			sweepers.VBar.Paint = BLANK_DRAW
-			sweepers.VBar:SetHideButtons(true)
-			sweepers.VBar.btnGrip.Paint = jcms.paint_ScrollGrip
-		end
+		if jcms.util_IsPVP() then
+			local header_jcorp = p_left:Add("DPanel")
+			header_jcorp:Dock(TOP)
+			header_jcorp:DockMargin(0, 0, 0, 4)
+			header_jcorp:SetBackgroundColor(Color(255, 32, 32))
+			header_jcorp.Paint = jcms.paint_scoreboard_Header
+			header_jcorp.pvpTeam = 1
 
-		local npcs = p_left:Add("DScrollPanel")
-		npcs:Dock(FILL)
-		npcs.Paint = jcms.paint_scoreboard_ScrollPanel
-		if IsValid(npcs.VBar) then
-			npcs.VBar.Paint = BLANK_DRAW
-			npcs.VBar:SetHideButtons(true)
-			npcs.VBar.btnGrip.Paint = jcms.paint_ScrollGrip
-		end
-
-		function p_left.Think()
-			for ply, elem in pairs(p_left.plyDict) do
-				if not IsValid(ply) or not IsValid(elem) then
-					elem:Remove()
-					p_left.plyDict[ply] = nil
-				end
+			local team1 = p_left:Add("DScrollPanel")
+			team1:Dock(TOP)
+			team1:SetTall(188)
+			team1:DockMargin(0, 0, 0, 4)
+			team1.Paint = jcms.paint_scoreboard_ScrollPanel
+			if IsValid(team1.VBar) then
+				team1.VBar.Paint = BLANK_DRAW
+				team1.VBar:SetHideButtons(true)
+				team1.VBar.btnGrip.Paint = jcms.paint_ScrollGrip
 			end
 
-			for i, ply in ipairs(player.GetAll()) do
-				local team = ply:GetNWInt("jcms_desiredteam", 0)
-				local elem = p_left.plyDict[ ply ]
-				local intendedParent
-				
-				if team == 1 then
-					intendedParent = sweepers
-				else
-					intendedParent = npcs
+			local header_mafia = p_left:Add("DPanel")
+			header_mafia:Dock(TOP)
+			header_mafia:DockMargin(0, 0, 0, 4)
+			header_mafia:SetBackgroundColor(Color(255, 217, 32))
+			header_mafia.Paint = jcms.paint_scoreboard_Header
+			header_mafia.pvpTeam = 2
+
+			local team2 = p_left:Add("DScrollPanel")
+			team2:Dock(TOP)
+			team2:SetTall(188)
+			team2:DockMargin(0, 0, 0, 4)
+			team2.Paint = jcms.paint_scoreboard_ScrollPanel
+			if IsValid(team2.VBar) then
+				team2.VBar.Paint = BLANK_DRAW
+				team2.VBar:SetHideButtons(true)
+				team2.VBar.btnGrip.Paint = jcms.paint_ScrollGrip
+			end
+
+			function p_left.Think()
+				for ply, elem in pairs(p_left.plyDict) do
+					if not IsValid(ply) or not IsValid(elem) then
+						elem:Remove()
+						p_left.plyDict[ply] = nil
+					end
 				end
 
-				if not elem or not IsValid(elem) then
-					elem = intendedParent:Add("DButton")
-					elem:Dock(TOP)
-					elem:DockMargin(2, 2, 2, 0)
-					elem.Paint = jcms.paint_scoreboard_Player
-					jcms.scoreboard_SetupPlayerElement(elem)
-					p_left.plyDict[ ply ] = elem
-				else
-					elem:SetParent(intendedParent)
-					elem:Dock(TOP)
+				for i, ply in ipairs(player.GetAll()) do
+					local team = ply:GetNWInt("jcms_desiredteam", 0)
+					if team ~= 1 then continue end
+
+					local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
+					local elem = p_left.plyDict[ ply ]
+					local intendedParent
+
+					if pvpTeam == 1 then
+						intendedParent = team1
+					elseif pvpTeam == 2 then
+						intendedParent = team2
+					end
+
+					if not elem or not IsValid(elem) then
+						elem = intendedParent:Add("DButton")
+						elem:Dock(TOP)
+						elem:DockMargin(2, 2, 2, 0)
+						elem.Paint = jcms.paint_scoreboard_Player
+						jcms.scoreboard_SetupPlayerElement(elem)
+						p_left.plyDict[ ply ] = elem
+					else
+						elem:SetParent(intendedParent)
+						elem:Dock(TOP)
+					end
+
+					elem.ply = ply
+					elem.i = i
+				end
+			end
+		else
+			local sweepers = p_left:Add("DScrollPanel")
+			sweepers:Dock(TOP)
+			sweepers:SetTall(250)
+			sweepers:DockMargin(0, 0, 0, 4)
+			sweepers.Paint = jcms.paint_scoreboard_ScrollPanel
+			if IsValid(sweepers.VBar) then
+				sweepers.VBar.Paint = BLANK_DRAW
+				sweepers.VBar:SetHideButtons(true)
+				sweepers.VBar.btnGrip.Paint = jcms.paint_ScrollGrip
+			end
+
+			local npcs = p_left:Add("DScrollPanel")
+			npcs:Dock(FILL)
+			npcs.Paint = jcms.paint_scoreboard_ScrollPanel
+			if IsValid(npcs.VBar) then
+				npcs.VBar.Paint = BLANK_DRAW
+				npcs.VBar:SetHideButtons(true)
+				npcs.VBar.btnGrip.Paint = jcms.paint_ScrollGrip
+			end
+
+			function p_left.Think()
+				for ply, elem in pairs(p_left.plyDict) do
+					if not IsValid(ply) or not IsValid(elem) then
+						elem:Remove()
+						p_left.plyDict[ply] = nil
+					end
 				end
 
-				elem.ply = ply
-				elem.i = i
+				for i, ply in ipairs(player.GetAll()) do
+					local team = ply:GetNWInt("jcms_desiredteam", 0)
+					local elem = p_left.plyDict[ ply ]
+					local intendedParent
+					
+					if team == 1 then
+						intendedParent = sweepers
+					else
+						intendedParent = npcs
+					end
+
+					if not elem or not IsValid(elem) then
+						elem = intendedParent:Add("DButton")
+						elem:Dock(TOP)
+						elem:DockMargin(2, 2, 2, 0)
+						elem.Paint = jcms.paint_scoreboard_Player
+						jcms.scoreboard_SetupPlayerElement(elem)
+						p_left.plyDict[ ply ] = elem
+					else
+						elem:SetParent(intendedParent)
+						elem:Dock(TOP)
+					end
+
+					elem.ply = ply
+					elem.i = i
+				end
 			end
 		end
 

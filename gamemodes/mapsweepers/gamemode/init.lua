@@ -1112,9 +1112,10 @@ end
 				local allTargets = {}
 				local currentTarget = ply:GetObserverTarget()
 				local currentTargetIndex = 1
+				local myTeam = ply:GetNWInt("jcms_pvpTeam", -1)
 
 				for i, oply in ipairs(team.GetPlayers(1)) do
-					if IsValid(oply) and oply~=ply and oply:Alive() and oply:GetObserverMode() == OBS_MODE_NONE then
+					if IsValid(oply) and oply~=ply and oply:Alive() and oply:GetObserverMode() == OBS_MODE_NONE and (myTeam == -1 or oply:GetNWInt("jcms_pvpTeam", -1) == myTeam) then
 						table.insert(allTargets, oply)
 						
 						if currentTarget == oply then
