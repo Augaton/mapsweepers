@@ -434,7 +434,7 @@ jcms.missions.datadownload = {
 					md.powerMultiplier = progressPower
 
 					local scalar = (#d.npcs > 10) and jcms.runprogress_GetDifficulty() or 1
-					progressPower = progressPower * 1/((60*5) * scalar) * (jcms.util_IsPVP() and 4 or 1)
+					progressPower = progressPower * 1/((60*5) * scalar) * (jcms.util_IsPVP() and 3.25 or 1)
 
 					md.defenseProgress = math.Clamp(md.defenseProgress + progressPower, 0, 1)
 					md.timeEstimate = math.ceil( (1 - md.defenseProgress) / progressPower )
@@ -512,7 +512,7 @@ jcms.missions.datadownload = {
 					
 					local pvpTeam = computer:GetNWInt("jcms_pvpTeam", -1)
 					if not(pvpTeam == -1) and downloadSucceeded and not pvpRespawnGiven then
-						jcms.director_PvpObjectiveCompletedTeam(pvpTeam, computer:GetPos())
+						jcms.director_PvpObjectiveCompletedTeam(pvpTeam, computer:GetPos(), true)
 						pvpRespawnGiven = true 
 					end
 					computer:SetNWInt("jcms_pvpTeam", -1)

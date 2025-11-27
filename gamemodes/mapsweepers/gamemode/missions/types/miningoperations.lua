@@ -49,7 +49,7 @@ jcms.missions.miningoperations = {
 
 				if ref.jcms_pvpOreAccumulator > missionData.totalToRefine/3 then
 					ref.jcms_pvpOreAccumulator = 0
-					jcms.director_PvpObjectiveCompletedTeam(ref:GetNWInt("jcms_pvpTeam", -1), ref:GetPos())
+					jcms.director_PvpObjectiveCompletedTeam(ref:GetNWInt("jcms_pvpTeam", -1), ref:GetPos(), true)
 				end
 			end
 

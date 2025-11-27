@@ -78,7 +78,7 @@ for i=1, 8 do
 	table.insert(ENT.VomitVectors, vec2)
 end
 
-ENT.EjectionCooldown = 1 --How long until we can eat again after ejecting
+ENT.EjectionCooldown = 2.5 --How long until we can eat again after ejecting
 ENT.AttachCooldown = 1 --How long until we can attach after being grabbed off a vehicle
 
 function ENT:SetupDataTables()

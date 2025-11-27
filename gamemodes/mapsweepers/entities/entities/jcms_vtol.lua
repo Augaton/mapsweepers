@@ -688,6 +688,7 @@ if SERVER then
 	end
 
 	function ENT:RedirectDamage(driver, dmg)
+		self:TakeDamageInfo( dmg )
 		dmg:SetDamage(0)
 	end
 end

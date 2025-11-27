@@ -148,21 +148,28 @@
 			return jcms.director and jcms.director.suddenDeathTime and jcms.director_GetMissionTime() > jcms.director.suddenDeathTime
 		end
 
-		function jcms.director_PvpObjectiveCompleted(ply, pos) --Player who completed, objective position.
+		function jcms.director_PvpObjectiveCompleted(ply, pos, nonLocal) --Player who completed, objective position, whether we should spawn completely randomly or nearby
 			if not IsValid(ply) then return end
 
 			local teamId = ply:GetNWInt("jcms_pvpTeam", -1)
 			teamId = not(teamId==-1) and teamId or 1
 
-			jcms.director_PvpObjectiveCompletedTeam(teamId, pos)
+			jcms.director_PvpObjectiveCompletedTeam(teamId, pos, nonLocal)
 		end
 
-		function jcms.director_PvpObjectiveCompletedTeam(teamId, pos) --Skips getting player team 
+		function jcms.director_PvpObjectiveCompletedTeam(teamId, pos, nonLocal) --Skips getting player team 
 			if not jcms.util_IsPVP() then return end
 
-			local awayAreas = jcms.director_GetAreasAwayFrom(jcms.mapgen_MainZone(), {pos}, 100, 1250)
+
+			local areas
+			if nonLocal then 
+				areas = jcms.mapgen_MainZone()
+			else
+				areas = jcms.director_GetAreasAwayFrom(jcms.mapgen_MainZone(), {pos}, 100, 1250)
+			end
+
 			local weightedAreas = {}
-			for i, area in ipairs(awayAreas) do
+			for i, area in ipairs(areas) do
 				weightedAreas[area] = area:GetSizeX() * area:GetSizeY()
 			end
 

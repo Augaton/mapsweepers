@@ -665,6 +665,7 @@ if SERVER then
 	end
 	
 	function ENT:RedirectDamage(driver, dmg)
+		self:TakeDamageInfo( dmg )
 		dmg:ScaleDamage(0)
 	end
 end
