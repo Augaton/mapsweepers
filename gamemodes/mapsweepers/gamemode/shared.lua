@@ -1233,6 +1233,22 @@ local nmt = FindMetaTable("NPC")
 		end
 	end
 
+	function jcms.util_GetPVPVectorColor(ent)
+		if IsValid(ent) and ent:GetNWInt("jcms_pvpTeam", -1) == 2 then
+			return Vector(1, 1, 0)
+		else
+			return Vector(1, 0, 0)
+		end
+	end
+
+	function jcms.util_GetPVPColor(ent)
+		if IsValid(ent) and ent:GetNWInt("jcms_pvpTeam", -1) == 2 then
+			return Color(255, 217, 0)
+		else
+			return Color(255, 0, 0)
+		end
+	end
+
 	function jcms.util_TryUpdateForPVP(ent)
 		if IsValid(ent) and ent.UpdateForFaction then
 			ent:UpdateForFaction( jcms.util_GetFactionNamePVP(ent) )

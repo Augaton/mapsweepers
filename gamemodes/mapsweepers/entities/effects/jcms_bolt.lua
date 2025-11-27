@@ -60,6 +60,7 @@ function EFFECT:Init( data )
 		-- Get random position in the sky above.
 		sound.Play("npc/strider/fire.wav", self.start, 150, 80, 1, 25)
 		self.delay = data:GetMagnitude()
+		self.pvpTeam = data:GetMaterialIndex()
 		self.t = -self.delay -- Delay
 		
 		local randomVisualSkyTrace = util.TraceLine {
@@ -100,7 +101,7 @@ function EFFECT:Think()
 				ed:SetOrigin(selfTbl.endpos)
 				ed:SetRadius(450)
 				ed:SetNormal(upVector)
-				ed:SetFlags(2)
+				ed:SetFlags(selfTbl.pvpTeam == 2 and 7 or 2)
 				util.Effect("jcms_blast", ed)
 				util.Effect("Explosion", ed)
 
@@ -159,15 +160,32 @@ function EFFECT:Render()
 
 		if f < 0 then
 			local invf = -selfTbl.t / selfTbl.delay
-			selfTbl.color.r = math.min(255, invf*255*2)
-			selfTbl.color.g = math.min(255, invf*invf*140*2)
-			selfTbl.color.b = math.min(255, invf*160*2)
+
+			if selfTbl.pvpTeam == 2 then
+				-- Yellow
+				selfTbl.color.r = math.min(255, invf*invf*255*2)
+				selfTbl.color.g = math.min(255, invf*180*2)
+				selfTbl.color.b = math.min(255, invf*100*2)
+			else
+				-- Red
+				selfTbl.color.r = math.min(255, invf*invf*255*2)
+				selfTbl.color.g = math.min(255, invf*140*2)
+				selfTbl.color.b = math.min(255, invf*invf*160*2)
+			end
 			selfTbl.color.a = invf*255
 			width = 32*invf
 		else
-			selfTbl.color.r = 255*(1-f)
-			selfTbl.color.g = 140*ff
-			selfTbl.color.b = 190*ff
+			if selfTbl.pvpTeam == 2 then
+				-- Yellow
+				selfTbl.color.r = 255*(1-f)
+				selfTbl.color.g = 255*ff
+				selfTbl.color.b = 100*ff
+			else
+				-- Red
+				selfTbl.color.r = 255*(1-f)
+				selfTbl.color.g = 140*ff
+				selfTbl.color.b = 190*ff
+			end
 			selfTbl.color.a = 256*ff
 			width = 500
 		end

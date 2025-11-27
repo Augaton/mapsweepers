@@ -117,12 +117,20 @@ hook.Add("Think", "jcms_Flashlights", function(ply) --todo: see if I can have th
 			end
 			
 			do -- Setting the colour
+				local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
 				local r,g,b = 255*a, 128*a*a, 128*a*a
 
-				if jcms.playerfactions_players[ ply.__s64hash ] == "rgg" then
-					r,g,b = 180*a*a, 64*a*a, 255*a
-				elseif jcms.playerfactions_players[ ply.__s64hash ] == "mafia" then
-					r,g,b = 250*a*a, 207*a*a, 121*a
+				if pvpTeam == 1 then
+					r,g,b = 255*a, 40*a*a, 40*a*a
+				elseif pvpTeam == 2 then
+					r,g,b = 255*a, 200*a*a, 40*a*a
+				else
+					-- Default logic.
+					if jcms.playerfactions_players[ ply.__s64hash ] == "rgg" then
+						r,g,b = 180*a*a, 64*a*a, 255*a
+					elseif jcms.playerfactions_players[ ply.__s64hash ] == "mafia" then
+						r,g,b = 250*a*a, 207*a*a, 121*a
+					end
 				end
 
 				jcms.flashlights_cachedColor:SetUnpacked(r,g,b)

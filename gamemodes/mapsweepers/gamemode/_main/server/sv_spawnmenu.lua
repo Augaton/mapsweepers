@@ -411,6 +411,8 @@
 
 				local blast_radius = 400
 				local blast_damage = 200
+				local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
+				if pvpTeam == -1 then pvpTeam = 1 end --Default 1 to work with normal mode.
 
 				local function shootFunc(bomb_pos, norm, length, i, count, timeToDrop)
 					local tr = util.TraceLine {
@@ -423,6 +425,7 @@
 					ed:SetOrigin(tr.HitPos)
 					ed:SetFlags(3)
 					ed:SetMagnitude(1.5)
+					ed:SetMaterialIndex(pvpTeam)
 					util.Effect("jcms_bolt", ed)
 
 					timer.Simple(1.5, function()

@@ -243,7 +243,7 @@ if SERVER then
 			missile.Damping = 0.76
 			missile.Speed = 1500
 			missile.ActivationTime = CurTime() + 0.5
-			local col = self:GetHackedByRebels() and jcms.factions_GetColor("rebel") or Color(255, 0, 0)
+			local col = self:GetHackedByRebels() and jcms.factions_GetColor("rebel") or jcms.util_GetPVPColor(self.jcms_owner)
 			missile:SetBlinkColor( Vector(col.r/255, col.g/255, col.b/255) )
 			missile:Spawn()
 

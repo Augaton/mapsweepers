@@ -545,7 +545,8 @@ if SERVER then
 			if (not tower.nextShot or CurTime() - tower.nextShot > 0) then
 				local driver = self:GetDriver() or NULL
 				local angles = self:TowerAngles()
-				
+				local isMafia = ply:GetNWInt("jcms_pvpTeam", -1) == 2
+
 				local bullet = ents.Create("prop_physics")
 				local shootPos = tower:GetPos() + angles:Forward()*64 + angles:Right()*(self.altBarrel and 1 or -1)*12 + angles:Up()*75 
 				bullet:SetPos(shootPos)
@@ -566,7 +567,7 @@ if SERVER then
 				physBullet:SetDamping(0, 0)
 				physBullet:EnableGravity(false)
 				physBullet:Wake()
-				util.SpriteTrail(bullet, 0, Color(255, 110, 130), true, 64, 0, 0.25, 1, "sprites/physbeama")
+				util.SpriteTrail(bullet, 0, isMafia and Color(255, 180, 100) or Color(255, 110, 130), true, 64, 0, 0.25, 1, "sprites/physbeama")
 				
 				local physTower = tower:GetPhysicsObject()
 				physTower:ApplyForceOffset(angles:Forward() * physTower:GetMass() * -75, shootPos)
@@ -590,7 +591,7 @@ if SERVER then
 				local ed = EffectData()
 				ed:SetEntity(tower)
 				ed:SetScale(6)
-				ed:SetFlags(2)
+				ed:SetFlags(isMafia and 1 or 2)
 				ed:SetStart(shootPos)
 				ed:SetNormal(angles:Forward())
 				util.Effect("jcms_muzzleflash", ed)
@@ -618,7 +619,7 @@ if SERVER then
 				missile.Proximity = 40
 				missile.ActivationTime = CurTime() + 0.35
 				missile.jcms_owner = ply
-				missile:SetBlinkColor(Vector(1, 0, 0))
+				missile:SetBlinkColor(jcms.util_GetPVPVectorColor(ply))
 				missile:Spawn()
 				missile:GetPhysicsObject():SetVelocity(angles:Forward()*32 + pushAway)
 				

@@ -44,6 +44,7 @@ function EFFECT:Init( data )
 	-- 4: Boomer blast
 	-- 5: Electric explosion
 	-- 6: Nuke
+	-- 7: M-Blast (Type 2 but mafia)
 
 	if self.blasttype == 6 then
 		self.nukeEffect = CreateParticleSystem( self, "explosion_huge", PATTACH_ABSORIGIN_FOLLOW)
@@ -98,6 +99,11 @@ function EFFECT:Init( data )
 			dl.g = self.color.g
 			dl.b = self.color.b
 			dl.brightness = 2
+		elseif self.blasttype == 7 then
+			dl.r = 255
+			dl.g = 160
+			dl.b = 32
+			dl.brightness = 5
 		end
 		
 		dl.decay = 1000
@@ -321,6 +327,10 @@ function EFFECT:Render()
 				self.color.r = 255*a_flash
 				self.color.g = 150*a_flash*a_flash*a_flash
 				self.color.b = 150*a_flash*a_flash*a_flash
+			elseif self.blasttype == 7 then
+				self.color.r = 255*a_flash
+				self.color.g = 230*a_flash
+				self.color.b = 150*a_flash*a_flash
 			end
 		
 			render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
@@ -329,7 +339,7 @@ function EFFECT:Render()
 				render.DrawSprite(self.pos, self.size*e_flash*2, self.size*e_flash*2, self.color)
 				render.SetColorMaterial()
 				render.DrawSphere(self.pos, self.size*f_flash, 7, 7, self.color)
-			elseif self.blasttype == 2 then
+			elseif self.blasttype == 2 or self.blasttype == 7 then
 				render.SetMaterial(self.mat_fire3)
 				render.DrawSprite(self.pos, self.size*e_flash*2, self.size*e_flash*2, self.color)
 			end
@@ -338,7 +348,7 @@ function EFFECT:Render()
 		
 		if self.blasttype == 1 then
 			render.SetMaterial(self.mat_ring1)
-		elseif self.blasttype == 2 then
+		elseif self.blasttype == 2 or self.blasttype == 7 then
 			render.SetMaterial(self.mat_ring2)
 		end
 		
