@@ -1308,7 +1308,7 @@
 					local yoff = balance == 0 and ph/2 or ph/3
 
 					local font = lowres and "DefaultSmall" or "jcms_small_bolder"
-					local respawns = 5
+					local respawns = math.ceil( player.GetCount()/2 )
 					local text = ("%dv%d"):format(team1Count, team2Count)
 					local tw, th = draw.SimpleText(text, "jcms_hud_small", px, py+yoff, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 					draw.SimpleText(text, "jcms_hud_small", px, py+yoff, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
