@@ -267,7 +267,6 @@ if CLIENT then
 			render.OverrideBlend(true, BLEND_ZERO, BLEND_ONE, BLENDFUNC_ADD)
 			drawModels(ents.FindByClass("item_*"), eyePos) --Way better than ents.iterator for optimisation. even if this is a little jank.
 			drawModels(ents.FindByClass("jcms_shop"), eyePos)
-
 			render.OverrideBlend(false)
 		cam.End3D()
 		

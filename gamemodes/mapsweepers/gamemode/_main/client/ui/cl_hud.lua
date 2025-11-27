@@ -1533,6 +1533,29 @@
 		end
 	end
 
+	jcms.draw_xrayMat = Material("models/wireframe")
+
+	function jcms.draw_AllyID()
+		local myPVPTeam = jcms.locPly:GetNWInt("jcms_pvpTeam", -1)
+		if myPVPTeam == -1 or not jcms.util_IsPVP() then return end
+
+		cam.Start2D()
+		for i, ply in ipairs( player.GetAll() ) do
+			if ply == jcms.locPly then continue end
+			if jcms.hud_targetAnim > 0.01 and ply == jcms.hud_targetLast then continue end
+
+			if ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE and ply:GetNWInt("jcms_pvpTeam", -1) == myPVPTeam then
+				local spos = ply:WorldSpaceCenter():ToScreen()
+				draw.SimpleText(ply:Nick(), "jcms_small_bolder", spos.x, spos.y, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				
+				render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
+					draw.SimpleText(ply:Nick(), "jcms_small_bolder", spos.x, spos.y - 2, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				render.OverrideBlend( false )
+			end
+		end
+		cam.End2D()
+	end
+
 	function jcms.draw_SentinelAnchor()
 		if jcms.hud_myclass == "sentinel" then
 			local anchoredBy
@@ -2049,50 +2072,65 @@
 
 	jcms.hud_infoTargetFuncs = {
 		["player"] = function(ply, blend)
-			if ply:Team() == 1 then
-				render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
-					local R,G,B = jcms.color_bright:Unpack()
-					surface.SetDrawColor(R*0.25*blend, G*0.25*blend, B*0.25*blend)
-					surface.DrawRect(0, -256, 512*blend, 32)
-				render.OverrideBlend( false )
+			local noClass = false
+			if ply:Team() ~= 1 then 
+				noClass = true
+				local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
 
-				surface.SetAlphaMultiplier(blend)
-
-				local healthFrac = math.Clamp(ply:Health()/ply:GetMaxHealth(), 0, 1)
-				local armorFrac = math.Clamp(ply:Armor()/ply:GetMaxArmor(), 0, 1)
-				
-				local specialText = jcms.hud_GetSpecialText(ply)
-				specialText = specialText and language.GetPhrase("jcms.specialtext_"..specialText)
-
-				local classString = language.GetPhrase("jcms.class_" .. ply:GetNWString("jcms_class", "infantry"))
-				draw.SimpleText(ply:Nick(), "jcms_hud_big", 16, -256, jcms.color_dark, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-				draw.SimpleText(classString, "jcms_hud_medium", 32, -256 - 24, jcms.color_dark, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
-				if specialText then
-					draw.SimpleText(specialText, "jcms_hud_small", 32, -120, jcms.color_dark, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
-				end
-				
-				local healthWidth = ( ply:GetMaxHealth() * 4 )*blend
-				local armorWidth = ( ply:GetMaxArmor() * 4 )*blend
-
-				surface.SetDrawColor(jcms.color_dark)
-				surface.DrawRect(16, -190, healthWidth, 24)
-				surface.SetDrawColor(jcms.color_dark_alt)
-				surface.DrawRect(64, -190 - 10, armorWidth, 16)
-				
-				render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
-				draw.SimpleText(ply:Nick(), "jcms_hud_big", 16 + 4, -256 - 1, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-				draw.SimpleText(classString, "jcms_hud_medium", 32 + 3, -256 - 24 - 1, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
-				surface.SetDrawColor(jcms.color_bright)
-				surface.DrawRect(16 + 4, -190 - 2, healthWidth*healthFrac, 24)
-				jcms.hud_DrawStripedRect(16 + 4 + healthWidth*healthFrac, -190 + 2, healthWidth*(1-healthFrac), 24-4)
-				surface.SetDrawColor(jcms.color_bright_alt)
-				surface.DrawRect(64 + 4, -190 - 10 - 2, armorWidth*armorFrac, 16)
-				jcms.hud_DrawStripedRect(64 + 4 + armorWidth*armorFrac, -190 - 10 + 2, armorWidth*(1-armorFrac), 16-4, 75)
-				if specialText then
-					draw.SimpleText(specialText, "jcms_hud_small", 32+3, -120-1, jcms.color_bright_alt, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
-				end
-				render.OverrideBlend(false)
+				if pvpTeam == -1 then return end
+				if pvpTeam ~= jcms.locPly:GetNWInt("jcms_pvpTeam", -1) then return end
 			end
+			
+			render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
+				local R,G,B = jcms.color_bright:Unpack()
+				surface.SetDrawColor(R*0.25*blend, G*0.25*blend, B*0.25*blend)
+				surface.DrawRect(0, -256, 512*blend, 32)
+			render.OverrideBlend( false )
+
+			surface.SetAlphaMultiplier(blend)
+
+			local healthFrac = math.Clamp(ply:Health()/ply:GetMaxHealth(), 0, 1)
+			local armorFrac = math.Clamp(ply:Armor()/ply:GetMaxArmor(), 0, 1)
+			
+			local specialText = jcms.hud_GetSpecialText(ply)
+			specialText = specialText and language.GetPhrase("jcms.specialtext_"..specialText)
+
+			draw.SimpleText(ply:Nick(), "jcms_hud_big", 16, -256, jcms.color_dark, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+			local classString = language.GetPhrase("jcms.class_" .. ply:GetNWString("jcms_class", "infantry"))
+			
+			if not noClass then
+				draw.SimpleText(classString, "jcms_hud_medium", 32, -256 - 24, jcms.color_dark, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+			end
+			
+			if specialText then
+				draw.SimpleText(specialText, "jcms_hud_small", 32, -120, jcms.color_dark, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+			end
+			
+			local healthWidth = ( ply:GetMaxHealth() * 4 )*blend
+			local armorWidth = ( ply:GetMaxArmor() * 4 )*blend
+
+			surface.SetDrawColor(jcms.color_dark)
+			surface.DrawRect(16, -190, healthWidth, 24)
+			surface.SetDrawColor(jcms.color_dark_alt)
+			surface.DrawRect(64, -190 - 10, armorWidth, 16)
+			
+			render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
+			draw.SimpleText(ply:Nick(), "jcms_hud_big", 16 + 4, -256 - 1, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+			
+			if not noClass then
+				draw.SimpleText(classString, "jcms_hud_medium", 32 + 3, -256 - 24 - 1, jcms.color_bright, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+			end
+			
+			surface.SetDrawColor(jcms.color_bright)
+			surface.DrawRect(16 + 4, -190 - 2, healthWidth*healthFrac, 24)
+			jcms.hud_DrawStripedRect(16 + 4 + healthWidth*healthFrac, -190 + 2, healthWidth*(1-healthFrac), 24-4)
+			surface.SetDrawColor(jcms.color_bright_alt)
+			surface.DrawRect(64 + 4, -190 - 10 - 2, armorWidth*armorFrac, 16)
+			jcms.hud_DrawStripedRect(64 + 4 + armorWidth*armorFrac, -190 - 10 + 2, armorWidth*(1-armorFrac), 16-4, 75)
+			if specialText then
+				draw.SimpleText(specialText, "jcms_hud_small", 32+3, -120-1, jcms.color_bright_alt, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+			end
+			render.OverrideBlend(false)
 		end,
 
 		["jcms_turret"] = function(ent, blend)
@@ -2465,6 +2503,8 @@
 		end
 		
 		if jcms.hud_spawnmenuAnim <= 0.05 then
+			jcms.draw_AllyID()
+			
 			cam.Start2D()
 				jcms.draw_Locators()
 			cam.End2D()
