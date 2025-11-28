@@ -603,7 +603,7 @@ end
 	end
 
 	function jcms.runprogress_GetDifficulty()
-		return jcms.runprogress.difficulty
+		return jcms.util_IsPVP() and 1 or jcms.runprogress.difficulty
 	end
 
 	function jcms.runprogress_Victory()
@@ -641,6 +641,8 @@ end
 	end
 
 	function jcms.runprogress_GetStartingCash(ply_or_sid64)
+		if jcms.util_IsPVP() then return jcms.cvar_cash_start:GetInt() end
+
 		local sid64 = tostring(ply_or_sid64)
 		if type(ply_or_sid64) == "Player" then
 			sid64 = ply_or_sid64:SteamID64()
@@ -651,7 +653,7 @@ end
 	end
 
 	function jcms.runprogress_UpdateAllPlayers()
-		for i, ply in ipairs(player.GetAll()) do 
+		for i, ply in player.Iterator() do 
 			ply:SetNWInt("jcms_cash", jcms.runprogress_GetStartingCash(ply))
 			--print(jcms.runprogress_GetStartingCash(ply))
 		end
@@ -2646,7 +2648,7 @@ end
 		end
 
 		if not ply:IsPlayer() or ply:IsAdmin() then
-			for i, oply in ipairs( player.GetAll() ) do
+			for i, oply in player.Iterator() do
 				oply:SetNWBool("jcms_ready", false)
 				oply:SetNWInt("jcms_desiredteam", 0)
 				oply:SetNWInt("jcms_pvpTeam", -1)
@@ -2655,6 +2657,10 @@ end
 			local newState = not game.GetWorld():GetNWBool("jcms_pvpmode", false)
 			game.GetWorld():SetNWBool("jcms_pvpmode", newState)
 			jcms.printf("PVP Mode: " .. (newState and "On" or "Off"))
+
+			jcms.runprogress_UpdateAllPlayers()
+			game.GetWorld():SetNWInt("jcms_winstreak", newState and 0 or jcms.runprogress.winstreak)
+			game.GetWorld():SetNWInt("jcms_difficulty", newState and 1 or jcms.runprogress.difficulty)
 		end
 	end)
 
