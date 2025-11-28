@@ -2305,7 +2305,7 @@ jcms.offgame = jcms.offgame or NULL
 						sliderdot:SetText("#jcms.opt_crosshair_dot")
 						sliderdot:SetSize(400, 24)
 						sliderdot:SetPos(24, ammo:GetY() + ammo:GetTall() + 24)
-						sliderdot:SetMinMax(0, 2)
+						sliderdot:SetMinMax(0, 3)
 						sliderdot:SetDecimals(0)
 						sliderdot:SetConVar("jcms_crosshair_dot")
 						sliderdot.Paint = jcms.paint_NumSlider

@@ -232,7 +232,7 @@ end)
 	jcms.cvar_hud_noneardeathfilter = CreateClientConVar("jcms_hud_noneardeathfilter", "0", true, false, "Disables the near-death black-and-white effect")
 
 	jcms.cvar_crosshair_style = CreateClientConVar("jcms_crosshair_style", "1", true, false, "0: None\n1: T-shaped\n2: Triangle\n3: Plus-shaped\n4: Circle")
-	jcms.cvar_crosshair_dot = CreateClientConVar("jcms_crosshair_dot", "0", true, false, "Enables the central dot on the crosshair. 0=Never, 1=Always, 2=Only when zoomed in")
+	jcms.cvar_crosshair_dot = CreateClientConVar("jcms_crosshair_dot", "0", true, false, "Enables the central dot on the crosshair. 0=Never, 1=Always, 2=Only when zoomed in, 3=Hide when zoomed in")
 	jcms.cvar_crosshair_ammo = CreateClientConVar("jcms_crosshair_ammo", "1", true, false, "0: No ammo indicator\n1: Temporary circular\n2: Permanent circular\n3: Temporary numeric\n4: Permanent numeric")
 
 	jcms.cvar_crosshair_width = CreateClientConVar("jcms_crosshair_width", "1", true, false, "Thickness of the crosshair lines")
