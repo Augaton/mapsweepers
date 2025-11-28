@@ -247,23 +247,33 @@ if CLIENT then
 		local beamTime, prepTime, lifeTime = selfTbl:GetBeamTime(), selfTbl:GetBeamPrepTime(), selfTbl:GetBeamLifeTime()
 		local wm = self:CalcWidthMultiplier(beamTime - prepTime, lifeTime)
 		
-		local intensity = math.sqrt(math.max(0, wm * math.max(0, 1 - EyePos():Distance(tr.HitPos)/6000)))
-
+		
 		local visibility = 0 
 		for i, pv in ipairs(selfTbl.pixVis) do 
 			local travelVec = tr.HitPos - tr.StartPos
 			local dist = travelVec:Length()
-
+			
 			local pos = tr.StartPos + travelVec * (i/10)
 			local rad = dist * 0.15 --10 + 5% to make it a better approximation of a cylinder.
 			visibility = math.max(visibility, util.PixelVisible( pos, rad, pv ))
 		end
-
+		
+		local radMul = math.sqrt(self:GetBeamRadius() / 38)
+		local intensity = math.max(0, wm * math.max(0, 1 - EyePos():Distance(tr.HitPos)/(radMul*(3000 + visibility * 2000))))^3
 		visibility = math.min(1, visibility*2.25) --half of the sphere is going to be underground, ignore that.
-		intensity = intensity * 0.925 + (intensity * visibility * 0.075) --If we can't see the beam, make the screen-effects less intense.
+		intensity = intensity * 0.95 + (intensity * visibility * 0.05) --If we can't see the beam, make the screen-effects less intense.
 
-		--local red = jcms.hud_blindingRedLight or 0
-		--jcms.hud_blindingRedLight = math.max(red, (red + intensity)/2)
+		if not selfTbl.BlindColor then
+			selfTbl.BlindColor = Color(0, 0, 0)
+		end
+
+		selfTbl.BlindColor:SetUnpacked(
+			selfTbl.BeamColor.r / (2 + 3*intensity + math.random()),
+			selfTbl.BeamColor.g / (2 + 3*intensity + math.random()),
+			selfTbl.BeamColor.b / (2 + 3*intensity + math.random())
+		)
+
+		jcms.colormod_Hold("jcms_deathray#"..self:EntIndex(), selfTbl.BlindColor, intensity + visibility*intensity*0.05, 1, 2)
 
 		local rad = self:GetBeamRadius()
 		util.ScreenShake(tr.HitPos, (rad/4)*intensity^10, rad*1.5, 0.1, rad*1.5*wm, true)
@@ -326,8 +336,9 @@ function ENT:SetupDataTables()
 	self:NetworkVar("Bool", 1, "BeamIsSky")
 
 	if SERVER then
-		self:SetBeamRadius(32)
+		self:SetBeamRadius(1)
 		self:SetBeamLifeTime(15)
 		self:SetBeamPrepTime(2)
+		self:SetBeamColour(VectorRand(0, 1))
 	end
 end
