@@ -1117,10 +1117,17 @@ end)
 		end
 
 		local calc = jcms.colormod_calculated
-		calc.r = avg_r / totalIntensity
-		calc.g = avg_g / totalIntensity
-		calc.b = avg_b / totalIntensity
-		calc.intensity = math.min(totalIntensity, math.sqrt(totalIntensity))
+		if totalIntensity == 0 then
+			calc.r = 0
+			calc.g = 0
+			calc.b = 0
+			calc.intensity = 0
+		else
+			calc.r = avg_r / totalIntensity
+			calc.g = avg_g / totalIntensity
+			calc.b = avg_b / totalIntensity
+			calc.intensity = math.min(totalIntensity, math.sqrt(totalIntensity))
+		end
 	end)
 
 	hook.Add("RenderScreenspaceEffects", "jcms_jvision", function()
@@ -1148,7 +1155,6 @@ end)
 				local n_g = calc.g*blind/255
 				local n_b = calc.b*blind/255
 
-				
 				jcms.colormod["$pp_colour_addr"] = (color.r - avg) / 255 * addFactor + n_r
 				jcms.colormod["$pp_colour_addg"] = (color.g - avg) / 255 * addFactor + n_g
 				jcms.colormod["$pp_colour_addb"] = (color.b - avg) / 255 * addFactor + n_b
