@@ -506,6 +506,7 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 	end
 
 	function jcms.npc_SetupSweeperShields(npc, max, regen, regenDelay, col)
+		if not IsValid(npc) or npc.jcms_noSweeperShields then return end
 		local colInt = (type(col)=="number" and col) or (IsColor(col) and jcms.util_ColorInteger(col)) or 255
 
 		npc:SetNWInt("jcms_sweeperShield", max)

@@ -591,6 +591,7 @@ jcms.npc_types.rebel_rgg = {
 
 		npc.jcms_rgg_nextTeleport = CurTime()
 		npc.jcms_rgg_teleporting = false
+		npc.jcms_noSweeperShields = true
 	end,
 	
 	takeDamage = function(npc, dmg)
