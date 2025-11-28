@@ -3008,7 +3008,7 @@
 			render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
 				draw.SimpleText(str, "jcms_hud_medium", 0, -128-2-32*anim, time<0.5 and jcms.color_alert or jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
 			render.OverrideBlend(false)
-			surface.SetAlphaMultiplier(anim)
+			surface.SetAlphaMultiplier(1)
 		end
 	end
 
