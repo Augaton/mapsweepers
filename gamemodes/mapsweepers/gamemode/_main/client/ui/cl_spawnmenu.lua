@@ -258,7 +258,7 @@ end
 				end
 				
 				local cos, sin = math.cos(ca+span/2), math.sin(ca+span/2)
-				surface.SetDrawColor(clr.r, clr.g, clr.b, 250*alphamul)
+				surface.SetDrawColor(clr.r, clr.g, clr.b, 72)
 				drawSegment(sw, sh, ca, ca+span, 256 + (i%2==0 and 0 or 16), 128 + (i%2==0 and 32 or 0), 4)
 
 				local dist = i%2==0 and 160 or 135
@@ -372,7 +372,8 @@ end
 				
 				local maxDisplayed = 11
 				local th = 20
-				
+
+				local oldAlphaMul = surface.GetAlphaMultiplier()
 				for i, order in ipairs(orderList) do
 					local iOff = i - selectionId + 1
 					if iOff < -maxDisplayed/2+1 or iOff > maxDisplayed/2+1 then
@@ -386,8 +387,8 @@ end
 					local timeUntilUse = (orderData.nextUse or 0) - CurTime()
 					local affordable = math.ceil(orderData.cost*costMult) <= myCash
 					
-					if (timeUntilUse > 0) or (not affordable) then
-						alphamul = 0.25
+					if ((timeUntilUse > 0) or (not affordable)) and (i == selectionId) then
+						surface.SetAlphaMultiplier(oldAlphaMul*0.25)
 					end
 				
 					local clr = jcms.color_bright
@@ -409,6 +410,8 @@ end
 					else
 						draw.SimpleText(orderName, "jcms_small", ScrW()/2, ScrH()/2 - (iOff-1)*th, clr_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 					end
+
+					surface.SetAlphaMultiplier(oldAlphaMul)
 				end
 			end
 
@@ -807,6 +810,8 @@ end
 					elseif pvpTeam == 2 then
 						intendedParent = team2
 					end
+
+					if not intendedParent then continue end
 
 					if not elem or not IsValid(elem) then
 						elem = intendedParent:Add("DButton")
