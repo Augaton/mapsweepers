@@ -20,7 +20,7 @@
 --]]
 
 -- // Combine-Specific-Functions {{{
-	function jcms.npc_Gunship_Think_Rally(npc, bRad, bPrep, bLife, bDPS)
+	function jcms.npc_Gunship_Think_Rally(npc, bRad, bPrep, bLife, bDPS, bColour)
 		if npc.jcms_npcState == jcms.NPC_STATE_GUNSHIPRALLY then
 			--npc:SetSaveValue("m_flMaxSpeed", 700)
 			npc:EmitSound("npc/combine_gunship/see_enemy.wav", 140, 80, 1, CHAN_AUTO, 0, 38) --Roar / Announce
@@ -37,7 +37,7 @@
 			npc.deathRay.filter = npc --todo: We still seem to be killing ourselves sometimes somehow?
 			npc.deathRay:Spawn()
 
-			npc.deathRay:SetBeamIsBlue(true)
+			npc.deathRay:SetBeamColour(bColour or Vector(0, 1, 1))
 			npc.deathRay:SetBeamRadius(bRad)
 			npc.deathRay:SetBeamPrepTime(bPrep)
 			npc.deathRay:SetBeamLifeTime(bLife)
@@ -343,7 +343,7 @@ jcms.npc_types.combine_gunship = {
 	think = function(npc, state) --Strafe w/ deathray occasionally
 		npc:SetSaveValue("m_vecDesiredPosition", npc:GetPos())
 
-		if jcms.npc_Gunship_Think_Rally(npc, 96, 1.5, 12, 120) then 
+		if jcms.npc_Gunship_Think_Rally(npc, 96, 1.5, 12, 120, Vector(0.1, 0.5, 1)) then 
 			npc:SetSaveValue("m_flMaxSpeed", 700)
 		elseif npc.jcms_npcState == jcms.NPC_STATE_GUNSHIPCHARGE then
 			npc:SetSaveValue("m_vecDesiredPosition", npc.jcms_gunshipMoveTarget)
@@ -437,7 +437,7 @@ jcms.npc_types.combine_cybergunship = {
 	think = function(npc, state) --Strafe w/ deathray occasionally
 		npc:SetSaveValue("m_vecDesiredPosition", npc:GetPos())
 
-		if jcms.npc_Gunship_Think_Rally(npc, 64, 1.5, 16, 120) then
+		if jcms.npc_Gunship_Think_Rally(npc, 64, 1.5, 16, 120, Vector(0.8, 0.5, 1)) then
 			if not npc.jcms_cybergunship_siren:IsPlaying() then 
 				npc.jcms_cybergunship_siren:PlayEx(0.75, 145)
 			end

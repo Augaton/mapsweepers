@@ -1235,7 +1235,7 @@ local nmt = FindMetaTable("NPC")
 
 	function jcms.util_GetPVPVectorColor(ent)
 		if IsValid(ent) and ent:GetNWInt("jcms_pvpTeam", -1) == 2 then
-			return Vector(1, 1, 0)
+			return Vector(1, 0.8, 0)
 		else
 			return Vector(1, 0, 0)
 		end

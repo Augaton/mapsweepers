@@ -515,6 +515,7 @@
 				beam.deathRay.DPS = 90
 				beam.deathRay.DPS_DIRECT = 160
 				beam.deathRay:SetBeamRadius(rad)
+				beam.deathRay:SetBeamColour( jcms.util_GetPVPVectorColor(ply) )
 				beam.deathRay.jcms_owner = ply
 
 				beam.IsIdleUntilActive = jcms.util_IsPVP()

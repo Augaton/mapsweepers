@@ -29,6 +29,7 @@ ENT.RenderGroup = RENDERGROUP_TRANSLUCENT
 
 ENT.DPS = 90
 ENT.DPS_DIRECT = 120
+ENT.IgniteOnHit = true
 
 jcms.deathray_npcMinDamageThresholds = {
 	["npc_strider"] = 100,
@@ -105,6 +106,10 @@ if SERVER then
 			
 			util.BlastDamageInfo(dmg, tr.HitPos + vector_up, rad * 4)
 
+			local colourVec = self:GetBeamColour()
+			colourVec:Mul(255)
+			local colourInt = jcms.util_ColorIntegerFast(colourVec:Unpack())
+
 			local basedmg = selfTbl.DPS_DIRECT
 			for i, target in ipairs(targets) do
 				if jcms.team_GoodTarget(target) then
@@ -123,15 +128,19 @@ if SERVER then
 							dmg:SetDamage(basedmg)
 							
 							local ed = EffectData()
-							ed:SetMagnitude(0.5)
+							ed:SetMagnitude(1)
 							ed:SetOrigin(target:EyePos())
 							ed:SetRadius(threshold / 10 + 72)
 							ed:SetNormal(target:GetAngles():Up())
-							ed:SetFlags(2)
+							ed:SetFlags(5)
+							ed:SetColor(colourInt)
 							util.Effect("jcms_blast", ed)
 							
 							target:EmitSound("jcms_deathray_blast")
-							target:Ignite(math.ceil(threshold/5))
+
+							if self.IgniteOnHit then
+								target:Ignite(math.ceil(threshold/5))
+							end
 						end
 					else
 						target:DispatchTraceAttack(dmg, tr)
@@ -169,15 +178,10 @@ if CLIENT then
 		local selfTbl = self:GetTable()
 		local beamTime, prepTime, lifeTime = selfTbl:GetBeamTime(), selfTbl:GetBeamPrepTime(), selfTbl:GetBeamLifeTime()
 		
-		if selfTbl.GetBeamIsBlue() then
-			selfTbl.BeamColor.r = 32
-			selfTbl.BeamColor.g = 128
-			selfTbl.BeamColor.b = 255
-		else
-			selfTbl.BeamColor.r = 255
-			selfTbl.BeamColor.g = 0
-			selfTbl.BeamColor.b = 0
-		end
+		local beamColourVector = self:GetBeamColour()
+		selfTbl.BeamColor.r = beamColourVector.x*255
+		selfTbl.BeamColor.g = beamColourVector.y*255
+		selfTbl.BeamColor.b = beamColourVector.z*255
 
 		if beamTime <= prepTime then
 			local tr = self.tr or selfTbl.GetBeamTrace(self)
@@ -206,7 +210,7 @@ if CLIENT then
 			end
 
 			local scroll = -beamTime
-			local lenfactor = tr.HitPos:Distance(beamStartPos)/(rad*8)
+			local lenfactor = tr.HitPos:Distance(beamStartPos)/(rad*10)
 
 			local beamColor = selfTbl.BeamColor
 			local beamColorBrighter = Color(selfTbl.BeamColor:Unpack())
@@ -258,14 +262,11 @@ if CLIENT then
 		visibility = math.min(1, visibility*2.25) --half of the sphere is going to be underground, ignore that.
 		intensity = intensity * 0.925 + (intensity * visibility * 0.075) --If we can't see the beam, make the screen-effects less intense.
 
-		local red = jcms.hud_blindingRedLight or 0
-		if selfTbl:GetBeamIsBlue() then
-			jcms.hud_blindingRedLight = math.min(red, (red - intensity)/2)
-		else
-			jcms.hud_blindingRedLight = math.max(red, (red + intensity)/2)
-		end
+		--local red = jcms.hud_blindingRedLight or 0
+		--jcms.hud_blindingRedLight = math.max(red, (red + intensity)/2)
 
-		util.ScreenShake(tr.HitPos, 9*intensity^10, 50, 0.1, 50*wm, true)
+		local rad = self:GetBeamRadius()
+		util.ScreenShake(tr.HitPos, (rad/4)*intensity^10, rad*1.5, 0.1, rad*1.5*wm, true)
 
 		if beamTime <= prepTime then
 			if beamTime > prepTime - 0.5 and not selfTbl.sndPlayedPre then
@@ -319,9 +320,9 @@ function ENT:SetupDataTables()
 	self:NetworkVar("Float", 0, "BeamTime")
 	self:NetworkVar("Float", 1, "BeamRadius")
 	self:NetworkVar("Vector", 0, "BeamVelocity")
+	self:NetworkVar("Vector", 1, "BeamColour")
 	self:NetworkVar("Float", 2, "BeamLifeTime")
 	self:NetworkVar("Float", 3, "BeamPrepTime")
-	self:NetworkVar("Bool", 0, "BeamIsBlue")
 	self:NetworkVar("Bool", 1, "BeamIsSky")
 
 	if SERVER then

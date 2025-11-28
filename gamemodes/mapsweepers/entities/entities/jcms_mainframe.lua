@@ -89,7 +89,7 @@ if SERVER then
 		end
 
 		--Death rays
-		if self.nextBombardment < CurTime() then 
+		if (self.nextBombardment < CurTime()) and not (jcms.director and jcms.director.debug) then 
 			if self.bombardmentActive then --JCorp Death-beams
 				for i=1, 3, 1 do
 					local targetArea = jcms.mapgen_UseRandomArea() --Convenient way of targeting some-place valid.
@@ -112,6 +112,12 @@ if SERVER then
 					beam.deathRay:SetBeamPrepTime(prep)
 					beam.deathRay.jcms_owner = self
 					beam.deathRay:SetBeamLifeTime(20)
+
+					if jcms.util_IsPVP() then
+						beam.deathRay:SetBeamColour( Vector(0.7, 0.1, 1) )
+					else
+						beam.deathRay:SetBeamColour( Vector(1, 0.1, 0.1) )
+					end
 
 					beam.IsIdleUntilActive = true --Don't track until we're actually fully formed.
 				end

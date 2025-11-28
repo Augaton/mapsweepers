@@ -1022,6 +1022,107 @@ end)
 
 	jcms.colormod_death = 0
 
+	jcms.colormod_list_oneshots = {}
+	jcms.colormod_dict_named = {}
+	jcms.colormod_calculated = { r = 0, g = 0, b = 0, intensity = 0 }
+
+	function jcms.colormod_Add(color, intensity, delay, inDur, holdDur, outDur)
+		table.insert(jcms.colormod_list_oneshots, {
+			t = -(delay or 0),
+			inDur = inDur or 1,
+			holdDur = holdDur or 1,
+			outDur = outDur or 1,
+			color = color,
+			intensity = intensity or 1
+		})
+	end
+
+	function jcms.colormod_Hold(id, color, intensity, inDur, outDur)
+		local existingData = jcms.colormod_dict_named[ id ]
+		if not existingData then
+			existingData = { holdingPower = 0, holdingThisTick = true }
+			jcms.colormod_dict_named[ id ] = existingData
+		end
+
+		existingData.color = color
+		existingData.intensity = intensity
+		existingData.holdingThisTick = true
+		existingData.inDur = inDur or 1
+		existingData.outDur = outDur or 1
+	end
+	
+	function jcms.colormod_CalcIntensity(colormodInfo)
+		local intensity = colormodInfo.intensity
+
+		if colormodInfo.holdingPower then
+			return colormodInfo.holdingPower * intensity
+		end
+
+		local t = colormodInfo.t
+		if t < 0 then return 0 end
+		
+		local inDur = colormodInfo.inDur
+		local holdDur = colormodInfo.inDur
+		local outDur = colormodInfo.outDur
+
+		return math.Clamp(math.min(
+			t / inDur,
+			(t - inDur - holdDur - outDur) / (-outDur)
+		), 0, 1)*intensity
+	end
+
+	hook.Add("Think", "jcms_colormodThink", function()
+		local totalCount = 0
+		local totalIntensity = 0
+		local avg_r, avg_g, avg_b = 0, 0, 0
+		local dt = FrameTime()
+
+		for name, colormodInfo in pairs(jcms.colormod_dict_named) do
+			local intensity = jcms.colormod_CalcIntensity(colormodInfo)
+
+			totalCount = totalCount + 1
+			totalIntensity = totalIntensity + intensity
+
+			local r,g,b = colormodInfo.color:Unpack()
+			avg_r, avg_g, avg_b = avg_r + r*intensity, avg_g + g*intensity, avg_b + b*intensity
+
+			if colormodInfo.holdingThisTick then
+				colormodInfo.holdingThisTick = false
+				colormodInfo.holdingPower = math.min(colormodInfo.holdingPower + dt/colormodInfo.inDur, 1)
+			else
+				if colormodInfo.holdingPower == 0 then
+					jcms.colormod_dict_named[name] =  nil
+				else
+					colormodInfo.holdingPower = math.max(0, colormodInfo.holdingPower - dt/colormodInfo.outDur)
+				end
+			end
+		end
+
+		for i=#jcms.colormod_list_oneshots, 1, -1 do
+			local colormodInfo = jcms.colormod_list_oneshots[ i ]
+
+			if colormodInfo.t > (colormodInfo.inDur + colormodInfo.holdDur + colormodInfo.outDur) then
+				table.remove(jcms.colormod_list_oneshots, i)
+			else
+				colormodInfo.t = colormodInfo.t + dt
+
+				local intensity = jcms.colormod_CalcIntensity(colormodInfo)
+
+				totalCount = totalCount + 1
+				totalIntensity = totalIntensity + intensity
+
+				local r,g,b = colormodInfo.color:Unpack()
+				avg_r, avg_g, avg_b = avg_r + r*intensity, avg_g + g*intensity, avg_b + b*intensity
+			end
+		end
+
+		local calc = jcms.colormod_calculated
+		calc.r = avg_r / totalIntensity
+		calc.g = avg_g / totalIntensity
+		calc.b = avg_b / totalIntensity
+		calc.intensity = math.min(totalIntensity, math.sqrt(totalIntensity))
+	end)
+
 	hook.Add("RenderScreenspaceEffects", "jcms_jvision", function()
 		local colourmod = not jcms.cvar_hud_nocolourfilter:GetBool()
 		local deathmod = not jcms.cvar_hud_noneardeathfilter:GetBool()
@@ -1037,29 +1138,27 @@ end)
 			else
 				local color = jcms.color_bright
 				local avg = (color.r + color.g + color.b) / 3
+				local calc = jcms.colormod_calculated
 
 				local addFactor, mulFactor = (math.sin(cTime) + 1)/2 * 0.03 + 0.08, (math.cos(cTime) + 1)/2 * 0.05
 				
-				local blind = 0
-				local red = math.Clamp(jcms.hud_blindingRedLight or 0, -1, 1)
-				if red > 0 then
-					jcms.hud_blindingRedLight = math.max(0, red - FrameTime())
-					blind = math.ease.InCubic(red)
-				elseif red < 0 then
-					jcms.hud_blindingRedLight = math.min(0, red + FrameTime())
-					blind = -math.ease.InCubic(-red)
-				end
-				
-				jcms.colormod["$pp_colour_addr"] = (color.r - avg) / 255 * addFactor
-				jcms.colormod["$pp_colour_addg"] = (color.g - avg) / 255 * addFactor - blind*0.3
-				jcms.colormod["$pp_colour_addb"] = (color.b - avg) / 255 * addFactor - blind*0.3
+				local blind = calc.intensity
+				local brightness = (calc.r + calc.g + calc.b) / 3 / 255
+				local n_r = calc.r*blind/255
+				local n_g = calc.g*blind/255
+				local n_b = calc.b*blind/255
 
-				jcms.colormod["$pp_colour_mulr"] = (color.r - avg) / 255 * mulFactor
-				jcms.colormod["$pp_colour_mulg"] = (color.g - avg) / 255 * mulFactor
-				jcms.colormod["$pp_colour_mulb"] = (color.b - avg) / 255 * mulFactor
 				
-				jcms.colormod["$pp_colour_contrast"] = Lerp(blind^2, 1.06, math.Rand(2.7, 3.06))
-				jcms.colormod["$pp_colour_brightness"] = Lerp(blind^2, 0.025, -math.Rand(0.67, 0.72))
+				jcms.colormod["$pp_colour_addr"] = (color.r - avg) / 255 * addFactor + n_r
+				jcms.colormod["$pp_colour_addg"] = (color.g - avg) / 255 * addFactor + n_g
+				jcms.colormod["$pp_colour_addb"] = (color.b - avg) / 255 * addFactor + n_b
+
+				jcms.colormod["$pp_colour_mulr"] = (color.r - avg) / 255 * mulFactor - n_g/3 - n_b/3
+				jcms.colormod["$pp_colour_mulg"] = (color.g - avg) / 255 * mulFactor - n_r/3 - n_b/3
+				jcms.colormod["$pp_colour_mulb"] = (color.b - avg) / 255 * mulFactor - n_r/3 - n_g/3
+				
+				jcms.colormod["$pp_colour_contrast"] = Lerp(blind^2, 1.06, 1.9)
+				jcms.colormod["$pp_colour_brightness"] = Lerp(blind^2, 0.025, Lerp(brightness, -0.5, 0.4))
 			end
 		else
 			jcms.colormod["$pp_colour_addr"] = 0
