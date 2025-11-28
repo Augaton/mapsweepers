@@ -804,19 +804,35 @@ jcms.npc_types.antlion_ultracyberguard = {
 			if IsValid(enemy) and npc.jcms_uCyberguard_nextBeam < CurTime() then 
 				local ePos = npc:Visible(enemy) and enemy:WorldSpaceCenter() + enemy:GetVelocity()*0.5 or npc:GetEnemyLastSeenPos(enemy)
 
-				local fromAngle = math.random()<0.5 and math.Rand(0, 0.15) or math.Rand(0.5, 0.8)
-				local toAngle = (math.random()<0.5 and 1 or -1) * 32
-
-				for i=1, (npc.jcms_uCyberguard_stage2 and 2) or 1, 1 do 
-					toAngle = (i == 1 and toAngle) or -1 * toAngle
-
-					local beam = jcms.npc_AntlionBeamAttack(npc, ePos, 2000, fromAngle, toAngle, 4)
-					beam:SetPos(npc:GetBonePosition(2))
-					beam:AddEffects( EF_FOLLOWBONE )
-					beam:SetParent(npc, 1)
+				local pos
+				local boneId = 4
+				if boneId then
+					local matrix = npc:GetBoneMatrix(boneId)
+					pos = matrix:GetTranslation()
+				else
+					pos = npc:EyePos()
 				end
+				
+				local beam = ents.Create("jcms_deathray")
+				beam:FollowBone(npc, boneId)
+				beam:SetPos(pos)
+				beam:SetAngles(npc:GetAngles())
+				beam.filter = npc
+				beam:Spawn()
 
-				npc.jcms_uCyberguard_nextBeam = CurTime() + ((npc.jcms_uCyberguard_stage2 and 3) or 5)
+				local stage2 = npc.jcms_uCyberguard_stage2
+
+				beam:SetBeamColour(Vector(1, 0.6, 0.1))
+				beam:SetBeamRadius(stage2 and 5 or 4)
+				beam:SetBeamPrepTime(stage2 and 0.5 or 1)
+				beam:SetBeamLifeTime(stage2 and 3 or 4)
+				beam:SetUseAngles(true)
+
+				beam.DPS = 25
+				beam.DPS_DIRECT = 25
+				beam.IgniteOnHit = false
+
+				npc.jcms_uCyberguard_nextBeam = CurTime() + (stage2 and 5 or 9)
 			end
 		-- // }}}
 	end,
