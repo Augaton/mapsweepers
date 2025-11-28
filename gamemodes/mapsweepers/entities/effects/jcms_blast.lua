@@ -195,6 +195,9 @@ function EFFECT:Think()
 		if self.nukeEffect and not self.nuked then
 			self.nukeEffect:StartEmission()
 			self.nuked = true
+
+			jcms.colormod_Add(Color(100,255,100), 0.75, 0, 0.05, 0, 0.15)
+			jcms.colormod_Add(Color(0,60,0), 0.75, 0.05, 0.15, 0, 4.5)
 		end
 
 		self.t = math.min(self.tout, self.t + FrameTime())
