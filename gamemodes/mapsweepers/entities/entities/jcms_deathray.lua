@@ -316,7 +316,18 @@ end
 
 function ENT:GetBeamTrace()
 	local pos = self:GetPos()
-	local endpos = Vector(pos.x, pos.y, pos.z - 32000)
+	local endpos
+
+	if self:GetUseAngles() then
+		endpos = self:GetAngles()
+		endpos:Add(self:GetAngleOffset())
+		
+		endpos = endpos:Forward()
+		endpos:Mul(32000)
+		endpos:Add(pos)
+	else 
+		endpos = Vector(pos.x, pos.y, pos.z - 32000)
+	end
 
 	local tr = util.TraceLine {
 		start = pos, endpos = endpos, mask = MASK_VISIBLE, filter = self.filter
@@ -333,7 +344,9 @@ function ENT:SetupDataTables()
 	self:NetworkVar("Vector", 1, "BeamColour")
 	self:NetworkVar("Float", 2, "BeamLifeTime")
 	self:NetworkVar("Float", 3, "BeamPrepTime")
-	self:NetworkVar("Bool", 1, "BeamIsSky")
+	self:NetworkVar("Bool", 0, "BeamIsSky")
+	self:NetworkVar("Bool", 1, "UseAngles")
+	self:NetworkVar("Angle", 0, "AngleOffset")
 
 	if SERVER then
 		self:SetBeamRadius(1)
