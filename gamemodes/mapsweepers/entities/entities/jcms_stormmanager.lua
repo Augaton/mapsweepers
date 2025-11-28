@@ -228,8 +228,7 @@ if CLIENT then
 		-- // }}}
 
 		-- // Red colormod {{{
-			--local red = jcms.hud_blindingRedLight or 0
-			--jcms.hud_blindingRedLight = math.max(rFac * (1 - self.indoorFade) * 0.8, red)
+			jcms.colormod_Hold("toxicrain", Color(64, 0, 0), rFac * (1 - self.indoorFade*0.6), 1, 2)
 		-- // }}}
 
 		if self.nextThunder < CurTime() then 
