@@ -1369,11 +1369,11 @@ local nmt = FindMetaTable("NPC")
 		return game.GetWorld():GetNWString("jcms_missionfaction", "antlion")
 	end
 
-	function jcms.util_GetCurrentWinstreak()
+	function jcms.util_GetCurrentWinstreak() --NOTE: Only the *displayed* winstreak is returned by this, not stored. I.e. currently it's always 0 in pvp
 		return game.GetWorld():GetNWInt("jcms_winstreak", 0)
 	end
 
-	function jcms.util_GetCurrentDifficulty()
+	function jcms.util_GetCurrentDifficulty() --NOTE: Ditto
 		return game.GetWorld():GetNWFloat("jcms_difficulty", 0)
 	end
 

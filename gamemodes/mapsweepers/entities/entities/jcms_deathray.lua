@@ -315,25 +315,27 @@ if CLIENT then
 end
 
 function ENT:GetBeamTrace()
+	local selfTbl = self:GetTable()
+
 	local pos = self:GetPos()
 	local endpos
 
-	if self:GetUseAngles() then
+	if selfTbl:GetUseAngles() then
 		endpos = self:GetAngles()
-		endpos:Add(self:GetAngleOffset())
+		endpos:Add(selfTbl:GetAngleOffset())
 		
 		endpos = endpos:Forward()
 		endpos:Mul(32000)
 		endpos:Add(pos)
-	else 
-		endpos = Vector(pos.x, pos.y, pos.z - 32000)
+	else
+		endpos = Vector(pos.x, pos.y, -32768)
 	end
 
 	local tr = util.TraceLine {
-		start = pos, endpos = endpos, mask = MASK_VISIBLE, filter = self.filter
+		start = pos, endpos = endpos, mask = MASK_VISIBLE, filter = selfTbl.filter
 	}
 
-	self.tr = tr --For avoiding duplicate work in Draw calls
+	selfTbl.tr = tr --For avoiding duplicate work in Draw calls
 	return tr
 end
 

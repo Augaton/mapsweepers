@@ -207,7 +207,7 @@
 				game.GetWorld():SetNWFloat("jcms_mapgen_progress", 1)
 
 				game.GetWorld():SetNWFloat("jcms_difficulty", jcms.runprogress_GetDifficulty())
-				game.GetWorld():SetNWInt("jcms_winstreak", jcms.runprogress.winstreak)
+				game.GetWorld():SetNWInt("jcms_winstreak", jcms.util_IsPVP() and 0 or jcms.runprogress.winstreak)
 			end
 		end)
 	end
@@ -332,7 +332,7 @@
 		-- }}}
 
 		-- Rewards & Progress {{{
-			if victory and not jcms.serverExtension_forcedEvac then
+			if victory and not(jcms.serverExtension_forcedEvac or jcms.util_IsPVP()) then
 				jcms.runprogress_Victory()
 
 				for i, pd in ipairs( postMissionStats.players ) do
@@ -367,7 +367,7 @@
 						jcms.net_SendCashBonuses(ply, bonuses, oldStartingCash, newStartingCash)
 					end
 				end
-			elseif not(jcms.serverExtension_forcedEvac and victory) then
+			elseif not(jcms.serverExtension_forcedEvac and victory) and not jcms.util_IsPVP() then
 				for i, pd in ipairs( postMissionStats.players ) do
 					local sid64 = pd.sid64
 
