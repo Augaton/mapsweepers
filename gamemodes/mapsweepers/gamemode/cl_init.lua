@@ -1062,7 +1062,7 @@ end)
 		if t < 0 then return 0 end
 		
 		local inDur = colormodInfo.inDur
-		local holdDur = colormodInfo.inDur
+		local holdDur = colormodInfo.holdDur
 		local outDur = colormodInfo.outDur
 
 		return math.Clamp(math.min(
