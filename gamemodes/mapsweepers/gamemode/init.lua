@@ -2423,6 +2423,9 @@ end
 			elseif team == 1 or team == "sweeper" or team == "jcorp" then
 				-- Sweeper
 				ply:SetNWInt("jcms_desiredteam", 1)
+				if jcms.util_IsPVP() then
+					ply:SetNWInt("jcms_pvpTeam", math.random(1, 2))
+				end
 			elseif canJoinNpcs and not game.SinglePlayer() then
 				if team == 2 or team == "npc" or team == "enemy" then
 					-- NPC
