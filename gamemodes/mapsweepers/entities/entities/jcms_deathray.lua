@@ -225,7 +225,8 @@ if CLIENT then
 			tr.HitPos:Add(tr.HitNormal)
 			render.DrawQuadEasy(tr.HitPos, tr.HitNormal, math.Rand(8, 13)*rad*wm, math.random(3, 4)*rad*wm, beamColorBrighter, 360*math.random())
 			render.DrawQuadEasy(tr.HitPos, tr.HitNormal, math.random(9, 14)*rad*wm, math.random(2, 4)*rad*wm, beamColorBrighter, 360*math.random())
-			render.DrawQuadEasy(tr.HitPos, tr.HitNormal, math.random(6, 14)*rad*wm, math.random(6, 14)*rad*wm, beamColor, wm*360)
+			--render.DrawQuadEasy(tr.HitPos, tr.HitNormal, math.random(6, 14)*rad*wm, math.random(6, 14)*rad*wm, beamColor, wm*360)
+			render.DrawSprite(tr.HitPos, math.random(10, 18)*rad*wm, math.random(12, 18)*math.sqrt(rad)*wm, beamColor)
 			render.DrawQuadEasy(beamStartPos, tr.Normal, math.random(6, 14)*rad*wm, math.random(6, 14)*rad*wm, beamColorBrighter, wm*360)
 
 			render.SetMaterial(selfTbl.MatBeamLight)
@@ -351,7 +352,7 @@ function ENT:SetupDataTables()
 	self:NetworkVar("Angle", 0, "AngleOffset")
 
 	if SERVER then
-		self:SetBeamRadius(1)
+		self:SetBeamRadius(32)
 		self:SetBeamLifeTime(15)
 		self:SetBeamPrepTime(2)
 		self:SetBeamColour(VectorRand(0, 1))
