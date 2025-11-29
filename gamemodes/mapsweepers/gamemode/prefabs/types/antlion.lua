@@ -30,7 +30,11 @@ prefabs.antlion_grubbombs = {
 		return area:GetSizeX() > 20 and area:GetSizeY() > 20
 	end,
 
+	areaWeight = function(area)
+		return (1 / (#area:GetAdjacentAreas() * math.sqrt(#area:GetVisibleAreas())) )
+	end,
+
 	stamp = function(area, data)
-		return jcms.npc_Spawn("antlion_grubbomb", area:GetCenter())
+		return jcms.npc_Spawn("antlion_grubbomb", jcms.mapgen_AreaPointAwayFromEdges(area, 20))
 	end
 }

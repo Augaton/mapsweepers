@@ -42,18 +42,8 @@ function ENT:Initialize()
 end
 
 if SERVER then
-	function ENT:FireBeam(fromAngle, toAngle, overTime)
-		self:SetBeamTime(0)
-		self:SetBeamLifeTime(overTime or 1)
-		self:SetBeamFromAngle(fromAngle)
-		self:SetBeamToAngle(toAngle)
-	end
-
-	function ENT:FireBeamSweep(targetVector, sweepVerticality, sweepDistance, overTime)
-		self:SetBeamTime(0)
-		self:SetBeamLifeTime(overTime or 1)
-		
-		local norm = targetVector - self:GetPos()
+	function jcms.beam_GetBeamAngles(origin, targetVec, sweepVerticality, sweepDistance)
+		local norm = targetVec - origin
 		norm:Normalize()
 		
 		local ang = norm:Angle()
@@ -65,6 +55,22 @@ if SERVER then
 		dAng2:RotateAroundAxis(right, Lerp(sweepVerticality, 0, -sweepDistance))
 		dAng1:RotateAroundAxis(up, Lerp(sweepVerticality, sweepDistance, 0))
 		dAng2:RotateAroundAxis(up, Lerp(sweepVerticality, -sweepDistance, 0))
+		
+		return dAng1, dAng2
+	end
+
+	function ENT:FireBeam(fromAngle, toAngle, overTime)
+		self:SetBeamTime(0)
+		self:SetBeamLifeTime(overTime or 1)
+		self:SetBeamFromAngle(fromAngle)
+		self:SetBeamToAngle(toAngle)
+	end
+
+	function ENT:FireBeamSweep(targetVector, sweepVerticality, sweepDistance, overTime)
+		self:SetBeamTime(0)
+		self:SetBeamLifeTime(overTime or 1)
+		
+		local dAng1, dAng2 = jcms.beam_GetBeamAngles(self:GetPos(), targetVector, sweepVertically, sweepDistance)
 		
 		self:SetBeamFromAngle(dAng1)
 		self:SetBeamToAngle(dAng2)

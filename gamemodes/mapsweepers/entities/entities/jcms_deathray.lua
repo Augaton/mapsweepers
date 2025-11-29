@@ -86,8 +86,8 @@ if SERVER then
 			local targets = ents.FindAlongRay(tr.StartPos, tr.HitPos, Vector(-rad/2, -rad/2, -4), Vector(rad/2, rad/2, 4))
 			table.RemoveByValue(targets, self)
 			local parent = self:GetParent()
-			if IsValid(parent) then 
-				table.RemoveByValue(targets, parent)
+			if isentity(selfTbl.filter) then --TODO: Bad solution.
+				table.RemoveByValue(targets, selfTbl.filter)
 			end
 
 			local dmg = DamageInfo()

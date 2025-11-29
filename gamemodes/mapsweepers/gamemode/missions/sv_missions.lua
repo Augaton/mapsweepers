@@ -202,6 +202,10 @@
 
 		timer.Create( "jcms_mission_run", 0.01, 0, function()
 			local success, shouldEnd = coroutine.resume(co)
+			if not success then 
+				ErrorNoHalt(shouldEnd) --"shouldEnd" is actually the error string in this context, the variable's just named with the other case in-mind.
+			end
+
 			if shouldEnd then 
 				timer.Remove("jcms_mission_run")
 				game.GetWorld():SetNWFloat("jcms_mapgen_progress", 1)

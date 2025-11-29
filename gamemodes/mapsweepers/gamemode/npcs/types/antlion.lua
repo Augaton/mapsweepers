@@ -774,7 +774,7 @@ jcms.npc_types.antlion_ultracyberguard = {
 		npc:SetModel("models/jcms/ultracyberguard.mdl")
 
 		npc.jcms_dmgMult = 0.75
-		npc.jcms_uCyberguard_nextBeam = CurTime() -- + 10
+		npc.jcms_uCyberguard_nextBeam = CurTime() + 10
 		npc.jcms_uCyberguard_stage2 = false
 
 		npc:SetNWString("jcms_boss", "antlion_ultracyberguard")
@@ -801,38 +801,80 @@ jcms.npc_types.antlion_ultracyberguard = {
 
 		-- // Laser Beams {{{
 			local enemy = npc:GetEnemy() 
-			if IsValid(enemy) and npc.jcms_uCyberguard_nextBeam < CurTime() then 
+			if IsValid(enemy) and npc.jcms_uCyberguard_nextBeam < CurTime() and enemy:WorldSpaceCenter():DistToSqr(npc:GetPos()) >150 then 
 				local ePos = npc:Visible(enemy) and enemy:WorldSpaceCenter() + enemy:GetVelocity()*0.5 or npc:GetEnemyLastSeenPos(enemy)
 
-				local pos
-				local boneId = 4
-				if boneId then
-					local matrix = npc:GetBoneMatrix(boneId)
-					pos = matrix:GetTranslation()
-				else
-					pos = npc:EyePos()
+				npc:SetSchedule(SCHED_RANGE_ATTACK1)
+				local attackType = math.random() < 0.5 and 1 or 2 --1 = Sweep, 2 = direct
+
+				local beamPrep = 0.65
+				local beamLife = 3.5
+				local sweepVertically = math.random()<0.5 and math.Rand(0, 0.15) or math.Rand(0.5, 0.65)
+				local sweepDistance = (math.random()<0.5 and 0.5 or -0.5)*60 
+				local beamDPS = 25
+				local beamRadius = 5
+
+				if attackType == 2 then 
+					beamPrep = 1.5
+					beamLife = 4
+
+					beamDPS = 45
+					beamRadius = 20
+
+					sweepVertically = 0 
+					sweepDistance = 0
 				end
+				local beamTotal = beamPrep + beamLife
 				
-				local beam = ents.Create("jcms_deathray")
-				beam:FollowBone(npc, boneId)
-				beam:SetPos(pos)
-				beam:SetAngles(npc:GetAngles())
-				beam.filter = npc
-				beam:Spawn()
+				npc:SetPlaybackRate(0.85)
+				timer.Simple(0.9, function()
+					if not IsValid(npc) or not(npc:GetCurrentSchedule() == SCHED_RANGE_ATTACK1) then return end 
+					npc:SetPlaybackRate(0.15)
 
-				local stage2 = npc.jcms_uCyberguard_stage2
+					local boneId = 4 --Head
+					local matrix = npc:GetBoneMatrix(boneId)
+					local pos = matrix:GetTranslation()
 
-				beam:SetBeamColour(Vector(1, 0.6, 0.1))
-				beam:SetBeamRadius(stage2 and 5 or 4)
-				beam:SetBeamPrepTime(stage2 and 0.5 or 1)
-				beam:SetBeamLifeTime(stage2 and 3 or 4)
-				beam:SetUseAngles(true)
+					local beam = ents.Create("jcms_deathray")
+					beam:SetPos(pos)
+					beam:SetAngles(npc:GetAngles())
+					beam.filter = npc
+					beam:Spawn()
 
-				beam.DPS = 25
-				beam.DPS_DIRECT = 25
-				beam.IgniteOnHit = false
+					beam:SetBeamColour(Vector(1, 0.6, 0.1))
+					beam:SetBeamRadius(beamRadius)
+					beam:SetBeamPrepTime(beamPrep)
+					beam:SetBeamLifeTime(beamLife)
+					beam:SetUseAngles(true)
 
-				npc.jcms_uCyberguard_nextBeam = CurTime() + (stage2 and 5 or 9)
+					beam.DPS = beamDPS
+					beam.DPS_DIRECT = beamDPS
+					beam.IgniteOnHit = false
+
+
+					local startAng, finishAng = jcms.beam_GetBeamAngles(pos, ePos, sweepVertically, sweepDistance)
+					local endTime = CurTime() + beamTotal
+
+					local timerName = "jcms_ultracyberguard_beamAim" .. tostring(npc:EntIndex())
+					timer.Create(timerName, 0.0, 0, function()
+						if not IsValid(npc) or not IsValid(beam) or not(npc:GetCurrentSchedule() == SCHED_RANGE_ATTACK1) then
+							timer.Remove(timerName)
+							if IsValid(npc) then npc:SetPlaybackRate(1) end 
+							if IsValid(beam) then beam:Remove() end
+							return
+						end
+
+						local frac = (endTime - CurTime())/beamTotal
+						
+						local mat = npc:GetBoneMatrix(boneId)
+						local pos = mat:GetTranslation()
+
+						beam:SetPos(pos)
+						beam:SetAngles(LerpAngle(frac, startAng, finishAng))
+					end)
+				end)
+
+				npc.jcms_uCyberguard_nextBeam = CurTime() + (npc.jcms_uCyberguard_stage2 and 8 or 15)
 			end
 		-- // }}}
 	end,

@@ -1425,7 +1425,8 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		local function calcw(area, prefabType)
 			for i, tuple in ipairs(canHouse[area]) do
 				if tuple[1] == prefabType then
-					return 1 / #canHouse[area]
+					local prefabData = jcms.prefabs[prefabType]
+					return (1 / #canHouse[area]) * (prefabData.areaWeight and prefabData.areaWeight(area) or 1)
 				end
 			end
 			return 0
