@@ -141,25 +141,27 @@ function jcms.mapgen_MainframeGenerateTrack(missionObjects, sectorDistances, are
 			targetArea = jcms.util_ChooseByWeight(areaWeights)
 			local navSuccess, pathAreas = jcms.mapgen_Navigate(targetArea, prevArea)
 
-			path = {}
-			table.insert(path, prevArea:GetCenter()) --Centre on our current terminal
+			if navSuccess then
+				path = {}
+				table.insert(path, prevArea:GetCenter()) --Centre on our current terminal
 
-			local pathPrevArea = prevArea
-			for i=2, #pathAreas-1, 1 do --from 2 since our first starts at the centre
-				local area = pathAreas[i]
+				local pathPrevArea = prevArea
+				for i=2, #pathAreas-1, 1 do --from 2 since our first starts at the centre
+					local area = pathAreas[i]
 
-				for side=0, 3 do
-					if area:IsConnectedAtSide(pathPrevArea, side) then
-						table.insert(path, jcms.mapgen_GetAreaEdgePos(area, side ))
-						break
+					for side=0, 3 do
+						if area:IsConnectedAtSide(pathPrevArea, side) then
+							table.insert(path, jcms.mapgen_GetAreaEdgePos(area, side ))
+							break
+						end
 					end
+
+					pathPrevArea = area
 				end
+				table.insert(path, targetArea:GetCenter())--Centre on our next terminal
 
-				pathPrevArea = area
+				jcms.mapgen_OptimiseVectorPath( path )
 			end
-			table.insert(path, targetArea:GetCenter())--Centre on our next terminal
-
-			jcms.mapgen_OptimiseVectorPath( path )
 		end
 
 		-- Placing down the track & terminal {{{
