@@ -1422,11 +1422,18 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 		local stamped = 0
 		local mapSizeMul = jcms.mapgen_GetMapSizeMultiplier_Restricted()
 
+		local cachedWeights = {} --Prevent repeat work
 		local function calcw(area, prefabType)
 			for i, tuple in ipairs(canHouse[area]) do
 				if tuple[1] == prefabType then
 					local prefabData = jcms.prefabs[prefabType]
-					return (1 / #canHouse[area]) * (prefabData.areaWeight and prefabData.areaWeight(area) or 1)
+					local weight = (1 / #canHouse[area])
+					if prefabData.areaWeight then 
+						cachedWeights[prefabType] = cachedWeights[prefabType] or {}
+						cachedWeights[area] = cachedWeights[area] or prefabData.areaWeight(area)
+						weight = weight * cachedWeights[area]
+					end
+					return weight 
 				end
 			end
 			return 0
@@ -1465,6 +1472,7 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 						stamped = stamped + 1
 						
 						prefabCounts[prefabType] = (prefabCounts[prefabType] or 0) + 1
+						canHouse[chosenArea] = {}
  						break
 					end
 				end

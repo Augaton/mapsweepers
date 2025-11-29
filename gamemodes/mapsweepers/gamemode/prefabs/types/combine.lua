@@ -31,6 +31,14 @@ prefabs.combine_floorturrets = {
 		if not jcms.mapgen_ValidArea(area) then return false end
 		if area:GetSizeX() < 30 or area:GetSizeY() < 30 then return false end
 
+		if not jcms.mapgen_AreaFlat(area) then 
+			return false 
+		end
+
+		return jcms.prefab_CheckOverlooking(area)
+	end,
+
+	areaWeight = function(area)
 		local centre = area:GetCenter() 
 		local indoorTrace = util.TraceLine({
 			start = centre,
@@ -38,14 +46,9 @@ prefabs.combine_floorturrets = {
 			mask = MASK_SOLID_BRUSHONLY
 		})
 
-		--Only indoors
-		if indoorTrace.HitSky then return false end 
-		
-		if not jcms.mapgen_AreaFlat(area) then 
-			return false 
-		end
-
-		return jcms.prefab_CheckOverlooking(area)
+		local weight = indoorTrace.HitSky and 0.01 or 1 --Prefer indoors / hidden
+		weight = weight * (#area:GetAdjacentAreas() <= 2 and 1 or 0.25)
+		return weight  --* #area:GetVisibleAreas() / #area:GetAdjacentAreas() --Prefer Corners with high visible area-count.
 	end,
 
 	stamp = function(area, data)

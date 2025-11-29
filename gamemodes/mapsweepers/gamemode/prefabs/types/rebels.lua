@@ -27,6 +27,10 @@ prefabs.rebel_jammer = {
 	onlyMainZone = true,
 
 	check = function(area)
+		return area:GetSizeX() > 40 and area:GetSizeY() > 40
+	end,
+
+	areaWeight = function(area)
 		local centre = area:GetCenter() 
 		local indoorTrace = util.TraceLine({
 			start = centre,
@@ -34,10 +38,9 @@ prefabs.rebel_jammer = {
 			mask = MASK_SOLID_BRUSHONLY
 		})
 
-		--Only indoors
-		if indoorTrace.HitSky then return false end 
-
-		return area:GetSizeX() > 40 and area:GetSizeY() > 40
+		--Prefer indoors / hidden
+		local weight = indoorTrace.HitSky and 0.01 or 1
+		return weight / math.sqrt(#area:GetVisibleAreas())
 	end,
 
 	stamp = function(area, data)

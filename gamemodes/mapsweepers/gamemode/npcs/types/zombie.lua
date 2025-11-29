@@ -1007,6 +1007,7 @@ jcms.npc_types.zombie_barnacle = {
 		npc:SetHealth(hp)
 
 		timer.Simple(0, function() --(Unreliable?) fix to us not attacking players
+			if not IsValid(npc) then return end
 			npc:Activate()
 			npc:TakeDamage(0) --Awesome!11!
 		end)

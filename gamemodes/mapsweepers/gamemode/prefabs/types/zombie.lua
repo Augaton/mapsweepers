@@ -38,6 +38,10 @@ prefabs.zombie_barnacles = {
 		return tr.Hit and not tr.HitSky and math.acos(tr.HitNormal:Dot(-jcms.vectorUp)) < math.pi/4
 	end,
 
+	areaWeight = function(area) 
+		return 1 / #area:GetAdjacentAreas() --Prefer Chokepoints
+	end,
+
 	stamp = function(area, data)
 		return jcms.npc_Spawn("zombie_barnacle", area:GetCenter())
 	end
