@@ -851,6 +851,7 @@ jcms.npc_types.antlion_ultracyberguard = {
 					beam.DPS_DIRECT = beamDPS
 					beam.IgniteOnHit = false
 
+					npc:SetMoveYawLocked( true )
 
 					local startAng, finishAng = jcms.beam_GetBeamAngles(pos, ePos, sweepVertically, sweepDistance)
 					local endTime = CurTime() + beamTotal
@@ -859,7 +860,10 @@ jcms.npc_types.antlion_ultracyberguard = {
 					timer.Create(timerName, 0.0, 0, function()
 						if not IsValid(npc) or not IsValid(beam) or not(npc:GetCurrentSchedule() == SCHED_RANGE_ATTACK1) then
 							timer.Remove(timerName)
-							if IsValid(npc) then npc:SetPlaybackRate(1) end 
+							if IsValid(npc) then
+								npc:SetPlaybackRate(1) 
+								npc:SetMoveYawLocked( false )
+							end 
 							if IsValid(beam) then beam:Remove() end
 							return
 						end
