@@ -1766,6 +1766,19 @@
 					p.reverseSort:SetX(IsValid(p.sortComboBox) and p.sortComboBox:GetX()+p.sortComboBox:GetWide()+4 or 16)
 				end
 			end
+
+			if #p.shop.weaponButtons <= 0 then
+				y1 = y1 + (lowres and 8 or 24)
+
+				local leftPanelEdge = 248
+				local markupPad = lowres and 4 or 24
+				local colorTag = ("<color=%d,%d,%d>"):format(jcms.color_bright:Unpack())
+				if not p.noWeaponMarkup then
+					p.noWeaponMarkup = markup.Parse( ("<font=jcms_small>%s%s\n\n%s\n\n%s</color>"):format( colorTag, language.GetPhrase("jcms.shop_noweapons2"), language.GetPhrase("jcms.shop_noweapons3"), language.GetPhrase("jcms.shop_noweapons4")), w-leftPanelEdge-markupPad*2 )
+				end
+				local _, th = draw.SimpleText("#jcms.shop_noweapons1", lowres and "jcms_small_bolder" or "jcms_big", (w-leftPanelEdge)*0.5 + leftPanelEdge, y1 + 64, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				p.noWeaponMarkup:Draw(leftPanelEdge + markupPad, y1 + 64 + th + 8)
+			end
 		end
 
 		function jcms.offgame_paint_ControlPanel(p, w, h)
