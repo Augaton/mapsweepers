@@ -131,6 +131,8 @@ local nmt = FindMetaTable("NPC")
 	jcms.cvar_npcteam_restrict = CreateConVar("jcms_npcteam_restrict", "0", FCVAR_JCMS_SHARED_SAVED, "Restrictions on NPC Team. 0 = no restrictions, 1 = can only join as NPC post-evac, 2 = can never join as NPCs", 0, 2)
 	jcms.cvar_suddendeathtimer = CreateConVar("jcms_suddendeathtimer", "0", FCVAR_JCMS_SHARED_SAVED, "(If set above 0) This is the number of seconds that must pass since the first sweeper evacuates, until J Corp stops giving credits for kills to remaining sweepers, encouraging evacuation. If set to 0, people can take their time with EVAC as long as they want with no penalties.", 0, 600)
 
+	jcms.cvar_damage_mul = CreateConVar("jcms_damage_mul", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Damage multiplier to Sweepers done by NPCs.", 0, 5)
+
 	jcms.cvar_swarm_frequency = CreateConVar("jcms_swarm_frequency", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Swarm frequency multiplier.", 0, 5)
 	jcms.cvar_swarm_size = CreateConVar("jcms_swarm_size", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Swarm size multiplier.", 0, 5)
 	jcms.cvar_swarm_warning = CreateConVar("jcms_swarm_warning", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Extra seconds between a portal opening and enemies coming out of it.", 0, 30)

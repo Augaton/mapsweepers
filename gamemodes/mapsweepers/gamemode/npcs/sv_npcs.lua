@@ -50,7 +50,7 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 
 	function jcms.npc_GetScaledDamage(override)
 		local plyCount = override or #team.GetPlayers(1)
-		return (1 + math.max((plyCount-1) * 0.125, 0)) * jcms.runprogress_GetDifficulty()
+		return (1 + math.max((plyCount-1) * 0.125, 0)) * jcms.runprogress_GetDifficulty() * jcms.cvar_damage_mul:GetFloat()
 	end
 
 	function jcms.npc_GetScaledSwarmWeight(data) 

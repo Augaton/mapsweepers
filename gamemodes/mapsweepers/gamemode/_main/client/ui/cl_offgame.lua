@@ -2408,10 +2408,18 @@ jcms.offgame = jcms.offgame or NULL
 							content:DockPadding(0, 0, 0, 16)
 							bar:SetContents(content)
 
+							local dmgmul = content:Add("DNumSlider")
+							dmgmul:SetText("#jcms.opt_damage_mul")
+							dmgmul:SetSize(contentSize - 48, 24)
+							dmgmul:SetPos(24, 24)
+							dmgmul:SetMinMax(0, 5)
+							dmgmul:SetConVar("jcms_damage_mul")
+							dmgmul.Paint = jcms.paint_NumSlider
+
 							local freq = content:Add("DNumSlider")
 							freq:SetText("#jcms.opt_swarm_freq")
 							freq:SetSize(contentSize - 48, 24)
-							freq:SetPos(24, 24)
+							freq:SetPos(24, 24 + 32)
 							freq:SetMinMax(0, 5)
 							freq:SetConVar("jcms_swarm_frequency")
 							freq.Paint = jcms.paint_NumSlider
@@ -2419,7 +2427,7 @@ jcms.offgame = jcms.offgame or NULL
 							local size = content:Add("DNumSlider")
 							size:SetText("#jcms.opt_swarm_size")
 							size:SetSize(contentSize - 48, 24)
-							size:SetPos(24, 24 + 32)
+							size:SetPos(24, 24 + 64)
 							size:SetMinMax(0, 5)
 							size:SetConVar("jcms_swarm_size")
 							size.Paint = jcms.paint_NumSlider
@@ -2427,7 +2435,7 @@ jcms.offgame = jcms.offgame or NULL
 							local warn = content:Add("DNumSlider")
 							warn:SetText("#jcms.opt_swarm_warn")
 							warn:SetSize(contentSize - 48, 24)
-							warn:SetPos(24, 24 + 64)
+							warn:SetPos(24, 24 + 96)
 							warn:SetMinMax(0, 30)
 							warn:SetConVar("jcms_swarm_warning")
 							warn:SetDecimals(0)
