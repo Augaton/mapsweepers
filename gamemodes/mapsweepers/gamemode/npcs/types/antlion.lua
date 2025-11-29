@@ -855,6 +855,7 @@ jcms.npc_types.antlion_ultracyberguard = {
 
 					local startAng, finishAng = jcms.beam_GetBeamAngles(pos, ePos, sweepVertically, sweepDistance)
 					local endTime = CurTime() + beamTotal
+					npc:IgnoreEnemyUntil( enemy, endTime )
 
 					local timerName = "jcms_ultracyberguard_beamAim" .. tostring(npc:EntIndex())
 					timer.Create(timerName, 0.0, 0, function()
