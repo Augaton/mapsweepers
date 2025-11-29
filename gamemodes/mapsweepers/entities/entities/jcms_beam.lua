@@ -70,7 +70,7 @@ if SERVER then
 		self:SetBeamTime(0)
 		self:SetBeamLifeTime(overTime or 1)
 		
-		local dAng1, dAng2 = jcms.beam_GetBeamAngles(self:GetPos(), targetVector, sweepVertically, sweepDistance)
+		local dAng1, dAng2 = jcms.beam_GetBeamAngles(self:GetPos(), targetVector, sweepVerticality, sweepDistance)
 		
 		self:SetBeamFromAngle(dAng1)
 		self:SetBeamToAngle(dAng2)
