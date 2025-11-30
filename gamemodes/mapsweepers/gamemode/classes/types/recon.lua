@@ -124,10 +124,25 @@ function class.SetupMove(ply, mv, cmd)
 							target:TakeDamageInfo(dmg)
 						end
 					end
-					if tr.Entity then
+					if IsValid(tr.Entity) then
 						if not jcms.team_SameTeam(ply, tr.Entity) and tr.Entity.TakeDamageInfo then --An extra 25 dmg if we are on top of it.
 							dmg:SetDamage(25)
 							tr.Entity:TakeDamageInfo(dmg)
+							local metalMats = {
+								[MAT_VENT] = true,
+								[MAT_WARPSHIELD] = true,
+								[MAT_GLASS] = true,
+								[MAT_COMPUTER] = true,
+								[MAT_METAL] = true,
+								[MAT_GRATE] = true,
+								[MAT_CONCRETE] = true,
+							}
+
+							if metalMats[tr.MatType] then
+								ply:EmitSound("NPC_dog.PoundGround_Light")
+							else
+								ply:EmitSound("Weapon_Crossbow.BoltHitBody")
+							end
 						end
 					end
 				end

@@ -34,7 +34,7 @@ jcms.missions.miningoperations = {
 		missionData.refineries_secondary = refineries_secondary
 
 		local diffMult = jcms.runprogress_GetDifficulty() ^ (2/3)
-		missionData.totalToRefine = math.ceil(1500 * diffMult)
+		missionData.totalToRefine = math.ceil(1750 * diffMult)
 
 
 		--Pvp Mode

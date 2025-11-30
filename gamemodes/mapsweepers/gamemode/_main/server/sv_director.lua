@@ -1291,7 +1291,7 @@
 					local weightedAreas = jcms.mapgen_BorderWeights( jcms.mapdata.validAreas )
 
 					local timeNuking = cTime - d.nukeStart
-					local exp = 1/math.sqrt(timeNuking/240)
+					local exp = 1/math.sqrt(timeNuking/300)
 					for area, weight in pairs(weightedAreas) do 
 						weightedAreas[area] = weight ^ exp --Flatten as time goes on.
 					end
@@ -1306,7 +1306,7 @@
 
 					jcms.util_skyNuke(targetPos)
 
-					d.nextNuke = cTime + 60
+					d.nextNuke = cTime + 55
 				end
 			end
 		end
@@ -1667,7 +1667,7 @@
 				local aliveTeams = {} --Which team is alive (*only* useful if there's one, otherwise returns highest index team) 
 				local aliveTeamCount = 0
 				for pvpTeam=1, 8, 1 do
-					if (teamRespawns[pvpTeam] or 0) + (teamAlivePlayers[pvpTeam] or 0) > 0 and #jcms.PVPGetTeamPlayers( pvpTeam ) > 0 then --Has respawns or alive players, has actual members.
+					if (not jcms.director_IsSuddenDeath() and teamRespawns[pvpTeam] or 0) + (teamAlivePlayers[pvpTeam] or 0) > 0 and #jcms.PVPGetTeamPlayers( pvpTeam ) > 0 then --Has respawns or alive players, has actual members.
 						aliveTeamCount = aliveTeamCount + 1
 						aliveTeams[pvpTeam] = true
 					else

@@ -768,7 +768,7 @@ jcms.npc_types.antlion_ultracyberguard = {
 	postSpawn = function(npc)
 		jcms.npc_GetRowdy(npc)
 		
-		local hp = math.ceil( npc:GetMaxHealth() * 1.25 )
+		local hp = math.ceil( npc:GetMaxHealth() * 1.5 )
 		npc:SetMaxHealth(hp)
 		npc:SetHealth(hp)
 		npc:SetModel("models/jcms/ultracyberguard.mdl")
@@ -802,23 +802,24 @@ jcms.npc_types.antlion_ultracyberguard = {
 		-- // Laser Beams {{{
 			local enemy = npc:GetEnemy() 
 			if IsValid(enemy) and npc.jcms_uCyberguard_nextBeam < CurTime() and enemy:WorldSpaceCenter():DistToSqr(npc:GetPos()) >150 then 
-				local ePos = npc:Visible(enemy) and enemy:WorldSpaceCenter() + enemy:GetVelocity()*0.5 or npc:GetEnemyLastSeenPos(enemy)
+				local ePos = npc:Visible(enemy) and enemy:EyePos() or npc:GetEnemyLastSeenPos(enemy)
 
 				npc:SetSchedule(SCHED_RANGE_ATTACK1)
-				local attackType = math.random() < 0.5 and 1 or 2 --1 = Sweep, 2 = direct
-
-				local beamPrep = 0.65
-				local beamLife = 3.5
-				local sweepVertically = math.random()<0.5 and math.Rand(0, 0.15) or math.Rand(0.5, 0.65)
-				local sweepDistance = (math.random()<0.5 and 0.5 or -0.5)*60 
-				local beamDPS = 25
+				local attackType = (math.random() < (enemy:GetVelocity():Length() / 400)) and 1 or 2 --1 = Sweep, 2 = direct
+				--Sweeps are more likely if you're moving, direct attacks more likely for stationary/slow
+				
+				local beamPrep = 0.45
+				local beamLife = 3
+				local sweepVertically = math.Rand(0, 0.15)
+				local sweepDistance = (math.random()<0.5 and 1 or -1)*60 
+				local beamDPS = 40
 				local beamRadius = 5
 
 				if attackType == 2 then 
-					beamPrep = 1.5
+					beamPrep = 0.9
 					beamLife = 4
 
-					beamDPS = 45
+					beamDPS = 80
 					beamRadius = 20
 
 					sweepVertically = 0 
@@ -850,10 +851,11 @@ jcms.npc_types.antlion_ultracyberguard = {
 					beam.DPS = beamDPS
 					beam.DPS_DIRECT = beamDPS
 					beam.IgniteOnHit = false
+					beam.instantDamageImpulse = true
 
 					npc:SetMoveYawLocked( true )
 
-					local startAng, finishAng = jcms.beam_GetBeamAngles(pos, ePos, sweepVertically, sweepDistance)
+					local startAng, finishAng = jcms.beam_GetBeamAngles(pos, ePos + (enemy:GetVelocity() * (beamPrep + beamLife/3)), sweepVertically, sweepDistance)
 					local endTime = CurTime() + beamTotal
 					npc:IgnoreEnemyUntil( enemy, endTime )
 

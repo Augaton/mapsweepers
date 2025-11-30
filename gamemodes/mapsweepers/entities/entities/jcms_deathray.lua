@@ -70,6 +70,8 @@ function ENT:Initialize()
 		end
 	end
 
+	self.hitTargets = {}
+
 	self:DrawShadow(false)
 end
 
@@ -138,9 +140,15 @@ if SERVER then
 							
 							target:EmitSound("jcms_deathray_blast")
 
-							if self.IgniteOnHit then
+							if selfTbl.IgniteOnHit then
 								target:Ignite(math.ceil(threshold/5))
 							end
+						end
+
+						if selfTbl.instantDamageImpulse and not selfTbl.hitTargets[target] then
+							dmg:SetDamage(basedmg)
+							selfTbl.hitTargets[target] = true
+							target:TakeDamageInfo(dmg)
 						end
 					else
 						target:DispatchTraceAttack(dmg, tr)
