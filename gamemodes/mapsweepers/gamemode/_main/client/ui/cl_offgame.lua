@@ -227,6 +227,7 @@ jcms.offgame = jcms.offgame or NULL
 			end
 
 			local pnl = makeBasePanel(jcms.offgame_paint_LobbyFrame)
+			pnl.PaintOver = jcms.offgame_paintover_LobbyFrame
 
 			-- Primary {{{
 				pnl.buttonsPrimary = { selection = 1 }
@@ -692,6 +693,8 @@ jcms.offgame = jcms.offgame or NULL
 					surface.PlaySound("buttons/button14.wav")
 				end
 			else
+				jcms.hud_SetThemeWithoutSaving(nil)
+
 				-- PvE {{{
 					local pnlPVE = tab:Add("DPanel")
 					pnlPVE:SetPos(32, 128)
@@ -735,15 +738,22 @@ jcms.offgame = jcms.offgame or NULL
 					pnlPVP:SetPaintBackground(false)
 
 					local pvplabel = pnlPVP:Add("DLabel")
-					pvplabel:SetPos(8, 4)
+					pvplabel:SetPos(8, 0)
 					pvplabel:SetSize(340, 32)
 					pvplabel:SetText("#jcms.pvptext")
 					pvplabel:SetTextColor(jcms.color_bright_alt)
 					pvplabel:SetFont("jcms_medium")
 
+					local pvplabelws = pnlPVP:Add("DLabel")
+					pvplabelws:SetPos(8, 18)
+					pvplabelws:SetSize(340, 32)
+					pvplabelws:SetText("#jcms.pvptext_savedws")
+					pvplabelws:SetTextColor(jcms.color_bright_alt)
+					pvplabelws:SetFont("jcms_small")
+
 					local bJoinTeam1 = pnlPVP:Add("DButton")
 					bJoinTeam1:SetText("#jcms.joinas_pvp1")
-					bJoinTeam1:SetPos(48, 32+8)
+					bJoinTeam1:SetPos(48, 32+16)
 					bJoinTeam1:SetSize(256, 32)
 					bJoinTeam1.Paint = jcms.paint_ButtonFilled
 					bJoinTeam1.jFont = "jcms_medium"
@@ -751,7 +761,7 @@ jcms.offgame = jcms.offgame or NULL
 
 					local bJoinTeam2 = pnlPVP:Add("DButton")
 					bJoinTeam2:SetText("#jcms.joinas_pvp2")
-					bJoinTeam2:SetPos(64, 32*2+12)
+					bJoinTeam2:SetPos(64, 32*2+20)
 					bJoinTeam2:SetSize(256, 32)
 					bJoinTeam2.Paint = jcms.paint_ButtonFilled
 					bJoinTeam2.jFont = "jcms_medium"
@@ -767,6 +777,10 @@ jcms.offgame = jcms.offgame or NULL
 						surface.PlaySound("buttons/button14.wav")
 						jcms.offgame_BuildMissionPrepTab(tab)
 						RunConsoleCommand("jcms_jointeam_pvp", self.pvpTeam)
+
+						if jcms.cvar_hud_pvptheme:GetBool() then
+							jcms.hud_SetThemeWithoutSaving( jcms.util_GetFactionNameFromTeamId(self.pvpTeam) )
+						end
 					end
 
 					bJoinTeam2.DoClick = bJoinTeam1.DoClick
@@ -783,6 +797,19 @@ jcms.offgame = jcms.offgame or NULL
 						jcms.offgame_ModalChangeMission()
 						surface.PlaySound("buttons/button14.wav")
 					end
+
+					local bTogglePVP = tab:Add("DButton")
+					bTogglePVP:SetText("")
+					bTogglePVP:SetPos(48, 264 + 32 + 4)
+					bTogglePVP:SetSize(400-64-24, 32)
+					bTogglePVP.Paint = jcms.paint_Button
+					bTogglePVP.jFont = "jcms_medium"
+					function bTogglePVP:DoClick()
+						RunConsoleCommand("jcms_pvptoggle")
+						surface.PlaySound("buttons/button14.wav")
+					end
+
+					tab.pvpButton = bTogglePVP
 				end
 
 				function pnlPVE:Think()
@@ -790,9 +817,12 @@ jcms.offgame = jcms.offgame or NULL
 					pnlPVE:SetVisible(not isPVP)
 					pnlPVP:SetVisible(isPVP)
 
-					if isPVP then
-					else
+					if not isPVP then
 						bJoinNPC:SetVisible(jcms.cvar_npcteam_restrict:GetInt() == 0)
+					end
+
+					if IsValid(tab.pvpButton) then
+						tab.pvpButton:SetText( jcms.util_IsPVP() and "#jcms.pvpmode_off" or "#jcms.pvpmode_on" )
 					end
 				end
 				
@@ -2136,16 +2166,37 @@ jcms.offgame = jcms.offgame or NULL
 						content:DockPadding(0, 0, 0, 16)
 						content.selectedColor = "bright"
 						bar:SetContents(content)
+
+						local cb = content:Add("DCheckBoxLabel")
+						cb:SetPos(24, 24)
+						cb:SetText("#jcms.opt_hudpvptheme")
+						cb:SetWide(400)
+						cb:SetConVar("jcms_hud_pvptheme")
+						cb.Paint = jcms.paint_CheckBoxLabel
 		
 						local scale = content:Add("DNumSlider")
 						scale:SetText("#jcms.opt_hudscale")
 						scale:SetSize(contentSize - 48, 24)
-						scale:SetPos(24, 24)
+						scale:SetPos(24, 24 + 32)
 						scale:SetMinMax(0.5, 2)
 						scale:SetConVar("jcms_hud_scale")
 						scale.Paint = jcms.paint_NumSlider
 
-						local mixer = content:Add("DColorMixer")
+						local colourArea = content:Add("DPanel")
+						colourArea:SetSize(contentSize - 48, 150)
+						colourArea:SetPos(24, 64 + 32)
+						colourArea.Paint = BLANK_DRAW
+						colourArea.PaintOver = function(p, w, h)
+							if not p:IsEnabled() then
+								local mul = surface.GetAlphaMultiplier()
+
+								surface.SetAlphaMultiplier(1)
+								draw.SimpleTextOutlined("#jcms.pvpthemeinuse", jcms.util_IsLowRes() and "jcms_medium" or "jcms_big", w/2, h/2, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, jcms.color_dark)
+								surface.SetAlphaMultiplier(mul)
+							end
+						end
+
+						local mixer = colourArea:Add("DColorMixer")
 
 						local function clrBtnFunc(b)
 							content.selectedColor = b.colorName
@@ -2161,9 +2212,9 @@ jcms.offgame = jcms.offgame or NULL
 							local x = (i - 1) % 3
 							local y = math.floor( (i - 1) / 3 )
 
-							local btn = content:Add("DButton")
+							local btn = colourArea:Add("DButton")
 							btn:SetSize(72, 24)
-							btn:SetPos(24 + x * (btn:GetWide() + 4) + y * 8, 64 + y * (btn:GetTall() + 4))
+							btn:SetPos(x * (btn:GetWide() + 4) + y * 8, y * (btn:GetTall() + 4))
 							btn.Paint = jcms.paint_ButtonColor
 							btn.colorName = clrName
 							btn.DoClick = clrBtnFunc
@@ -2173,8 +2224,8 @@ jcms.offgame = jcms.offgame or NULL
 						mixer:SetPalette(false)
 						mixer:SetAlphaBar(false)
 						mixer:SetColor(jcms.color_bright)
-						mixer:SetPos(400 - 48, 64)
 						mixer:SetSize(128 + 12, 128 - 12)
+						mixer:SetPos(colourArea:GetWide() - mixer:GetWide(), 0)
 						function mixer:ValueChanged(col)
 							local id = tostring(content.selectedColor)
 							local cvar = jcms.color_convars["jcms_hud_color_" .. id]
@@ -2184,10 +2235,10 @@ jcms.offgame = jcms.offgame or NULL
 							end
 						end
 
-						local rng = content:Add("DButton")
+						local rng = colourArea:Add("DButton")
 						rng:SetText("#jcms.opt_color_randomize")
 						rng:SetSize(230, 18)
-						rng:SetPos(32, 128)
+						rng:SetPos(32, 64)
 						rng.Paint = jcms.paint_ButtonFilled
 						function rng:DoClick()
 							local cvar_bright = jcms.color_convars["jcms_hud_color_bright"]
@@ -2227,7 +2278,7 @@ jcms.offgame = jcms.offgame or NULL
 							surface.PlaySound("npc/dog/dog_servo7.wav")
 						end
 
-						local adj = content:Add("DButton")
+						local adj = colourArea:Add("DButton")
 						adj:SetText("#jcms.opt_color_adjust")
 						adj:SetSize(230, 18)
 						adj:SetPos(48, rng:GetY() + rng:GetTall() + 4)
@@ -2248,7 +2299,7 @@ jcms.offgame = jcms.offgame or NULL
 							surface.PlaySound("npc/dog/dog_servo7.wav")
 						end
 
-						local res = content:Add("DButton")
+						local res = colourArea:Add("DButton")
 						res:SetText("#jcms.opt_color_reset")
 						res:SetSize(230, 18)
 						res:SetPos(32, adj:GetY() + adj:GetTall() + 4)
@@ -2256,6 +2307,10 @@ jcms.offgame = jcms.offgame or NULL
 						function res:DoClick()
 							jcms.hud_SetTheme(jcms.playerfactions_players[ LocalPlayer().__s64hash ] or "jcorp")
 							surface.PlaySound("npc/scanner/cbot_servoscared.wav")
+						end
+
+						function bar:Think()
+							colourArea:SetEnabled(not jcms.hudTempTheme)
 						end
 					end
 				-- }}}

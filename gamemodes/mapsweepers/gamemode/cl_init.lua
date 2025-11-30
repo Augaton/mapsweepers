@@ -226,6 +226,7 @@ end)
 	jcms.cvar_announcer = CreateClientConVar("jcms_announcer", "1", true, false, "If set to 1, JonahSoldier will watch over your progress with mission control voicelines.")
 	jcms.cvar_nomusic = CreateClientConVar("jcms_nomusic", "0", true, false, "Disables mission-start HL2 ambience at the start of each mission")
 
+	jcms.cvar_hud_pvptheme = CreateClientConVar("jcms_hud_pvptheme", "1", true, false, "Override the HUD colour theme specifically in PVP to match your side")
 	jcms.cvar_hud_scale = CreateClientConVar("jcms_hud_scale", "1", true, false, "Scale multiplier for the in-game HUD")
 	jcms.cvar_hud_novignette = CreateClientConVar("jcms_hud_novignette", "0", true, false, "Disables the darkening around corners of the screen")
 	jcms.cvar_hud_nocolourfilter = CreateClientConVar("jcms_hud_nocolourfilter", "0", true, false, "Disables the colour-modifying screen tint")
@@ -240,6 +241,18 @@ end)
 	jcms.cvar_crosshair_gap = CreateClientConVar("jcms_crosshair_gap", "0", true, false, "Added gap to the crosshair (there's a default one of ~8)")
 
 	jcms.cvar_favclass = CreateClientConVar("jcms_favclass", "", true, false, "Will automatically select this class whenever you join a game")
+
+	cvars.AddChangeCallback("jcms_hud_pvptheme", function(cvar, oldValue, newValue)
+		if tobool(newValue) then
+			local pvpId = jcms.locPly:GetNWInt("jcms_pvpTeam", -1)
+
+			if jcms.pvp_IsGoodTeamId(pvpId) then
+				jcms.hud_SetThemeWithoutSaving( jcms.util_GetFactionNameFromTeamId(pvpId) )
+			end
+		else
+			jcms.hud_SetThemeWithoutSaving( nil )
+		end
+	end)
 
 -- // }}}
 

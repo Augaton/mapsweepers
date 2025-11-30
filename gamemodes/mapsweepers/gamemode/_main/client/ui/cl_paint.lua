@@ -1452,6 +1452,26 @@
 			drawScanlines(w,h,r2,g2,b2)
 		end
 
+		function jcms.offgame_paintover_LobbyFrame(p, w, h)
+			if type(jcms.offgame.noiseOverlay) == "number" then
+				local ov = jcms.offgame.noiseOverlay
+
+				local r, g, b = jcms.color_bright:Unpack()
+
+				render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
+				surface.SetDrawColor(r, g, b, 255*math.ease.InOutCirc(math.min(ov, 1)))
+				jcms.hud_DrawNoiseRect(0, 0, w, h, Lerp(ov, w, h))
+				render.OverrideBlend( false )
+
+				ov = math.max(0, ov - RealFrameTime()*ov*3.2)
+				if ov <= 0 then
+					jcms.offgame.noiseOverlay = nil
+				else
+					jcms.offgame.noiseOverlay = ov
+				end
+			end
+		end
+
 		function jcms.offgame_paint_MissionTab(p, w, h)
 			if game.SinglePlayer() then
 				draw.SimpleText("#jcms.solo", "jcms_hud_medium", 200, 128, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)

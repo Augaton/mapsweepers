@@ -2425,7 +2425,7 @@ end
 			elseif team == 1 or team == "sweeper" or team == "jcorp" then
 				-- Sweeper
 				ply:SetNWInt("jcms_desiredteam", 1)
-				if jcms.util_IsPVP() then
+				if jcms.util_IsPVP() and not jcms.pvp_IsGoodTeamId(ply:GetNWInt("jcms_pvpTeam", -1)) then
 					ply:SetNWInt("jcms_pvpTeam", math.random(1, 2))
 				end
 			elseif canJoinNpcs and not game.SinglePlayer() then
@@ -2465,10 +2465,6 @@ end
 
 		end
 	end)
-
-	function jcms.pvp_IsGoodTeamId(teamId)
-		return teamId == 1 or teamId == 2
-	end
 
 	concommand.Add("jcms_jointeam_pvp", function(ply, cmd, args)
 		if jcms.util_IsPVP() then

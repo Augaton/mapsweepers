@@ -155,6 +155,47 @@
 		end
 	end
 
+	function jcms.hud_SetThemeWithoutSaving(themeName)
+		if themeName == nil then
+			jcms.hudTempTheme = false
+			
+			local foundMismatch = false
+			for cvarname, cvar in pairs(jcms.color_convars) do
+				local cname = cvarname:match("jcms_hud_(color_[%w_]+)")
+				if cname and jcms[ cname ] then
+					local r, g, b = cvar:GetString():match("(%d+) (%d+) (%d+)")
+					r, g, b = tonumber(r), tonumber(g), tonumber(b)
+					
+					if not foundMismatch then
+						local cr, cg, cb = jcms[ cname ]:Unpack()
+						foundMismatch = math.abs(r - cr) > 1 or math.abs(g - cg) > 1 or math.abs(b - cb) > 1
+					end
+					
+					if r and g and b then
+						jcms[ cname ]:SetUnpacked(r, g, b)
+					end
+				end
+			end
+
+			if foundMismatch and jcms.offgame and IsValid(jcms.offgame) then
+				jcms.offgame.noiseOverlay = 1
+			end
+		else
+			local themeData = jcms.color_themes[ themeName ]
+
+			if themeData then
+				jcms.offgame.noiseOverlay = 1
+				jcms.hudTempTheme = true
+				
+				for cname, color in pairs(themeData) do
+					if cname:match("color_[%w_]+") == cname then
+						jcms[ cname ]:SetUnpacked( color:Unpack() )
+					end
+				end
+			end
+		end
+	end
+
 	concommand.Add("jcms_sethudtheme", function(ply, cmd, args)
 		if jcms.color_themes[ args[1] ] then
 			print("Set theme to '"..args[1].."'")

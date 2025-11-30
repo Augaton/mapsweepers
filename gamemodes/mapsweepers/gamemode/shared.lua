@@ -1227,12 +1227,21 @@ local nmt = FindMetaTable("NPC")
 		end
 	end
 
-	function jcms.util_GetFactionNamePVP(ent)
-		if IsValid(ent) and ent:GetNWInt("jcms_pvpTeam", -1) == 2 then
+	function jcms.pvp_IsGoodTeamId(teamId)
+		return teamId == 1 or teamId == 2
+	end
+
+	function jcms.util_GetFactionNameFromTeamId(id)
+		if id == 2 then
 			return "mafia"
 		else
 			return "jcorp"
 		end
+	end
+
+	function jcms.util_GetFactionNamePVP(ent)
+		local id = IsValid(ent) and ent:GetNWInt("jcms_pvpTeam", -1) or 1
+		return jcms.util_GetFactionNameFromTeamId(id)
 	end
 
 	function jcms.util_GetPVPVectorColor(ent)
