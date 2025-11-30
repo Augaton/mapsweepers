@@ -78,6 +78,9 @@
 				end
 				surface.SetFont("jcms_hud_small")
 				local tw = surface.GetTextSize(progressString)
+				if barw - tw <= 32 then
+					barw = math.max(barw + 64, barw - tw + 48)
+				end
 	
 				local f = objective.anim_fProgress
 				draw.SimpleText(progressString, "jcms_hud_small", 24, 16, colorDark, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)

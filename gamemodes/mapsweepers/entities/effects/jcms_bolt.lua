@@ -168,8 +168,8 @@ function EFFECT:Render()
 				selfTbl.color.b = math.min(255, invf*100*2)
 			else
 				-- Red
-				selfTbl.color.r = math.min(255, invf*invf*255*2)
-				selfTbl.color.g = math.min(255, invf*140*2)
+				selfTbl.color.r = math.min(255, invf*255*2)
+				selfTbl.color.g = math.min(255, invf*invf*140*2)
 				selfTbl.color.b = math.min(255, invf*invf*160*2)
 			end
 			selfTbl.color.a = invf*255
