@@ -162,7 +162,7 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 			npc:SetMaxLookDistance( math.max(npc:GetMaxLookDistance(), 4096) )
 		end
 
-		if not enemyData.isStatic then
+		if not enemyData.isStatic and not enemyData.hullSize then
 			local hulltrace = util.TraceEntityHull({
 				start = npc:EyePos(),
 				endpos = pos + v35,
@@ -564,6 +564,11 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 
 				if nearestNode then 
 					v = nearestNode.pos
+				end
+			elseif npcData.hullSize then 
+				local nearestNode = jcms.pathfinder_ain_nearestHullNode(v, npcData.hullSize)
+				if nearestNode then 
+					v = ainReader.nodePositions[nearestNode]
 				end
 			end
 

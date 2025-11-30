@@ -1116,7 +1116,9 @@ jcms.npc_types.rebel_dog = {
 	class = "npc_jcms_dog",
 	bounty = 135,
 	
-	portalScale = 3
+	portalScale = 3,
+	
+	hullType = HULL_LARGE
 }
 
 jcms.npc_types.rebel_vortigaunt = {

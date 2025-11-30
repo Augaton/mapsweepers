@@ -385,6 +385,8 @@ jcms.npc_types.antlion_guard = {
 	swarmWeight = 1,
 	swarmLimit = 3,
 	portalScale = 4,
+
+	hullSize = HULL_LARGE,
 	
 	preSpawn = function(npc)
 		if not npc.jcms_fromPortal then
@@ -481,6 +483,8 @@ jcms.npc_types.antlion_burrowerguard = {
 	swarmWeight = 1,
 	swarmLimit = 3,
 	portalScale = 4,
+
+	hullSize = HULL_MEDIUM_TALL,
 	
 	preSpawn = function(npc)
 		if not npc.jcms_fromPortal then
@@ -589,6 +593,8 @@ jcms.npc_types.antlion_mineralguard = {
 	swarmWeight = 0.0000000001,
 	swarmLimit = 3,
 	portalScale = 3.8,
+
+	hullSize = HULL_LARGE,
 	
 	preSpawn = function(npc)
 		if not npc.jcms_fromPortal then
@@ -697,6 +703,8 @@ jcms.npc_types.antlion_cyberguard = {
 	swarmLimit = 2,
 	portalScale = 3,
 
+	hullSize = HULL_LARGE,
+
 	preSpawn = function(npc)
 		npc:SetMaterial("models/jcms/cyberguard")
 	end,
@@ -764,6 +772,8 @@ jcms.npc_types.antlion_ultracyberguard = {
 	swarmWeight = 1,
 	swarmLimit = 1,
 	portalScale = 5,
+
+	hullSize = HULL_LARGE,
 
 	postSpawn = function(npc)
 		jcms.npc_GetRowdy(npc)
@@ -858,6 +868,8 @@ jcms.npc_types.antlion_ultracyberguard = {
 					local startAng, finishAng = jcms.beam_GetBeamAngles(pos, ePos + (enemy:GetVelocity() * (beamPrep + beamLife/3)), sweepVertically, sweepDistance)
 					local endTime = CurTime() + beamTotal
 					npc:IgnoreEnemyUntil( enemy, endTime )
+
+					--TODO: Recalculate finishAng when the beam actually starts
 
 					local timerName = "jcms_ultracyberguard_beamAim" .. tostring(npc:EntIndex())
 					timer.Create(timerName, 0.0, 0, function()

@@ -315,7 +315,9 @@ jcms.npc_types.combine_hunter = {
 	class = "npc_hunter",
 	bounty = 125,
 
-	proficiency = WEAPON_PROFICIENCY_VERY_GOOD
+	proficiency = WEAPON_PROFICIENCY_VERY_GOOD,
+
+	hullType = HULL_MEDIUM_TALL
 }
 
 jcms.npc_types.combine_gunship = {

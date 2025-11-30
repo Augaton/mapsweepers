@@ -520,6 +520,11 @@
 							if nearestNode then 
 								pos = nearestNode.pos
 							end
+						elseif enemyData.hullSize then 
+							local nearestNode = jcms.pathfinder_ain_nearestHullNode(pos, enemyData.hullSize)
+							if nearestNode then 
+								pos = ainReader.nodePositions[nearestNode]
+							end
 						end
 						
 						if type(enemyType) == "table" then

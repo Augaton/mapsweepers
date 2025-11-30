@@ -97,6 +97,36 @@ function jcms.pathfinder.ain_nearestNode(pos)
 	return closest
 end
 
+function jcms.pathfinder_ain_nearestHullNode(pos, hull)
+	ainReader.readNodeData()
+	ainReader.readLinkData()
+	
+	local closest = nil 
+	local closestDist = math.huge
+
+	for node, nPos in ipairs(ainReader.nodePositions) do
+		if not ainReader.nodeTypes[node] == 2 then continue end
+
+		local hasConnection = false
+		for j, otherNode in pairs(ainReader.nodeConnections[node]) do --Best way to detect if we can stand here (if we can't move anywhere we probably can't)
+			if not(bit.band(ainReader.nodeConnectionMoves[node][j][hull+1], CAP_MOVE_GROUND) == 0)  then
+				hasConnection = true
+				break
+			end
+		end
+
+		if hasConnection then
+			local dist = nPos:DistToSqr(pos)
+			if dist < closestDist then 
+				closest = node
+				closestDist = dist
+			end
+		end
+	end
+
+	return closest
+end
+
 function jcms.pathfinder.ain_nearestNodeInView(pos)
 	ainReader.readNodeData()
 
