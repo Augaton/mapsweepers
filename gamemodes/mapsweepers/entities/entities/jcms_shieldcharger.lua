@@ -125,7 +125,7 @@ if SERVER then
 		if self:GetHackedByRebels() then
 			local inflictor, attacker = dmg:GetInflictor(), dmg:GetAttacker()
 			if IsValid(inflictor) and jcms.util_IsStunstick(inflictor) and jcms.team_JCorp(attacker) then --UnHack
-				jcms.util_UnHack(self)
+				jcms.util_UnHack(self, attacker)
 				return 0
 			end
 			self:SetHealth(self:Health() - dmg:GetDamage())

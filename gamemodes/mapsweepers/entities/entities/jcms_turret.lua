@@ -883,8 +883,7 @@ if SERVER then
 			local inflictor, attacker = dmg:GetInflictor(), dmg:GetAttacker()
 			if IsValid(inflictor) and jcms.util_IsStunstick(inflictor) and jcms.team_JCorp(attacker) then --Repairs
 				if self:GetHackedByRebels() then 
-					jcms.util_UnHack(self)
-					self.jcms_owner = (IsValid(self.jcms_owner) and self.jcms_owner:IsPlayer() and self.jcms_owner) or attacker
+					jcms.util_UnHack(self, attacker)
 				end
 
 				jcms.util_PerformRepairs(self, attacker)

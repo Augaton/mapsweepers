@@ -2965,7 +2965,7 @@ end
 		end
 	end
 
-	function jcms.util_UnHack(ent)
+	function jcms.util_UnHack(ent, ply)
 		ent:SetHackedByRebels(false)
 		ent:EmitSound("weapons/stunstick/alyx_stunner" .. math.random(1,2) .. ".wav", 75, 200)
 
@@ -2983,6 +2983,10 @@ end
 			ent.NextSlowThink = CurTime() - 0.1
 			ent:TurretSlowThink()
 		end
+
+		ent.jcms_owner = ((IsValid(ent.jcms_owner) and jcms.team_SameTeam(ent.jcms_owner, ply)) and ent.jcms_owner) or ply
+		ent:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+		jcms.util_TryUpdateForPVP(ent)
 	end
 
 	function jcms_util_shieldDamageEffect(dmginfo, shieldDmg)

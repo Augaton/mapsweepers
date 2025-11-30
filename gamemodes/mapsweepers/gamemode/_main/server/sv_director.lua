@@ -1291,7 +1291,7 @@
 					local weightedAreas = jcms.mapgen_BorderWeights( jcms.mapdata.validAreas )
 
 					local timeNuking = cTime - d.nukeStart
-					local exp = 1/math.sqrt(timeNuking/300)
+					local exp = 1/math.sqrt((timeNuking-50)/300)
 					for area, weight in pairs(weightedAreas) do 
 						weightedAreas[area] = weight ^ exp --Flatten as time goes on.
 					end
