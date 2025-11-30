@@ -247,7 +247,11 @@ jcms.terminal_modeTypes = {
 			local locked = ent:GetNWBool("jcms_terminal_locked") and not ent.respawnBeaconUsedUp
 
 			if not locked then
-				ent:SetColor( Color(255, 143, 143) )
+				if IsValid(ent.jcms_hackedBy) then
+					ent:SetNWInt("jcms_pvpTeam", ent.jcms_hackedBy:GetNWInt("jcms_pvpTeam", -1) )
+				end
+
+				ent:SetColor( jcms.util_IsPVP() and Color(143, 143, 143) or Color(255, 143, 143) ) --Neutral col in pvp. Not team-dependent because that'd benefit camping more.
 
 				if not ent.initializedAsRespawnBeacon and jcms.director then
 					table.insert(jcms.director.respawnBeacons, ent)
@@ -460,7 +464,7 @@ jcms.terminal_modeTypes = {
 				local newColorVector = Vector(1, 0.25, 0.25)
 
 				if IsValid(ent.jcms_hackedBy) then
-				jcms.director_PvpObjectiveCompleted(ent.jcms_hackedBy, ent:GetPos())
+					jcms.director_PvpObjectiveCompleted(ent.jcms_hackedBy, ent:GetPos())
 
 					local pvpTeam = ent.jcms_hackedBy:GetNWInt("jcms_pvpTeam", -1)
 					if pvpTeam ~= -1 then

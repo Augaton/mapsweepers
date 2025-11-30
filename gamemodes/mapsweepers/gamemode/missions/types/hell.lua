@@ -42,6 +42,14 @@ jcms.missions.hell = {
 		local diffMult = jcms.runprogress_GetDifficulty() ^ (2/3)
 		missionData.progress = 0
 		missionData.duration = 60*7.5 * diffMult
+
+		if jcms.util_IsPVP() then --Make things a little more interesting by spreading extra respawn chambers around in PvP.
+			local function weightOverride(name, ogWeight)
+				return ((name == "respawn_chamber") and 1) or 0
+			end
+
+			jcms.mapgen_PlaceNaturals(jcms.mapgen_AdjustCountForMapSize( 2 + math.ceil(1.5 * #jcms.GetLobbySweepers())), weightOverride)
+		end
 	end,
 	
 	getObjectives = function(missionData)
