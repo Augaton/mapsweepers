@@ -152,6 +152,38 @@ if SERVER then
 		self:NextThink(CurTime() + 1)
 		return true
 	end
+
+	function ENT:OnTakeDamage(dmgInfo)
+		local attacker = dmgInfo:GetAttacker()
+		if not IsValid(attacker) or attacker:Health() <= 0 or not attacker.jcms_oreType then return end 
+
+		local dmg = 200
+
+		-- // FX {{{
+			self:EmitSound("NPC_Manhack.Grind")
+
+			local obtained = jcms.ore_GetValue(attacker.jcms_oreType, dmg/3)
+			self:SetValueInside( self:GetValueInside() + obtained )
+
+			local ed = EffectData()
+			ed:SetOrigin(dmgInfo:GetDamagePosition())
+			ed:SetColor( jcms.util_ColorInteger(jcms.oreTypes[attacker.jcms_oreType].color) or 0 ) 
+			ed:SetRadius(obtained)
+			util.Effect("jcms_oremine", ed)
+
+			self:SetTimesGround(self:GetTimesGround() + 1)
+		-- // }}}
+
+		local newDmgInfo = DamageInfo()
+		newDmgInfo:SetAttacker(self)
+		newDmgInfo:SetInflictor(self)
+		newDmgInfo:SetDamageType(DMG_SLASH)
+		newDmgInfo:SetReportedPosition(self:WorldSpaceCenter())
+		newDmgInfo:SetDamagePosition(self:WorldSpaceCenter())
+		newDmgInfo:SetDamage(dmg)
+		
+		attacker:TakeDamageInfo(newDmgInfo)
+	end
 end
 
 if CLIENT then

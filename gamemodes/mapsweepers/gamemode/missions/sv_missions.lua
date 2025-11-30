@@ -82,6 +82,7 @@
 			game.CleanUpMap()
 			jcms.RecolorAllDollies()
 			jcms.ReplaceAllCrates()
+			jcms.DisableThumpers()
 			
 			game.GetWorld():SetNWString("jcms_missiontype", missionType)
 			game.GetWorld():SetNWString("jcms_missionfaction", factionType)

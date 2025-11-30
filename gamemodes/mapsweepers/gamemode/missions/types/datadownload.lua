@@ -434,7 +434,7 @@ jcms.missions.datadownload = {
 					md.powerMultiplier = progressPower
 
 					local scalar = (#d.npcs > 10) and jcms.runprogress_GetDifficulty() or 1
-					progressPower = progressPower * 1/((60*5) * scalar) * (jcms.util_IsPVP() and 3.25 or 1)
+					progressPower = progressPower * 1/((60*4.5) * (scalar^(3/4)) ) * (jcms.util_IsPVP() and 3.25 or 1)
 
 					md.defenseProgress = math.Clamp(md.defenseProgress + progressPower, 0, 1)
 					md.timeEstimate = math.ceil( (1 - md.defenseProgress) / progressPower )

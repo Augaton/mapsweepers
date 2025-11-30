@@ -47,6 +47,10 @@ if SERVER then
 		["models/cliffs/rocks_medium01.mdl"] = 140
 	}
 
+	function jcms.ore_GetValue(type, mass)
+		return math.ceil((tonumber(mass) or 0)  / math.sqrt(#team.GetPlayers(1)))
+	end
+
 	jcms.oreTypes = {
 		["mafium"] = {
 			color = Color(207, 183, 45),

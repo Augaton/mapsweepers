@@ -80,7 +80,7 @@ if SERVER then
 			phys:SetMass( mass )
 		end
 
-		self:SetWorth( math.ceil((tonumber(self.jcms_oreMass) or 0) * (tonumber(self.jcms_oreValue) or 1) / math.sqrt(#team.GetPlayers(1))) )
+		self:SetWorth( jcms.ore_GetValue(self:GetOreName(), mass) )
 	end
 
 	function ENT:Use(activator)

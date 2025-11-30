@@ -3208,6 +3208,12 @@ end
 		end
 	end
 
+	function jcms.DisableThumpers()
+		for i, thumper in ipairs(ents.FindByClass("prop_thumper")) do 
+			thumper:SetSaveValue("m_bEnabled", false)
+		end
+	end
+
 	hook.Run("MapSweepersReady") -- If you want to make an addon that adds new content into Map Sweepers, use this hook.
 
 -- // }}}

@@ -296,7 +296,7 @@ jcms.npc_types.antlion_drone = {
 		if not npc.jcms_fromPortal then
 			npc:Fire "Unburrow"
 			npc.jcms_shouldUnburrow = true
-			
+
 			timer.Simple(60, function() --fall-back
 				if IsValid(npc) and npc:GetInternalVariable("startburrowed") then 
 					npc:Remove()
@@ -636,14 +636,13 @@ jcms.npc_types.antlion_mineralguard = {
 			end
 		end)
 
-		local inflictor = dmg:GetInflictor()
-		local isStunstick = IsValid(inflictor) and jcms.util_IsStunstick(inflictor)
-		if (not npc.jcms_nextMine or CurTime() >= npc.jcms_nextMine) and (isStunstick or npc:Health() <= 0) then
-			npc.jcms_nextMine = CurTime() + 0.32
-			local pos = dmg:GetDamagePosition()
+		local pos = dmg:GetDamagePosition()
+		local attacker = dmg:GetAttacker()
+		local damage = dmg:GetDamage()
 
+		local function spawnOre(isStunstick)
 			local chunk = ents.Create("jcms_orechunk")
-			chunk.jcms_miner = dmg:GetAttacker()
+			chunk.jcms_miner = attacker
 			chunk:SetPos(pos)
 			chunk:SetAngles(AngleRand())
 			chunk:Spawn()
@@ -665,10 +664,30 @@ jcms.npc_types.antlion_mineralguard = {
 			local ed = EffectData()
 			ed:SetOrigin(pos)
 			ed:SetColor(npc.jcms_oreColourInt or 0)
-			ed:SetRadius( math.Clamp(dmg:GetDamage() + 5, 10, 120) )
+			ed:SetRadius( math.Clamp(damage + 5, 10, 120) )
 
 			util.Effect("jcms_oremine", ed)
 		end
+
+
+		local inflictor = dmg:GetInflictor()
+		if (not npc.jcms_nextMine or CurTime() >= npc.jcms_nextMine) and IsValid(inflictor) and jcms.util_IsStunstick(inflictor) then
+			npc.jcms_nextMine = CurTime() + 0.32
+
+			spawnOre(true)
+		end
+
+		timer.Simple(0, function() 
+			if not(IsValid(npc) and npc:Health() <= 0) then return end 
+			if npc.jcms_mined then return end
+			npc.jcms_mined = true
+
+			for i=0, 9 do 
+				timer.Simple( i/20 + math.Rand(0, 0.1), function() 
+					spawnOre(false)
+				end)
+			end
+		end)
 	end,
 
 	timerMin = 0.1,
