@@ -968,7 +968,10 @@
 			["models/gibs/antlion_gib_small_3.mdl"] = 7.5,
 
 			["models/gibs/antlion_worker_gibs_head.mdl"] = 7.5, --The rest of the worker gibs are ragdolls.
+			
+			["models/gunship.mdl"] = 25
 		}
+
 
 		jcms.director_debrisClasses = {
 			["helicopter_chunk"] = 60,
@@ -996,7 +999,7 @@
 				local isWeapon = ent:IsWeapon()
 				local entClass = ent:GetClass()
 				local isImportant = jcms.director_debrisClasses_important[entClass]
-				local isProp = entClass == "prop_physics"
+				local isProp = entClass == "prop_physics" or entClass == "prop_ragdoll"
 
 				if not (isWeapon or jcms.director_debrisClasses[entClass] or isImportant or isProp) then continue end --Only our entities
 				if IsValid(ent:GetOwner()) or ent:CreatedByMap() or ent.jcms_canPickup then continue end  --Don't kill map-entities or ones in an inventory
