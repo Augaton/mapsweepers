@@ -121,8 +121,17 @@ if SERVER then
 			if not self.jcms_destroyed and IsValid(self:GetPhysicsObject()) and IsValid(self:GetDriver()) and self:GetPhysicsObject():IsAsleep() then
 				self:GetPhysicsObject():Wake()
 			end
+			
 
 			if not self.despawning then
+				for slot, _ in ipairs(self.jcms_miningCrateAttaches) do 
+					local crate = self.jcms_attachedCrates[slot]
+					if IsValid(crate) then 
+						crate:DetachFromVehicle()
+					end
+				end
+				self.jcms_attachedCrates = nil
+
 				local despawnAfter = 15
 				
 				timer.Simple(despawnAfter, function()

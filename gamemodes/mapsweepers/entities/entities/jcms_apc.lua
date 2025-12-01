@@ -152,7 +152,15 @@ if SERVER then
 				self.soundWater = nil
 			end
 
-			if not self.despawning then
+			if not self.despawning then	
+				for slot, _ in ipairs(self.jcms_miningCrateAttaches) do 
+					local crate = self.jcms_attachedCrates[slot]
+					if IsValid(crate) then 
+						crate:DetachFromVehicle()
+					end
+				end
+				self.jcms_attachedCrates = nil
+
 				local despawnAfter = 7
 				
 				timer.Simple(despawnAfter, function()
