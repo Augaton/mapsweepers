@@ -152,9 +152,18 @@ if SERVER then
 			sound = "Airboat.FireGunHeavy",
 			soundEmpty = "Weapon_AR2.Empty",
 			
+			postSpawn = function(turret)
+				if jcms.util_IsPVP() then
+					turret:SetSniperGlare(true)
+				end
+			end,
+
 			boosted = { --engineer.
 				postSpawn = function(turret)
 					jcms.npc_SetupSweeperShields(turret, 35, 10, 5, Color(255, 0, 0))
+					if jcms.util_IsPVP() then
+						turret:SetSniperGlare(true)
+					end
 				end
 			}
 		},
@@ -410,8 +419,10 @@ function ENT:SetupDataTables()
 	self:NetworkVar("String", 0, "TurretKind")
 	self:NetworkVar("Bool", 0, "TurretBoosted")
 	self:NetworkVar("Bool", 1, "HackedByRebels")
+	self:NetworkVar("Bool", 2, "SniperGlare")
 	self:NetworkVar("Vector", 0, "TurretTurnSpeed")
 	self:NetworkVar("Vector", 1, "TurretPitchLock")
+	self:NetworkVar("Vector", 2, "GlareColour")
 	
 	if SERVER then
 		self:SetTurretDesiredAngle( Angle(0, 0, 0) )
@@ -419,11 +430,17 @@ function ENT:SetupDataTables()
 		self:SetTurretClip(self:GetTurretMaxClip())
 		self:SetTurretKind("smg")
 		self:SetTurretHealthFraction(1)
+		self:SetGlareColour(Vector(255, 60, 60))
 	end
 
 	self:NetworkVarNotify("HackedByRebels", function(ent, name, old, new )
 		if new ~= old then 
 			self:UpdateForFaction(new and "rgg" or jcms.util_GetFactionNamePVP(ent))
+			if new then 
+				self:SetSniperGlare(true)
+			elseif not jcms.util_IsPVP() then 
+				self:SetSniperGlare(false)
+			end
 		end
 	end)
 end
@@ -431,6 +448,14 @@ end
 function ENT:UpdateForFaction(faction)
 	for i, matname in ipairs(self:GetMaterials()) do
 		self:SetSubMaterial(i-1, matname:gsub("jcorp_", tostring(faction) .. "_"))
+	end
+
+	if faction == "rgg" then 
+		self:SetGlareColour(Vector(162, 81, 255))
+	elseif faction == "mafia" then 
+		self:SetGlareColour(Vector(241, 212, 14))
+	else
+		self:SetGlareColour(Vector(255, 60, 60))
 	end
 end
 
@@ -739,7 +764,7 @@ if SERVER then
 		if selfTbl.GetTurretClip(self) > 0 then
 			local myangle = self:GetAngles()
 			local up, right, fwd = myangle:Up(), myangle:Right(), myangle:Forward()
-			local mypos = selfTbl.GetTurretShootPos(self)
+			local mypos = selfTbl.GetTurretShootPos(self) --glare
 			
 			for i=1, pellets do
 				local dir = selfTbl.turretAngle + myangle
@@ -985,7 +1010,6 @@ if CLIENT then
 	function ENT:Think()
 		local selfTbl = self:GetTable()
 		local frameTime = FrameTime()
-		local myang = self:GetAngles()
 		local ang = selfTbl.turretAngle or Angle(0,0,0) --self:TurretAngle()
 
 		self:ManipulateBoneAngles(1, Angle(ang.y,0,0))
@@ -1037,9 +1061,51 @@ if CLIENT then
 		end
 	end
 	
+	local spriteMat = Material("particle/fire")
+	local spriteMat2 = Material("particle/Particle_Glow_04")
+	local beamCol = Color(120, 255, 255, 50)
 	function ENT:DrawTranslucent()
-		if self:GetHackedByRebels() then
+		local selfTbl = self:GetTable()
+		if selfTbl:GetHackedByRebels() then
 			jcms.render_HackedByRebels(self)
+		end
+
+		if selfTbl:GetSniperGlare() then 
+			local shootPos = selfTbl.GetTurretShootPos(self)
+			
+			local ang = self:GetAngles()
+			ang:Add(selfTbl.turretAngle)
+			local normal = ang:Forward()
+			
+			shootPos:Add(normal * 7.5)
+			shootPos:Add(ang:Right() * -1)
+			shootPos:Add(ang:Up() * 1.6)
+
+			local glarePos =  shootPos + normal * 25
+
+			local dif = EyePos()
+			dif:Sub(shootPos)
+			local dist = dif:Length()
+			dif:Normalize()
+
+			local dot = math.Clamp((dif:Dot(normal)-0.4)/0.6, 0, 1)^4 
+			local scale = (dist - 350) / 1000
+			local superDot = math.Remap(dot, 0.6, 1, 0, 1)
+			if dot > 0.01 and scale > 0 then
+				local r,g,b = self:GetGlareColour():Unpack()
+				beamCol:SetUnpacked(r,g,b, 255)
+
+				render.OverrideBlend(true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
+					render.SetMaterial(spriteMat)
+					render.DrawSprite(glarePos, Lerp(dot, 0, 256)*scale, Lerp(dot^2, 0, 64)*scale, beamCol)
+					
+					render.SetMaterial(spriteMat2)
+					if superDot > 0 then
+						render.DrawQuadEasy(glarePos, normal, math.Rand(32, 48)*scale*superDot*superDot, math.Rand(2, 10)*scale*superDot, beamCol, math.cos(CurTime())*48)
+						render.DrawQuadEasy(glarePos, normal, math.Rand(48, 64)*scale*superDot*superDot, math.Rand(3, 12)*scale*superDot, beamCol, math.sin(CurTime())*32)
+					end
+				render.OverrideBlend(false)
+			end
 		end
 	end
 	
