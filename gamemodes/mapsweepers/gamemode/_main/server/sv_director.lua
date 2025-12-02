@@ -177,7 +177,6 @@
 	-- }}}
 	
 	-- Helpers {{{
-	
 		function jcms.director_GetMissionTime()
 			return CurTime() - (jcms.director.missionStartTime or 0)
 		end
@@ -210,11 +209,18 @@
 				weightedAreas[area] = area:GetSizeX() * area:GetSizeY()
 			end
 
-			local respCount = math.ceil(player.GetCount()/2) --half the server in Respawns
-			for i=1, respCount, 1 do
-				local area = jcms.util_ChooseByWeight(weightedAreas) --TODO: account for no areas? Although that should be impossible.
+			if jcms.cvar_pvprespawnmode:GetInt() == 0 then
+				local respCount = math.ceil(player.GetCount()/2) --half the server in Respawns
 
-				jcms.director_InsertRespawnVector(area:GetCenter(), teamId)
+				for i=1, respCount, 1 do
+					local area = jcms.util_ChooseByWeight(weightedAreas) --TODO: account for no areas? Although that should be impossible.
+					jcms.director_InsertRespawnVector(area:GetCenter(), teamId)
+				end
+			elseif jcms.cvar_pvprespawnmode:GetInt() == 1 then 
+				for i, ply in ipairs(jcms.PVPGetTeamPlayers(teamId)) do 
+					local area = jcms.util_ChooseByWeight(weightedAreas)
+					jcms.director_GiveRespawnVector(area:GetCenter(), ply)
+				end
 			end
 		end
 		
@@ -375,7 +381,12 @@
 			
 			table.insert(jcms.director.respawnVectors[teamId], vec)
 		end
-		
+
+		function jcms.director_GiveRespawnVector(vec, ply)
+			ply.jcms_playerRespawnVectors = ply.jcms_playerRespawnVectors or {} 
+			table.insert(ply.jcms_playerRespawnVectors, vec)
+		end
+
 		function jcms.director_InvalidateRespawnBeacon(beacon)
 			if not jcms.director or not IsValid(beacon) then return end
 			local beacons = jcms.director.respawnBeacons
