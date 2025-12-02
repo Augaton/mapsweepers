@@ -63,10 +63,9 @@ if SERVER then
 
 	function ENT:SplitIntoCharples()
 		self:EmitSound("NPC_Antlion.RunOverByVehicle")
-		self:Remove()
 
 		local charples = {}
-		local nocollides = {}
+		local spawner = self.Spawner
 
 		for i=1, self.CharpleCount do
 			local charple = jcms.npc_Spawn("zombie_charple", self:WorldSpaceCenter() + VectorRand(-8, 8))
@@ -95,6 +94,12 @@ if SERVER then
 			for j=1, i-1 do
 				constraint.NoCollide(charple, charples[j], 0, 0)
 			end
+
+			--[[
+			if IsValid(spawner) then 
+				constraint.NoCollide(charple, spawner, 0, 0)
+			end--]]
+			charple:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE_DEBRIS)
 		end
 
 		timer.Simple(0.1, function()
@@ -104,14 +109,8 @@ if SERVER then
 				end
 			end
 		end)
-		
-		timer.Simple(1, function()
-			for i, nc in ipairs(nocollides) do
-				if IsValid(nc) then
-					nc:Remove()
-				end
-			end
-		end)
+
+		self:Remove()
 	end
 
 	function ENT:OnTakeDamage(dmg)
@@ -145,7 +144,9 @@ if SERVER then
 				return
 			end
 
-			self:SplitIntoCharples()
+			timer.Simple(0, function() --Stop complaining
+				self:SplitIntoCharples()
+			end)
 		end
 	end
 end

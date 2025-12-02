@@ -52,6 +52,8 @@ if SERVER then
 		self:SetAngles( Angle(math.Rand(-2, 2), math.random()*360, math.Rand(-2, 2)) )
 		
 		self:SetNWString("jcms_boss", "zombie_spawner")
+
+		self:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE)
 	end
 
 	function ENT:OnTakeDamage(dmgInfo)
