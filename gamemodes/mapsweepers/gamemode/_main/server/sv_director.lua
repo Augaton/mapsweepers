@@ -290,33 +290,54 @@
 			if not d then return end
 
 			local teamCounts = {}
+			local teamCountsNoPersonal = {}
 
 			--Respawn Beacons
 			for i, beacon in ipairs(d.respawnBeacons) do
 				local teamId = beacon:GetNWInt("jcms_pvpTeam", -1)
 				teamId = (not(teamId==-1) and teamId or 1)
 				teamCounts[teamId] = (teamCounts[teamId] or 0) + 1
+				teamCountsNoPersonal[teamId] = teamCounts[teamId]
 			end
 
 			--Respawn Vectors
 			for i, vecTbl in pairs(d.respawnVectors) do --Could technically be discontinuous.
 				teamCounts[i] = (teamCounts[i] or 0) + #vecTbl
+				teamCountsNoPersonal[i] = teamCounts[i]
+			end
+
+
+			for i, ply in player.Iterator() do 
+				if ply.jcms_playerRespawnVectors then
+					local plyTeam = ply:GetNWInt("jcms_pvpTeam", -1)
+					if plyTeam == -1 then plyTeam = 1 end
+
+					teamCounts[plyTeam] = (teamCounts[plyTeam] or 0) + #ply.jcms_playerRespawnVectors
+					ply:SetNWInt("jcms_playerRespawns", #ply.jcms_playerRespawnVectors)
+				end
 			end
 
 			--Total
 			--for i, count in ipairs(teamCounts) do
 			for i=1, 8 do --Needed to update vars in-case we have no data (e.g. mission just started)
-				local count = teamCounts[i] or 0
+				local count = teamCountsNoPersonal[i] or 0
 				game.GetWorld():SetNWInt("jcms_respawncount_"..tostring(i), count)
 			end
 
 			return teamCounts
 		end
 		
-		function jcms.director_FindRespawnBeacon(evenBusyOnes, teamId)
+		function jcms.director_FindRespawnBeacon(evenBusyOnes, ply)
+			local teamId = ply:GetNWInt("jcms_pvpTeam", -1)
+
 			local d = jcms.director
 			if not jcms.director then return end
 			if jcms.director_IsSuddenDeath() then return end
+
+			if ply.jcms_playerRespawnVectors and #ply.jcms_playerRespawnVectors > 0 then 
+				table.Shuffle(ply.jcms_playerRespawnVectors)
+				return ply.jcms_playerRespawnVectors[1], true
+			end
 			
 			local beacons = d.respawnBeacons
 			if not beacons then return end
@@ -332,7 +353,7 @@
 				table.Shuffle(d.respawnBeacons)
 				for i, beacon in ipairs(d.respawnBeacons) do
 					if (evenBusyOnes or not beacon:GetRespawnBusy()) and (not teamId or jcms.team_pvpSameTeam_optimised(teamId, beacon:GetNWInt("jcms_pvpTeam", -1))) then
-						return beacon
+						return beacon, false
 					end
 				end
 			end
@@ -342,7 +363,7 @@
 
 			if d.respawnVectors[teamId] and #d.respawnVectors[teamId] > 0 then
 				table.Shuffle(d.respawnVectors[teamId]) --I did this because it's done to beacons but do we actually want a random order?
-				return d.respawnVectors[teamId][1]
+				return d.respawnVectors[teamId][1], false
 			end 
 		end
 
@@ -378,6 +399,10 @@
 			local vectorTbl = jcms.director.respawnVectors[teamId]
 			
 			table.RemoveByValue(vectorTbl, vec)
+		end
+
+		function jcms.director_InvalidatePlayerRespawnVector(ply, vec) 
+			table.RemoveByValue(ply.jcms_playerRespawnVectors, vec)
 		end
 		
 		function jcms.director_GetSubdivisionsCount(length)
@@ -1108,16 +1133,16 @@
 				end)
 
 				local ct = CurTime()
-				local respawnDelay = (game.SinglePlayer() or #jcms.GetAliveSweepers() == 0) and 5 or 22.5
-				local respawnInterval = 5
 				for i, ply in ipairs(deadPlayers) do
+					local respawnDelay = (game.SinglePlayer() or #jcms.PVPGetTeamAlivePlayers(ply:GetNWInt("jcms_pvpTeam", -1)) == 0) and 5 or 22.5
+					local respawnInterval = 5
+
 					local timeSinceDeath = ct - (ply.jcms_lastDeathTime or 0)
 					local timeSinceRespawnAttempt = ply.jcms_lastRespawnTime and ct - ply.jcms_lastRespawnTime or respawnInterval + 1
 					local timeTabbedOut = ply:IsBot() and 0 or (CurTime() - ((jcms.playerAfkPings and jcms.playerAfkPings[ply]) or 0))
 
 					if (timeSinceDeath >= respawnDelay) and (timeSinceRespawnAttempt >= respawnInterval) and timeTabbedOut < 20 then
-						local teamId = ply:GetNWInt("jcms_pvpTeam", -1)
-						local beacon = jcms.director_FindRespawnBeacon(false, teamId)
+						local beacon, playerOriented = jcms.director_FindRespawnBeacon(false, ply)
 						
 						if IsValid(beacon) and isentity(beacon) then
 							ply.jcms_lastRespawnTime = CurTime()
@@ -1161,11 +1186,17 @@
 							
 							--Instantly droppod us in.
 							jcms.playerspawn_RespawnAs(ply, "sweeper", beacon) 
-							
-							jcms.director_InvalidateRespawnVector(beacon, teamId)
-							livingCount = livingCount + 1 --Needed because otherwise we check this on the same frame and think everyone's dead. 
-							local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1) --Default 1 to work with normal mode.
+
+							local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
 							if pvpTeam == -1 then pvpTeam = 1 end --Default 1 to work with normal mode.
+							
+							if playerOriented then 
+								jcms.director_InvalidatePlayerRespawnVector(ply, beacon)
+							else
+								jcms.director_InvalidateRespawnVector(beacon, pvpTeam)
+							end
+
+							livingCount = livingCount + 1 --Needed because otherwise we check this on the same frame and think everyone's dead. 
 							teamAlivePlayers[pvpTeam] = (teamAlivePlayers[pvpTeam] or 0) + 1
 						end
 					end

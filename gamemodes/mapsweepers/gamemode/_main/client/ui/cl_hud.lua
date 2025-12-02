@@ -581,7 +581,7 @@
 			local healthWidth = ( me:GetMaxHealth() * 4 )
 			local armorWidth = ( me:GetMaxArmor() * 4 )
 			local addX = 64
-			local respawns = jcms.util_GetRespawnCount(me:GetNWInt("jcms_pvpTeam", -1))
+			local respawns = jcms.util_GetRespawnCount(me:GetNWInt("jcms_pvpTeam", -1), me)
 			local deadteammates = 0
 			local myPvpTeam = me:GetNWInt("jcms_pvpTeam", -1)
 			for i, ply in player.Iterator() do
@@ -2685,7 +2685,7 @@
 				jcms.hud_DrawStripedRect(-armorWidth/2, -114-off+32+2, armorWidth, 24-4, 75)
 				surface.DrawRect(-armorWidth/2, -114-off+32, armorWidth*armorFrac, 24)
 
-				local respawns = jcms.util_GetRespawnCount(jcms.locPly:GetNWInt("jcms_pvpTeam", -1))
+				local respawns = jcms.util_GetRespawnCount(jcms.locPly:GetNWInt("jcms_pvpTeam", -1), me)
 				if respawns > 0 then
 					local str = language.GetPhrase("jcms.respawns_hud"):format(respawns)
 					draw.SimpleText(str, "jcms_hud_medium", 0, 0, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)

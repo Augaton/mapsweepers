@@ -996,6 +996,18 @@ local nmt = FindMetaTable("NPC")
 		return plys
 	end
 
+	function jcms.PVPGetTeamAlivePlayers( pvpTeam ) 
+		local plys = jcms.GetAliveSweepers()
+		for i=#plys, 1, -1 do 
+			local ply = plys[i] 
+			if not(ply:GetNWInt("jcms_desiredteam", -1) == 1) then
+				table.remove(plys, i)
+			end
+		end
+
+		return plys
+	end
+
 	jcms.cvar_noepisodes = GetConVar("jcms_noepisodes")
 	function jcms.HasEpisodes()
 		return not jcms.cvar_noepisodes:GetBool()
@@ -1368,8 +1380,9 @@ local nmt = FindMetaTable("NPC")
 		return game.GetWorld():GetNWBool("jcms_ongoing", false)
 	end
 
-	function jcms.util_GetRespawnCount(teamId)
-		return game.GetWorld():GetNWInt("jcms_respawncount_" .. tostring(not(teamId==-1) and teamId or 1), 0)
+	function jcms.util_GetRespawnCount(teamId, ply)
+		local count = game.GetWorld():GetNWInt("jcms_respawncount_" .. tostring(not(teamId==-1) and teamId or 1), 0)
+		return count + (IsValid(ply) and ply:GetNWInt("jcms_playerRespawns", 0) or 0)
 	end
 
 	function jcms.util_GetMissionType()
