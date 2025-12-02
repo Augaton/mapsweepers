@@ -43,12 +43,14 @@ local bits_ply, bits_ent, bits_wld = 2, 2, 4
 		local WLD_WEAPON_PRICES = 10
 		local WLD_NUKE = 11
 		local WLD_SPAWNEFFECTS = 12
+		local WLD_PVPVOTE = 13
 
 	-- // }}}
 
 	-- // CLIENT {{{
 		local CL_WLD_MAPVOTE = 0
 		local CL_WLD_AFKPING = 1
+		local CL_WLD_PVPVOTE = 2
 
 		local CL_PLY_ = 0
 
@@ -120,6 +122,16 @@ if SERVER then
 		[CL_WLD_AFKPING] = function(ply)
 			jcms.playerAfkPings = jcms.playerAfkPings or {}
 			jcms.playerAfkPings[ply] = CurTime()
+		end,
+
+		[CL_WLD_PVPVOTE] = function(ply)
+			if not jcms.pvp_vote then return end
+			if CurTime() > jcms.pvp_vote.endsAt then return end
+
+			local option = net.ReadUInt(2)
+			jcms.pvp_vote_InsertPlayerByOption(ply, option)
+			
+			jcms.net_SendPlayerPVPVote(ply, option)
 		end
 	}
 	
@@ -807,6 +819,30 @@ if SERVER then
 			end
 		net.Broadcast()
 	end
+
+	function jcms.net_SendPVPVoteStart()
+		net.Start("jcms_msg")
+			net.WriteBool(false)
+			net.WriteEntity(game.GetWorld())
+			net.WriteUInt(WLD_PVPVOTE, bits_wld)
+
+			net.WriteBit(0)
+			net.WriteUInt(jcms.pvp_vote.endsAt, 32)
+		net.Broadcast()
+	end
+
+	function jcms.net_SendPlayerPVPVote(ply, option)
+		-- Option 0: Yes, Option 1: No, Option 2: Any
+		net.Start("jcms_msg")
+			net.WriteBool(false)
+			net.WriteEntity(game.GetWorld())
+			net.WriteUInt(WLD_PVPVOTE, bits_wld)
+
+			net.WriteBit(1)
+			net.WritePlayer(ply)
+			net.WriteUInt(option, 2)
+		net.Broadcast()
+	end
 end
 
 if CLIENT then
@@ -1261,6 +1297,25 @@ if CLIENT then
 				ed:SetMagnitude(_8_delay/8)
 				util.Effect("jcms_spawneffect", ed)
 			end
+		end,
+
+		[ WLD_PVPVOTE ] = function()
+			local vote = jcms.pvp_vote
+			
+			local action = net.ReadBit()
+
+			if action == 0 then
+				-- Start vote
+				vote.endsAt = net.ReadUInt(32)
+				table.Empty( vote.yes )
+				table.Empty( vote.no )
+				table.Empty( vote.any )
+			elseif action == 1 then
+				-- Someone voted
+				local ply = net.ReadPlayer()
+				local option = net.ReadUInt(2) -- Yes, No, Any
+				jcms.pvp_vote_InsertPlayerByOption(ply, option)
+			end
 		end
 	}
 
@@ -1313,6 +1368,15 @@ if CLIENT then
 		net.Start("jcms_msg")
 			net.WriteEntity(game.GetWorld())
 			net.WriteUInt(CL_WLD_AFKPING, bits_wld)
+		net.SendToServer()
+	end
+
+	function jcms.net_SendPVPVote(option)
+		net.Start("jcms_msg")
+			net.WriteEntity(game.GetWorld())
+			net.WriteUInt(CL_WLD_PVPVOTE, bits_wld)
+
+			net.WriteUInt(tonumber(option) or 0, 2)
 		net.SendToServer()
 	end
 end

@@ -2636,7 +2636,7 @@ end
 			print(ply:Nick() .. ", this command is admin only")
 		end
 	end)
-
+	
 	concommand.Add("jcms_pvptoggle", function(ply, cmd, args)
 		if game.SinglePlayer() then
 			jcms.printf("You must be in Multiplayer")
@@ -2644,21 +2644,40 @@ end
 		end
 
 		if not ply:IsPlayer() or ply:IsAdmin() then
-			for i, oply in player.Iterator() do
-				oply:SetNWBool("jcms_ready", false)
-				oply:SetNWInt("jcms_desiredteam", 0)
-				oply:SetNWInt("jcms_pvpTeam", -1)
-			end
-
 			local newState = not game.GetWorld():GetNWBool("jcms_pvpmode", false)
-			game.GetWorld():SetNWBool("jcms_pvpmode", newState)
-			jcms.printf("PVP Mode: " .. (newState and "On" or "Off"))
-
-			jcms.runprogress_UpdateAllPlayers()
-			game.GetWorld():SetNWInt("jcms_winstreak", newState and 0 or jcms.runprogress.winstreak)
-			game.GetWorld():SetNWInt("jcms_difficulty", newState and 1 or jcms.runprogress.difficulty)
+			jcms.pvp_SetEnabled(newState)
 		end
 	end)
+
+-- // }}}
+
+-- // PVP {{{
+
+	function jcms.pvp_SetEnabled(state)
+		for i, oply in player.Iterator() do
+			oply:SetNWBool("jcms_ready", false)
+			oply:SetNWInt("jcms_desiredteam", 0)
+			oply:SetNWInt("jcms_pvpTeam", -1)
+		end
+
+		game.GetWorld():SetNWBool("jcms_pvpmode", state)
+		jcms.printf("PVP Mode: " .. (state and "On" or "Off"))
+
+		jcms.runprogress_UpdateAllPlayers()
+		game.GetWorld():SetNWInt("jcms_winstreak", state and 0 or jcms.runprogress.winstreak)
+		game.GetWorld():SetNWInt("jcms_difficulty", state and 1 or jcms.runprogress.difficulty)
+	end
+
+	function jcms.pvp_StartVote(time)
+		local vote = jcms.pvp_vote
+
+		vote.endsAt = math.ceil( CurTime() + time )
+		table.Empty( vote.yes )
+		table.Empty( vote.no )
+		table.Empty( vote.any )
+
+		jcms.net_SendPVPVoteStart()
+	end
 
 -- // }}}
 

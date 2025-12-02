@@ -822,7 +822,18 @@ jcms.offgame = jcms.offgame or NULL
 					end
 
 					if IsValid(tab.pvpButton) then
-						tab.pvpButton:SetText( jcms.util_IsPVP() and "#jcms.pvpmode_off" or "#jcms.pvpmode_on" )
+						local pvpMode = jcms.cvar_pvpallowed:GetInt()
+						local isPVP = jcms.util_IsPVP()
+
+						local visible = (pvpMode == 1) or (pvpMode == 0 and isPVP) or (pvpMode == 2 and not isPVP)
+						tab.pvpButton:SetVisible( visible )
+						tab.pvpButton:SetEnabled( visible )
+						tab.pvpButton:SetText( isPVP and "#jcms.pvpmode_off" or "#jcms.pvpmode_on" )
+					end
+
+					if IsValid(pvplabelws) then
+						local pvpMode = jcms.cvar_pvpallowed:GetInt()
+						pvplabelws:SetVisible( pvpMode == 1 )
 					end
 				end
 				

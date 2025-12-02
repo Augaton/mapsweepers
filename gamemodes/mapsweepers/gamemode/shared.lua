@@ -137,11 +137,24 @@ local nmt = FindMetaTable("NPC")
 	jcms.cvar_swarm_size = CreateConVar("jcms_swarm_size", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Swarm size multiplier.", 0, 5)
 	jcms.cvar_swarm_warning = CreateConVar("jcms_swarm_warning", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Extra seconds between a portal opening and enemies coming out of it.", 0, 30)
 	
+	jcms.cvar_pvpallowed = CreateConVar("jcms_pvpallowed", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Dictates how PVP mode works. 0=Disable PVP; 1=Vote-based; 2=PVP Only")
 	jcms.cvar_pvpdebug = CreateConVar("jcms_pvpdebug", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "Stops PVP mode from ending when only 1 team is present")
 	
 	-- Replicated
 	jcms.cvar_announcer_type = CreateConVar("jcms_announcer_type", "default", FCVAR_JCMS_SHARED_SAVED, "Selects the current announcer by name.")
 	jcms.cvar_noepisodes = CreateConVar("jcms_noepisodes", "0", FCVAR_JCMS_SHARED_SAVED, "If set to 1, Half-Life 2: Episode One & Two content will never appear in-game. Useful if you don't want your poor friends to see errors.")
+
+	if SERVER then
+		cvars.AddChangeCallback("jcms_pvpallowed", function(cvar, oldValue, newValue)
+			local isPVP = jcms.util_IsPVP()
+			newValue = tonumber(newValue)
+			if isPVP and newValue == 0 then
+				jcms.pvp_SetEnabled(false)
+			elseif not isPVP and newValue == 2 then
+				jcms.pvp_SetEnabled(true)
+			end
+		end)
+	end
 
 -- // }}}
 
@@ -1013,6 +1026,37 @@ local nmt = FindMetaTable("NPC")
 		return not jcms.cvar_noepisodes:GetBool()
 	end
 -- }}}
+
+-- // PVP & Vote {{{
+
+	jcms.pvp_vote = jcms.pvp_vote or {
+		endsAt = 0,
+		yes = {},
+		no = {},
+		any = {}
+	}
+
+	function jcms.pvp_vote_InsertPlayerByOption(ply, option)
+		local vote = jcms.pvp_vote
+
+		local tables = {
+			vote.yes,
+			vote.no,
+			vote.any
+		}
+
+		for i, tab in ipairs(tables) do
+			table.RemoveByValue(tab, ply)
+		end
+
+		local tab = tables[option + 1]
+		
+		if tab then
+			table.insert(tab, ply)
+		end
+	end
+
+-- // }}}
 
 -- Util {{{
 
