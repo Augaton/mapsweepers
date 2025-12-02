@@ -273,15 +273,15 @@ if SERVER then
 		if not self:GetTankIsTower() and data.HitEntity:Health() > 0 then
 			local speed = data.OurOldVelocity:Length()
 			
-			if speed > 50 then
-				local dmg = DamageInfo()
-				dmg:SetDamage(math.sqrt(speed) / 10 + 5)
-				dmg:SetAttacker(self:GetDriver() or self)
-				dmg:SetInflictor(self)
-				dmg:SetDamageType(bit.bor(DMG_CRUSH, DMG_VEHICLE))
-				dmg:SetReportedPosition(self:GetPos())
-				dmg:SetDamagePosition(data.HitPos)
-				data.HitEntity:TakeDamageInfo(dmg)
+			if data.HitEntity:IsNPC() then
+				local dmgInfo = DamageInfo()
+				dmgInfo:SetDamage(speed/5 + (IsValid(self:GetDriver()) and 15 or 0))
+				dmgInfo:SetAttacker(self:GetDriver() or self)
+				dmgInfo:SetInflictor(self)
+				dmgInfo:SetDamageType(bit.bor(DMG_CRUSH, DMG_VEHICLE))
+				dmgInfo:SetReportedPosition(self:GetPos())
+				dmgInfo:SetDamagePosition(data.HitPos)
+				data.HitEntity:TakeDamageInfo(dmgInfo)
 			end
 			
 			if speed > 700 then
