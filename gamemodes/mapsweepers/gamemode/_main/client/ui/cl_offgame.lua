@@ -660,10 +660,26 @@ jcms.offgame = jcms.offgame or NULL
 				end)
 			end
 
+			local btnHouse = tab:Add("DPanel")
+			btnHouse:SetSize(400, 800)
+			btnHouse:SetPaintBackground(false)
+			tab.btnHouse = btnHouse
+			
+			local voteHouse = tab:Add("DPanel")
+			voteHouse:SetSize(400, 800)
+			voteHouse:SetPaintBackground(false)
+			tab.voteHouse = voteHouse
+
+			if jcms.pvp_vote and CurTime() <= jcms.pvp_vote.endsAt then
+				btnHouse:SetPos( -btnHouse:GetWide(), 0 )
+			else
+				voteHouse:SetPos( -voteHouse:GetWide(), 0 )
+			end
+
 			if game.SinglePlayer() then
 				local y = 220
 
-				local bBegin = tab:Add("DButton")
+				local bBegin = btnHouse:Add("DButton")
 				bBegin:SetText("#jcms.startmission")
 				bBegin:SetPos(32, y)
 				bBegin:SetSize(400-64-24, 32)
@@ -682,7 +698,7 @@ jcms.offgame = jcms.offgame or NULL
 				end
 				y = y + 32 + 8
 
-				local bChangeMission = tab:Add("DButton")
+				local bChangeMission = btnHouse:Add("DButton")
 				bChangeMission:SetText("#jcms.changemission_sp")
 				bChangeMission:SetPos(32+24, y)
 				bChangeMission:SetSize(400-64-24, 32)
@@ -696,7 +712,7 @@ jcms.offgame = jcms.offgame or NULL
 				jcms.hud_SetThemeWithoutSaving(nil)
 
 				-- PvE {{{
-					local pnlPVE = tab:Add("DPanel")
+					local pnlPVE = btnHouse:Add("DPanel")
 					pnlPVE:SetPos(32, 128)
 					pnlPVE:SetSize(348, 128)
 					pnlPVE:SetPaintBackground(false)
@@ -732,7 +748,7 @@ jcms.offgame = jcms.offgame or NULL
 				-- }}}
 
 				-- PvP {{{
-					local pnlPVP = tab:Add("DPanel")
+					local pnlPVP = btnHouse:Add("DPanel")
 					pnlPVP:SetPos(32, 128)
 					pnlPVP:SetSize(348, 128)
 					pnlPVP:SetPaintBackground(false)
@@ -787,7 +803,7 @@ jcms.offgame = jcms.offgame or NULL
 				-- }}}
 
 				if LocalPlayer():IsAdmin() then
-					local bChangeMission = tab:Add("DButton")
+					local bChangeMission = btnHouse:Add("DButton")
 					bChangeMission:SetText("#jcms.changemission_sp")
 					bChangeMission:SetPos(32, 264)
 					bChangeMission:SetSize(400-64-24, 32)
@@ -798,7 +814,7 @@ jcms.offgame = jcms.offgame or NULL
 						surface.PlaySound("buttons/button14.wav")
 					end
 
-					local bTogglePVP = tab:Add("DButton")
+					local bTogglePVP = btnHouse:Add("DButton")
 					bTogglePVP:SetText("")
 					bTogglePVP:SetPos(48, 264 + 32 + 4)
 					bTogglePVP:SetSize(400-64-24, 32)
@@ -809,7 +825,7 @@ jcms.offgame = jcms.offgame or NULL
 						surface.PlaySound("buttons/button14.wav")
 					end
 
-					tab.pvpButton = bTogglePVP
+					btnHouse.pvpButton = bTogglePVP
 				end
 
 				function pnlPVE:Think()
@@ -821,27 +837,70 @@ jcms.offgame = jcms.offgame or NULL
 						bJoinNPC:SetVisible(jcms.cvar_npcteam_restrict:GetInt() == 0)
 					end
 
-					if IsValid(tab.pvpButton) then
-						local pvpMode = jcms.cvar_pvpallowed:GetInt()
+					local pvpMode = jcms.cvar_pvpallowed:GetInt()
+					if IsValid(btnHouse.pvpButton) then
 						local isPVP = jcms.util_IsPVP()
 
 						local visible = (pvpMode == 1) or (pvpMode == 0 and isPVP) or (pvpMode == 2 and not isPVP)
-						tab.pvpButton:SetVisible( visible )
-						tab.pvpButton:SetEnabled( visible )
-						tab.pvpButton:SetText( isPVP and "#jcms.pvpmode_off" or "#jcms.pvpmode_on" )
+						btnHouse.pvpButton:SetVisible( visible )
+						btnHouse.pvpButton:SetEnabled( visible )
+						btnHouse.pvpButton:SetText( isPVP and "#jcms.pvpmode_off" or "#jcms.pvpmode_on" )
 					end
 
 					if IsValid(pvplabelws) then
-						local pvpMode = jcms.cvar_pvpallowed:GetInt()
 						pvplabelws:SetVisible( pvpMode == 1 )
+					end
+
+					local voteOngoing = jcms.pvp_vote and CurTime() <= jcms.pvp_vote.endsAt
+					if IsValid(tab.btnHouse) then
+						local target = voteOngoing and -tab.btnHouse:GetWide() or 0
+						tab.btnHouse:SetPos( (tab.btnHouse:GetX()*4 + target)/5, 0 )
+						tab.btnHouse:SetEnabled( not voteOngoing )
+					end
+					if IsValid(tab.voteHouse) then
+						local target = voteOngoing and 0 or -tab.voteHouse:GetWide()
+						tab.voteHouse:SetPos( (tab.voteHouse:GetX()*4 + target)/5, 0 )
+						tab.voteHouse:SetEnabled( voteOngoing )
 					end
 				end
 				
 				pnlPVP.Think = pnlPVE.Think
 			end
 
+			do
+				local voteForPVP = voteHouse:Add("DButton")
+				voteForPVP:SetSize(150, 24)
+				voteForPVP:SetPos(16, 200)
+				voteForPVP:SetText("#jcms.pvpvote0")
+				voteForPVP.Paint = jcms.paint_ButtonFilled
+				voteForPVP.jFont = "jcms_small_bolder"
+				function voteForPVP:DoClick()
+					jcms.net_SendPVPVote(0)
+				end
+
+				local voteForPVE = voteHouse:Add("DButton")
+				voteForPVE:SetSize(150, 24)
+				voteForPVE:SetPos(voteHouse:GetWide() - voteForPVE:GetWide() - 16, 200)
+				voteForPVE:SetText("#jcms.pvpvote1")
+				voteForPVE.Paint = jcms.paint_ButtonFilled
+				voteForPVE.jFont = "jcms_small_bolder"
+				function voteForPVE:DoClick()
+					jcms.net_SendPVPVote(1)
+				end
+
+				local voteAny = voteHouse:Add("DButton")
+				voteAny:SetSize(200, 24)
+				voteAny:SetPos((voteHouse:GetWide() - voteAny:GetWide())/2, 228)
+				voteAny:SetText("#jcms.pvpvote2")
+				voteAny.Paint = jcms.paint_Button
+				voteAny.jFont = "jcms_small_bolder"
+				function voteAny:DoClick()
+					jcms.net_SendPVPVote(2)
+				end
+			end
+
 			if not jcms.statistics.playedTutorial then
-				local tutor = tab:Add("DPanel")
+				local tutor = btnHouse:Add("DPanel")
 				tutor:SetPos(72, 380)
 				tutor:SetSize(256, 300)
 				tutor.Paint = jcms.paint_Panel

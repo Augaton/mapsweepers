@@ -1473,12 +1473,56 @@
 		end
 
 		function jcms.offgame_paint_MissionTab(p, w, h)
+			local x1 = IsValid(p.btnHouse) and p.btnHouse:GetX() or 0
 			if game.SinglePlayer() then
-				draw.SimpleText("#jcms.solo", "jcms_hud_medium", 200, 128, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-				draw.SimpleText("#jcms.pod_text", "jcms_small", 200, 128 + 6, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText("#jcms.solo", "jcms_hud_medium", x1 + 200, 128, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				draw.SimpleText("#jcms.pod_text", "jcms_small", x1 + 200, 128 + 6, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
 			else
-				draw.SimpleText(GetHostName(), "jcms_small", 200, 128 - 38, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
-				draw.SimpleText("#jcms.pod_text", "jcms_medium", 200, 128 - 12, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText(GetHostName(), "jcms_small", x1 + 200, 128 - 38, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText("#jcms.pod_text", "jcms_medium", x1 + 200, 128 - 12, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+			end
+
+			if IsValid(p.voteHouse) and (p.voteHouse:GetX() > -p.voteHouse:GetWide() + 4) then
+				local x2 = p.voteHouse:GetX()
+				draw.SimpleText("#jcms.pvpvotetitle", "jcms_medium", x2 + 200, 100, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+				
+				local plyCount = player.GetCount()
+				local bw = (400 - 48) / plyCount - 2
+				
+				local vote = jcms.pvp_vote
+
+				local time = string.FormattedTime(math.floor(vote.endsAt - CurTime()))
+				local formatted = string.format("%02i:%02i", time.m, time.s)
+				draw.SimpleText(formatted, "jcms_big", x2 + 200, 100, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+
+				local yesCount, noCount, anyCount = #vote.yes, #vote.no, #vote.any
+				local opinionCount = yesCount + noCount
+				
+				surface.SetDrawColor(jcms.color_pulsing)
+				local by = 200 - 48
+				local t = (CurTime() % 1)*32
+
+				jcms.hud_DrawStripedRect(x2 + 8, by - 4 - 4, 400 - 16, 4, 32, t)
+				jcms.hud_DrawStripedRect(x2 + 8, by + 24 + 4, 400 - 16, 4, 32, t)
+
+				for i=1, plyCount do
+					local bx = plyCount == 1 and (400-bw)/2 or math.Remap(i, 1, plyCount, 24, 400 - 24 - bw)
+					jcms.hud_DrawHollowPolyButton(x2 + bx, by, bw, 24, 8)
+
+					if i <= yesCount then
+						surface.SetDrawColor(jcms.color_bright_alt)
+							jcms.hud_DrawFilledPolyButton(x2 + bx + 2, by + 2, bw - 4, 24 - 4, 6)
+						surface.SetDrawColor(jcms.color_pulsing)
+						draw.SimpleText("v", "jcms_small_bolder", x2 + bx + bw/2, by + 24/2, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+					elseif i >= plyCount - noCount + 1 then
+						surface.SetDrawColor(jcms.color_bright)
+							jcms.hud_DrawFilledPolyButton(x2 + bx + 2, by + 2, bw - 4, 24 - 4, 6)
+						surface.SetDrawColor(jcms.color_pulsing)
+						draw.SimpleText("x", "jcms_small_bolder", x2 + bx + bw/2, by + 24/2, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+					elseif i <= yesCount + anyCount then
+						draw.SimpleText("/", "jcms_small_bolder", x2 + bx + bw/2, by + 24/2, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+					end
+				end
 			end
 
 			surface.SetDrawColor(jcms.color_pulsing)

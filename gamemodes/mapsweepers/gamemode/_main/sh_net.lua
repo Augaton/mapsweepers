@@ -1315,6 +1315,17 @@ if CLIENT then
 				local ply = net.ReadPlayer()
 				local option = net.ReadUInt(2) -- Yes, No, Any
 				jcms.pvp_vote_InsertPlayerByOption(ply, option)
+
+				if jcms.offgame and IsValid(jcms.offgame) and (not jcms.pvp_vote.lastSoundFrame or FrameNumber() > jcms.pvp_vote.lastSoundFrame) then
+
+					if option == 0 then
+						surface.PlaySound("friends/friend_join.wav")
+					elseif option == 1 then
+						surface.PlaySound("buttons/button10.wav")
+					end
+
+					jcms.pvp_vote.lastSoundFrame = FrameNumber()
+				end
 			end
 		end
 	}
