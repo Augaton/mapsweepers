@@ -611,7 +611,7 @@
 
 			local fracHealth = math.Clamp(me:Health() / me:GetMaxHealth(), 0, 1)
 			local fracArmor = math.Clamp(me:Armor() / me:GetMaxArmor(), 0, 1)
-			local fracArmorOvercharge = math.Clamp(math.TimeFraction(me:GetMaxArmor(), me:GetMaxArmor() + 100, me:Armor()), 0, 1)
+			local fracArmorOvercharge = math.Clamp(math.TimeFraction(me:GetMaxArmor(), math.min(250, me:GetMaxArmor() + 100), me:Armor()), 0, 1)
 
 			if not jcms.hud_fracHealth then
 				jcms.hud_fracHealth = fracHealth

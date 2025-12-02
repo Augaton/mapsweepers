@@ -232,7 +232,7 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 			local squadName = string.format("%s%x", enemyData.faction, jcms.npc_GetAndIncrementSquadIndex())
 			npc:SetSquad(squadName)
 			npc:CapabilitiesAdd(bit.bor(CAP_MOVE_JUMP, CAP_USE, CAP_AUTO_DOORS, CAP_OPEN_DOORS))
-			npc:SetKeyValue("sleepstate", 2) -- TODO Experimental, may be turned down to 1 if we have issues
+			--npc:SetKeyValue("sleepstate", 2)
 		end
 		
 		jcms.npc_UpdateRelations(npc)
