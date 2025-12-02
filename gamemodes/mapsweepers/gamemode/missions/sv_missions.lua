@@ -239,8 +239,19 @@
 		jcms.mission_ResetStartTimer()
 		game.CleanUpMap()
 
-		if (jcms.cvar_pvpallowed:GetInt() == 1) and (jcms.util_IsPVP()) and (not jcms.util_IsPVPAllowed()) then
+		local goodForPVP = jcms.util_IsPVPAllowed()
+		local pvpAllowed = jcms.cvar_pvpallowed:GetInt()
+
+		if pvpAllowed == 0 then
 			jcms.pvp_SetEnabled(false)
+		elseif pvpAllowed == 2 then
+			jcms.pvp_SetEnabled(true)
+		elseif pvpAllowed == 1 then
+			if goodForPVP then
+				jcms.pvp_StartVote(40)
+			elseif jcms.util_IsPVP() then
+				jcms.pvp_SetEnabled(false)
+			end
 		end
 	end
 
