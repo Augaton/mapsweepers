@@ -2686,9 +2686,81 @@ end
 		table.Empty( vote.yes )
 		table.Empty( vote.no )
 		table.Empty( vote.any )
+		vote.processed = false
 
 		jcms.net_SendPVPVoteStart()
 	end
+
+	function jcms.pvp_EndAndProcessVote()
+		local vote = jcms.pvp_vote
+		vote.processed = true
+		vote.endsAt = CurTime()
+		jcms.net_SendEndPVPVote()
+		
+		local yesCount, noCount = #vote.yes, #vote.no
+		
+		local approvalRatio
+		if (yesCount + noCount == 0) then
+			approvalRatio = 0
+		else
+			approvalRatio = yesCount / (yesCount + noCount)
+		end
+
+		if approvalRatio >= 0.75 then
+			jcms.pvp_SetEnabled(true)
+		else
+			jcms.pvp_SetEnabled(false)
+		end
+	end
+	
+	hook.Add("PlayerDisconnected", "jcms_VoteDisconnectHandling", function(ply)
+		if jcms.pvp_vote_IsOngoing() then
+			jcms.pvp_vote_InsertPlayerByOption(ply, 3)
+			jcms.net_SendPlayerPVPVote(ply, 3)
+		end
+	end)
+
+	hook.Add("Think", "jcms_VoteLogic", function()
+		local vote = jcms.pvp_vote
+		if vote.processed or vote.endsAt == 0 then return end
+		
+		if not jcms.util_IsPVPAllowed() then
+			vote.processed = true
+			vote.endsAt = CurTime()
+			jcms.net_SendEndPVPVote()
+		end
+		
+		local shouldProcess = false
+
+		if jcms.pvp_vote_IsOngoing() then
+			local plyTotal = player.GetCount()
+			local yesCount, noCount, anyCount = #vote.yes, #vote.no, #vote.any
+
+			if (yesCount + noCount + anyCount == plyTotal) then
+				shouldProcess = true
+			end
+		else
+			shouldProcess = true
+		end
+
+		if shouldProcess then
+			jcms.printf("Processing PVP vote...")
+			jcms.pvp_EndAndProcessVote()
+		end
+	end)
+
+	hook.Add("jcms_PlayerNetReady", "jcms_RelayVote", function(ply)
+		if jcms.pvp_vote_IsOngoing() then
+			local vote = jcms.pvp_vote
+
+			jcms.net_SendPVPVoteStart()
+			for i, tbl in ipairs { vote.yes, vote.no, vote.any } do
+				for j, ply in ipairs(tbl) do
+					jcms.net_SendPlayerPVPVote(ply, i - 1)
+				end
+			end
+		end
+	end)
 
 -- // }}}
 

@@ -138,6 +138,7 @@ local nmt = FindMetaTable("NPC")
 	jcms.cvar_swarm_warning = CreateConVar("jcms_swarm_warning", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Extra seconds between a portal opening and enemies coming out of it.", 0, 30)
 	
 	jcms.cvar_pvpallowed = CreateConVar("jcms_pvpallowed", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Dictates how PVP mode works. 0=Disable PVP; 1=Vote-based; 2=PVP Only")
+	jcms.cvar_pvpminplayers = CreateConVar("jcms_pvpminplayers", "2", FCVAR_JCMS_NOTIFY_AND_SAVE, "Minimum players to be present on the server before PVP voting can begin")
 	jcms.cvar_pvpdebug = CreateConVar("jcms_pvpdebug", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "Stops PVP mode from ending when only 1 team is present")
 	jcms.cvar_pvprespawnmode = CreateConVar("jcms_pvprespawnmode", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "0=Team-wide, 1=Per-Player")
 	
@@ -1037,6 +1038,10 @@ local nmt = FindMetaTable("NPC")
 		any = {}
 	}
 
+	function jcms.pvp_vote_IsOngoing()
+		return jcms.pvp_vote and CurTime() < jcms.pvp_vote.endsAt
+	end
+
 	function jcms.pvp_vote_InsertPlayerByOption(ply, option)
 		local vote = jcms.pvp_vote
 
@@ -1448,6 +1453,10 @@ local nmt = FindMetaTable("NPC")
 
 	function jcms.util_IsPVP()
 		return game.GetWorld():GetNWBool("jcms_pvpmode", false)
+	end
+
+	function jcms.util_IsPVPAllowed()
+		return (jcms.cvar_pvpallowed:GetInt() ~= 0) and (player.GetCount() >= jcms.cvar_pvpminplayers:GetInt())
 	end
 
 	function jcms.util_AddAngles(ang1, ang2) --TODO: Not super efficient as it creates 2 matrix objects.

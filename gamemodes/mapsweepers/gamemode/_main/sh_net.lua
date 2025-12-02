@@ -125,10 +125,15 @@ if SERVER then
 		end,
 
 		[CL_WLD_PVPVOTE] = function(ply)
-			if not jcms.pvp_vote then return end
-			if CurTime() > jcms.pvp_vote.endsAt then return end
+			if jcms.director then return end
+			if not jcms.pvp_vote_IsOngoing() then return end
+			if jcms.pvp_vote and jcms.pvp_vote.processed then return end
+			if jcms.cvar_pvpallowed:GetInt() ~= 1 then return end
+			if not jcms.util_IsPVPAllowed() then return end
 
 			local option = net.ReadUInt(2)
+			
+			jcms.printf("%s voted %s", ply, ({ "YES", "NO", "ANY", "NONE" })[option + 1])
 			jcms.pvp_vote_InsertPlayerByOption(ply, option)
 			
 			jcms.net_SendPlayerPVPVote(ply, option)
@@ -826,7 +831,7 @@ if SERVER then
 			net.WriteEntity(game.GetWorld())
 			net.WriteUInt(WLD_PVPVOTE, bits_wld)
 
-			net.WriteBit(0)
+			net.WriteUInt(0, 2)
 			net.WriteUInt(jcms.pvp_vote.endsAt, 32)
 		net.Broadcast()
 	end
@@ -838,9 +843,19 @@ if SERVER then
 			net.WriteEntity(game.GetWorld())
 			net.WriteUInt(WLD_PVPVOTE, bits_wld)
 
-			net.WriteBit(1)
+			net.WriteUInt(1, 2)
 			net.WritePlayer(ply)
 			net.WriteUInt(option, 2)
+		net.Broadcast()
+	end
+
+	function jcms.net_SendEndPVPVote()
+		net.Start("jcms_msg")
+			net.WriteBool(false)
+			net.WriteEntity(game.GetWorld())
+			net.WriteUInt(WLD_PVPVOTE, bits_wld)
+
+			net.WriteUInt(2, 2)
 		net.Broadcast()
 	end
 end
@@ -1302,7 +1317,7 @@ if CLIENT then
 		[ WLD_PVPVOTE ] = function()
 			local vote = jcms.pvp_vote
 			
-			local action = net.ReadBit()
+			local action = net.ReadUInt(2)
 
 			if action == 0 then
 				-- Start vote
@@ -1326,6 +1341,9 @@ if CLIENT then
 
 					jcms.pvp_vote.lastSoundFrame = FrameNumber()
 				end
+			elseif action == 2 then
+				-- End vote
+				vote.endsAt = CurTime() + 0.5
 			end
 		end
 	}
