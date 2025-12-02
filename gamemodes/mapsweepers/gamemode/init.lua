@@ -370,15 +370,26 @@ end
 			end
 		end
 
-		if IsValid(attacker) and (attacker:GetClass() == "npc_headcrab_poison" or attacker:GetClass() == "npc_headcrab_black") then
+		if IsValid(attacker) then
 			--Their default behaviour seems to be hardcoded in hl2, and messing with the damageinfo breaks it (causes them to instakill).
 			--This is a bandaid solution to that. 
 
-			local hp = ent:Health()
-			if ent:IsPlayer() then
-				dmg:SetDamage( math.min(hp-5, dmg:GetDamage()) )
-			else
-				dmg:SetDamage(math.min(math.max(0, hp-1), 5))
+			local attkClass = attacker:GetClass()
+			local isCrab = attkClass == "npc_headcrab_poison" or attkClass == "npc_headcrab_black"
+			local isCavernGuard = attkClass == "npc_antlionguard" and attacker:GetInternalVariable("m_bCavernBreed")
+			local isWorker = attkClass == "npc_antlion" and attacker:HasSpawnFlags( 262144 ) -- 262144 = worker spawnflags
+
+			if isCrab then
+				local hp = ent:Health()
+				if ent:IsPlayer() then
+					dmg:SetDamage( math.min(hp-5, dmg:GetDamage()) )
+				else
+					dmg:SetDamage(math.min(math.max(0, hp-1), 5))
+				end
+			elseif isCavernGuard or isWorker then 
+				if ent:IsPlayer() then 
+					dmg:SetDamage( math.min( dmg:GetDamage(), ent:GetMaxHealth() * 0.75 ) )
+				end
 			end
 		end
 	end)
