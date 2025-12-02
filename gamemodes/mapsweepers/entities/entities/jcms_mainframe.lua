@@ -62,7 +62,7 @@ if SERVER then
 		else
 			--Charging
 			for i, ent in ipairs(ents.FindInSphere(self:WorldSpaceCenter(), self.Radius)) do 
-				if ent:IsNPC() and not jcms.team_JCorp_ent(ent) then 
+				if ent:IsNPC() and not ent.jcms_noSweeperShields and not jcms.team_JCorp_ent(ent) then 
 					if ent:WorldSpaceCenter():DistToSqr(self:WorldSpaceCenter()) <= (self.Radius/2)^2 and ent:GetNWInt("jcms_sweeperShield_max", -1) == -1 then 
 						local colInt = jcms.factions_GetColorInteger("rebel")
 
