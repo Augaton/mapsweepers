@@ -238,6 +238,10 @@
 		jcms.mission_Randomize()
 		jcms.mission_ResetStartTimer()
 		game.CleanUpMap()
+
+		if (jcms.cvar_pvpallowed:GetInt() == 1) and (jcms.util_IsPVP()) and (not jcms.util_IsPVPAllowed()) then
+			jcms.pvp_SetEnabled(false)
+		end
 	end
 
 	function jcms.mission_Randomize()

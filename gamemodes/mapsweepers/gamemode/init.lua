@@ -2697,7 +2697,11 @@ end
 		vote.endsAt = CurTime()
 		jcms.net_SendEndPVPVote()
 		
-		local yesCount, noCount = #vote.yes, #vote.no
+		local yesCount, noCount, anyCount = #vote.yes, #vote.no, #vote.any
+
+		if yesCount == 0 and noCount == 0 and anyCount >= 1 then
+			return
+		end
 		
 		local approvalRatio
 		if (yesCount + noCount == 0) then
@@ -2724,10 +2728,11 @@ end
 		local vote = jcms.pvp_vote
 		if vote.processed or vote.endsAt == 0 then return end
 		
-		if not jcms.util_IsPVPAllowed() then
+		if not jcms.util_IsPVPAllowed() or (jcms.cvar_pvpallowed:GetInt() ~= 1) then
 			vote.processed = true
 			vote.endsAt = CurTime()
 			jcms.net_SendEndPVPVote()
+			return
 		end
 		
 		local shouldProcess = false
