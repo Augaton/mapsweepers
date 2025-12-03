@@ -2991,7 +2991,7 @@
 
 -- // Ending sequence {{{
 
-	function jcms.hud_EndingSequence(victory)
+	function jcms.hud_EndingSequence(victory, isLate)
 		if CustomChat then --Integration, stops drawing over the lobby.
 			CustomChat:Disable()
 		end
@@ -3006,17 +3006,23 @@
 			jcms.spawnmenu_mouseCapturePanel:Remove()
 		end
 
-		if jcms.locPly:Team() == 2 then
-			if victory then
-				EmitSound("music/hl2_song25_teleporter.mp3", EyePos(), -2, CHAN_AUTO, 1, 75)
-			else
-				EmitSound("music/hl2_song17.mp3", EyePos(), -2, CHAN_AUTO, 1, 75)
+		if isLate then
+			if IsValid(jcms.offgame) then
+				jcms.offgame.time = 3.5
 			end
 		else
-			if victory then
-				EmitSound("music/hl2_song6.mp3", EyePos(), -2, CHAN_AUTO, 1, 75)
+			if jcms.locPly:Team() == 2 and not jcms.util_IsPVP() then
+				if victory then
+					EmitSound("music/hl2_song25_teleporter.mp3", EyePos(), -2, CHAN_AUTO, 1, 75)
+				else
+					EmitSound("music/hl2_song17.mp3", EyePos(), -2, CHAN_AUTO, 1, 75)
+				end
 			else
-				EmitSound("music/hl2_song28.mp3", EyePos(), -2, CHAN_AUTO, 1, 75)
+				if victory then
+					EmitSound("music/hl2_song6.mp3", EyePos(), -2, CHAN_AUTO, 1, 75)
+				else
+					EmitSound("music/hl2_song28.mp3", EyePos(), -2, CHAN_AUTO, 1, 75)
+				end
 			end
 		end
 	end

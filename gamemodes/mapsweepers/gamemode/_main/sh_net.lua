@@ -397,7 +397,7 @@ if SERVER then
 		net.Send(ply)
 	end
 	
-	function jcms.net_SendMissionEnding(jCorpWon, lateToThePartyPlayer, teamId) -- TODO Send a faster end-screen to those who had just joined.
+	function jcms.net_SendMissionEnding(jCorpWon, lateToThePartyPlayer, teamId)
 		net.Start("jcms_msg")
 			net.WriteBool(false)
 			net.WriteEntity(game.GetWorld())
@@ -1087,8 +1087,7 @@ if CLIENT then
 						jcms.aftergame.vote.choices[mapname] = wsid
 					end
 
-					-- todo Skip the animations if we're late
-					jcms.hud_EndingSequence(victory)
+					jcms.hud_EndingSequence(victory, isLate)
 				end
 			end
 		end,
