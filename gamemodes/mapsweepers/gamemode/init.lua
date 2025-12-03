@@ -1128,7 +1128,7 @@ end
 				local myTeam = ply:GetNWInt("jcms_pvpTeam", -1)
 
 				for i, oply in ipairs(team.GetPlayers(1)) do
-					if IsValid(oply) and oply~=ply and oply:Alive() and oply:GetObserverMode() == OBS_MODE_NONE and (myTeam == -1 or oply:GetNWInt("jcms_pvpTeam", -1) == myTeam) then
+					if jcms.director_CanSpectate(ply, oply) then
 						table.insert(allTargets, oply)
 						
 						if currentTarget == oply then
@@ -1137,9 +1137,13 @@ end
 					end
 				end
 
-				local nextTarget = allTargets[ (currentTargetIndex+switchDir-1)%(#allTargets)+1 ]
-				if IsValid(nextTarget) and nextTarget ~= currentTarget then
-					ply:SpectateEntity(nextTarget)
+				if #allTargets == 0 and jcms.director then 
+					ply:SpectateEntity(jcms.director.npcs[math.random(#jcms.director.npcs)])
+				else
+					local nextTarget = allTargets[ (currentTargetIndex+switchDir-1)%(#allTargets)+1 ]
+					if IsValid(nextTarget) and nextTarget ~= currentTarget then
+						ply:SpectateEntity(nextTarget)
+					end
 				end
 			end
 		end

@@ -440,6 +440,13 @@
 			end
 			return false
 		end
+
+		local spectateClasses = {
+			["jcms_respawnbeacon"] = true
+		}
+		function jcms.director_CanSpectate(spectator, target) --Is a valid target class or is a valid target player.
+			return IsValid(target) and spectator~=target and (spectateClasses[target:GetClass()] or (target:Alive() and (not target.GetObserverMode or target:GetObserverMode() == OBS_MODE_NONE) and jcms.team_pvpSameTeam(spectator, target)))
+		end
 	-- }}}
 
 	-- Swarm-related {{{
@@ -1125,14 +1132,20 @@
 					elseif ply:Alive() and ply:GetObserverMode() == OBS_MODE_CHASE then
 						local ent = ply:GetObserverTarget()
 						
-						if not IsValid(ent) or not ent:Alive() or (ent.GetObserverMode and ent:GetObserverMode() ~= OBS_MODE_NONE) then
+						if not jcms.director_CanSpectate(ply, ent) then
 							for i, oply in ipairs(team.GetPlayers(1)) do
-								if IsValid(oply) and oply~=ply and oply~=ent and oply:Alive() and oply:GetObserverMode() == OBS_MODE_NONE then
+								if jcms.director_CanSpectate(ply, oply) then
 									ply:SpectateEntity(oply)
 									break
 								end
 							end
+
+							local target = ply:GetObserverTarget()
+							if not IsValid(target) or target == ply then 
+								ply:SpectateEntity(jcms.director.npcs[math.random(#jcms.director.npcs)])
+							end
 						end
+
 						
 						if ply:GetNWInt("jcms_desiredteam", 0) == 1 or jcms.util_IsPVP() then
 							table.insert(deadPlayers, ply)
