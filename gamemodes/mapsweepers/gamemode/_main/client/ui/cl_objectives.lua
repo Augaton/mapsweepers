@@ -131,6 +131,7 @@
 
 			draw.SimpleText(str, "jcms_hud_small", xOff, -2, colorDark, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 			
+			x = math.min(x, 60*60 - 1) --Max 1h
 			local timestr = string.FormattedTime(x, "%02i:%02i")
 			draw.SimpleText(timestr, "jcms_hud_medium", xOff+16, -2+48, colorDark, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 			
