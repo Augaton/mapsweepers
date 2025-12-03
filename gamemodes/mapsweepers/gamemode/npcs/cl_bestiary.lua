@@ -24,7 +24,7 @@ jcms.bestiary = {}
 -- // Antlion {{{
 
 	jcms.bestiary.antlion_cyberguard = {
-		faction = "antlion", bounty = 300, health = 450,
+		faction = "antlion", bounty = 300, health = 523,
 		mdl = "models/antlion_guard.mdl", mats = { "models/jcms/cyberguard" }, camlookvector = Vector(0, 0, 50)
 	}
 
@@ -34,12 +34,12 @@ jcms.bestiary = {}
 	}
 
 	jcms.bestiary.antlion_guard = {
-		faction = "antlion", bounty = 350, health = 675,
+		faction = "antlion", bounty = 350, health = 445,
 		mdl = "models/antlion_guard.mdl", camlookvector = Vector(0, 0, 50)
 	}
 
 	jcms.bestiary.antlion_burrowerguard = {
-		faction = "antlion", bounty = 300, health = 351,
+		faction = "antlion", bounty = 275, health = 419,
 		mdl = "models/antlion_guard.mdl",
 		camlookvector = Vector(0, 0, 50),
 		skin = 1, scale = 0.75
@@ -51,7 +51,7 @@ jcms.bestiary = {}
 	}
 
 	jcms.bestiary.antlion_ultracyberguard = {
-		faction = "antlion", bounty = 600, health = 563,
+		faction = "antlion", bounty = 600, health = 785,
 		mdl = "models/jcms/ultracyberguard.mdl", camlookvector = Vector(0, 0, 50)
 	}
 
@@ -220,7 +220,7 @@ jcms.bestiary = {}
 	}
 
 	jcms.bestiary.zombie_spawner = {
-		faction = "zombie", bounty = 350, health = 675,
+		faction = "zombie", bounty = 350, health = 750,
 		mdl = "models/jcms/zombiespawner.mdl", scale = 0.5,
 	}
 
