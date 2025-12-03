@@ -1778,7 +1778,7 @@
 					draw.SimpleText(language.GetPhrase(stats.ammotype_lkey), "jcms_medium", 28, y + 16, jcms.color_bright_alt)
 				end
 
-				if stats.base == "Default" then
+				if stats.base == "Default" and weapons.GetStored(hoveredElement.gunClass) then
 					surface.SetDrawColor(jcms.color_pulsing)
 					if mini then
 						y = h - 54 - 16
