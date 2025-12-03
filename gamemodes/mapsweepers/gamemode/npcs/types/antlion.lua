@@ -512,10 +512,6 @@ jcms.npc_types.antlion_burrowerguard = {
 	end,
 
 	think = function(npc)
-		--Allows us to unburrow 
-			--npc:SetSaveValue("m_bIsBurrowed", true)
-			--npc:Fire "Unburrow"
-		
 		--If we can't reach an enemy, search for nodes near them that we can fit in and teleport/burrow there.
 
 		local enemy = npc:GetEnemy()
@@ -533,15 +529,39 @@ jcms.npc_types.antlion_burrowerguard = {
 				}, npc)
 
 				if not tr.Hit then --Put us in a free spot
-					npc:SetPos(nodePos)
-					
-					npc:SetSaveValue("m_bIsBurrowed", true)
-					npc:Fire "Unburrow"
-
 					npc.jcms_burrowerGuard_isburrowing = true
-					timer.Simple(3.5, function() 
-						npc.jcms_burrowerGuard_isburrowing = false
-					end)
+
+					-- // Burrow Anim {{{
+						npc:SetSchedule(SCHED_RANGE_ATTACK1) --Would be better if we had no SFX from this
+
+						timer.Simple(0.4, function()
+							if not IsValid(npc) then return end
+
+							npc:EmitSound("npc/antlion/digdown1.wav", 90, 90 + math.Rand(-5, 5))
+							
+							local ed = EffectData()
+							ed:SetOrigin(npc:WorldSpaceCenter())
+							ed:SetScale(2.7 - 0.4) --Duration
+							ed:SetMagnitude(250) --Depth
+							ed:SetEntity(npc)
+							util.Effect("jcms_burrow", ed)
+						end)
+					-- // }}}
+					
+					-- // Unburrow
+						timer.Simple(2.7, function()
+							if not IsValid(npc) then return end
+
+							npc:SetPos(nodePos)
+							
+							npc:SetSaveValue("m_bIsBurrowed", true)
+							npc:Fire "Unburrow"
+
+							timer.Simple(3.5, function() 
+								npc.jcms_burrowerGuard_isburrowing = false
+							end)
+						end)
+					-- // }}}
 
 					break
 				end
@@ -555,12 +575,32 @@ jcms.npc_types.antlion_burrowerguard = {
 			if IsValid(npc) then
 				npc:SetNWFloat("HealthFraction", npc:Health() / npc:GetMaxHealth())
 
-				if npc:Health() <= 0 then 
-					--TODO: doesn't work right
-					--TODO: I want to try giving them the worker-style acid-blast too. Although that'll need testing as it could easily be annoying/frustrating.
-					local ed = EffectData()
-						ed:SetOrigin(npc:WorldSpaceCenter())
-					util.Effect("antlion_gib_02", ed)
+				if npc:Health() <= 0 then --Burst on death (Ragdolling doesn't work right due to our smaller size)
+					npc.jcms_burrowerguard_dead = true
+					timer.Simple(1.45, function() 	
+						if IsValid(npc) then	
+							EmitSound( "NPC_Antlion.PoisonBurstExplode", npc:WorldSpaceCenter() )
+						end
+					end)
+
+					timer.Simple(1.65, function()
+						if IsValid(npc) then
+							local pos = npc:WorldSpaceCenter()
+							
+							local ed = EffectData()
+							ed:SetOrigin(pos)
+							ed:SetRadius(50)
+							ed:SetNormal(vector_up)
+							ed:SetMagnitude(0.6)
+							ed:SetFlags(4)
+							util.Effect("jcms_blast", ed)
+
+							npc:Fire("Break")
+							ParticleEffect( "antlion_gib_02", pos, angle_zero )
+
+							npc:EmitSound("npc/antlion_grub/squashed.wav", 75, 80)
+						end
+					end)
 				end
 			end
 		end)
