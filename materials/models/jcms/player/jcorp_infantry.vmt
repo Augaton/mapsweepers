@@ -1,7 +1,7 @@
 "vertexlitgeneric"
 {
-	"$baseTexture" 	"models/jcms/player/PLACEHOLDER_sentinel_mafia"
-    "$bumpmap" 		"models/cstrike/ct_sas_normal"
+	"$baseTexture" 	"models/jcms/player/jcorp_infantry"
+    "$bumpmap" 		"models/jcms/player/infantry_normal"
 	
 	"$phong" "1"
 	"$phongexponent" "10"
@@ -12,6 +12,6 @@
 	"$rimlightexponent" "8"
 	"$rimlightboost" "2"
 	
-	"$phongexponenttexture" "models/cstrike/ct_sas_normal"
+	"$phongexponenttexture" "models/jcms/player/infantry_normal"
 	"$rimmask" "1"
 }

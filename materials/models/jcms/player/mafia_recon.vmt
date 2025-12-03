@@ -1,7 +1,7 @@
 "vertexlitgeneric"
 {
-	"$baseTexture" 	"models/jcms/player/PLACEHOLDER_recon_mafia"
-    "$bumpmap" 		"models/cstrike/ct_urban_normal"
+	"$baseTexture" 	"models/jcms/player/mafia_recon"
+    	"$bumpmap" 	"models/cstrike/ct_urban_normal"
 	
 	"$phong" "1"
 	"$phongexponent" "5"

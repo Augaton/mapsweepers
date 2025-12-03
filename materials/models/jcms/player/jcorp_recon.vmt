@@ -1,7 +1,7 @@
 "vertexlitgeneric"
 {
-	"$baseTexture" 	"models/jcms/player/recon"
-    "$bumpmap" 		"models/cstrike/ct_urban_normal"
+	"$baseTexture" 	"models/jcms/player/jcorp_recon"
+    	"$bumpmap" 	"models/cstrike/ct_urban_normal"
 	
 	"$phong" "1"
 	"$phongexponent" "5"

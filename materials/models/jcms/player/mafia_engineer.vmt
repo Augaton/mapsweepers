@@ -1,7 +1,7 @@
 "vertexlitgeneric"
 {
-	"$baseTexture" 	"models/jcms/player/engineer"
-    "$bumpmap" 		"models/cstrike/ct_gign_normal"
+	"$baseTexture" 	"models/jcms/player/mafia_engineer"
+    	"$bumpmap" 		"models/cstrike/ct_gign_normal"
 	
 	"$phong" "1"
 	"$phongexponent" "10"

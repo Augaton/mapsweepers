@@ -1,7 +1,7 @@
 "vertexlitgeneric"
 {
-	"$baseTexture" 	"models/jcms/player/sentinel"
-    "$bumpmap" 		"models/cstrike/ct_sas_normal"
+	"$baseTexture" 	"models/jcms/player/jcorp_sentinel"
+    	"$bumpmap" 		"models/cstrike/ct_sas_normal"
 	
 	"$phong" "1"
 	"$phongexponent" "10"

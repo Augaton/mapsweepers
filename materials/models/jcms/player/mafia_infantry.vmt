@@ -1,7 +1,7 @@
 "vertexlitgeneric"
 {
-	"$baseTexture" 	"models/jcms/player/infantry"
-    "$bumpmap" 		"models/jcms/player/infantry_normal"
+	"$baseTexture" 	"models/jcms/player/mafia_infantry"
+    	"$bumpmap" 		"models/jcms/player/infantry_normal"
 	
 	"$phong" "1"
 	"$phongexponent" "10"

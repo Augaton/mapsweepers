@@ -1,0 +1,8 @@
+"vertexlitgeneric"
+{
+	"$baseTexture" 	"models/jcms/player/visor_jcorp_engineer"
+	"$selfillum" 1
+	"$selfillummask" "models/jcms/player/visor_illum"
+	"$additive" 1
+}
+
