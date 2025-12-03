@@ -595,9 +595,18 @@ jcms.npc_types.rebel_rgg = {
 	end,
 	
 	takeDamage = function(npc, dmg)
+		if npc:Health() > 4 then
+			npc:SetHealth(4)
+		end
+
         dmg:SetDamageType(DMG_DISSOLVE)
+
 		if dmg:GetDamage() > 0 then
-			dmg:SetDamage(1)
+			if jcms.util_IsStunstick( dmg:GetInflictor() ) then
+				dmg:SetDamage(npc:Health())
+			else
+				dmg:SetDamage(1)
+			end
 		end
     end,
     
