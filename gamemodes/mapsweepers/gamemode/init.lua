@@ -1516,30 +1516,21 @@ end
 	end
 	
 	function GM:PlayerSetHandsModel(ply, ent)
-		if ply:Team() == 1 then
-			ent:SetModel("models/weapons/c_arms_combine.mdl")
-			if ply:GetNWInt("jcms_pvpTeam", -1) == 2 then
-				ent:SetSubMaterial(0, "models/jcms/c_arms_mafia")
-			else
-				ent:SetSubMaterial(0, "models/jcms/c_arms_jcorp")
-			end
+		local classData = jcms.class_GetData(ply)
+
+		if classData.handsModel then
+			ent:SetModel(classData.handsModel)
 		else
-			local classData = jcms.class_GetData(ply)
+			local info = player_manager.RunClass(ply, "GetHandsModel")
+			if not info then
+				local playermodel = player_manager.TranslateToPlayerModelName(ply:GetModel())
+				info = player_manager.TranslatePlayerHands(playermodel)
+			end
 
-			if classData.handsModel then
-				ent:SetModel(classData.handsModel)
-			else
-				local info = player_manager.RunClass(ply, "GetHandsModel")
-				if not info then
-					local playermodel = player_manager.TranslateToPlayerModelName(ply:GetModel())
-					info = player_manager.TranslatePlayerHands(playermodel)
-				end
-
-				if info then
-					ent:SetModel(info.model)
-					ent:SetSkin(info.matchBodySkin and ply:GetSkin() or info.skin)
-					ent:SetBodyGroups(info.body)
-				end
+			if info then
+				ent:SetModel(info.model)
+				ent:SetSkin(info.matchBodySkin and ply:GetSkin() or info.skin)
+				ent:SetBodyGroups(info.body)
 			end
 		end
 	end
