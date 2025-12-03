@@ -574,7 +574,8 @@
 								end
 							end
 						else
-							jcms.printf("(weird?) enemyType has no enemyData: %s", tostring(enemyType))
+							-- This is caused by "enemyType" being a table (see a few lines below) which means its a player
+							--jcms.printf("(weird?) enemyType has no enemyData: %s", tostring(enemyType))
 						end
 						
 						if type(enemyType) == "table" then
