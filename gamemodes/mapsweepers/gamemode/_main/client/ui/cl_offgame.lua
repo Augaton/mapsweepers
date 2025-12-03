@@ -3145,7 +3145,7 @@ jcms.offgame = jcms.offgame or NULL
 				}
 			-- }}}
 
-			-- Level & EXP {{{
+			-- Cash {{{
 				pnl.statsPnl.wincash = pnl.statsPnl:Add("DPanel")
 				pnl.statsPnl.wincash.victory = victory
 				pnl.statsPnl.wincash.Paint = jcms.offgame_paint_WinStreakAndCash
@@ -3370,10 +3370,22 @@ jcms.offgame = jcms.offgame or NULL
 							local entry = pnl.multiPnl.leaderboardSweeper.scrollArea:Add("DPanel")
 							entry:SetTall(24)
 							entry:Dock(TOP)
-							entry:SetBackgroundColor(colBg)
+							if pd.pvpTeam > 0 then
+								local colBgPVP = jcms.util_GetPVPColorScoreboard(pd.pvpTeam)
+								entry:SetBackgroundColor(colBgPVP)
+							else
+								entry:SetBackgroundColor(colBg)
+							end
 							entry:DockMargin(0, 0, 0, 2)
 
-							if pd.evacuated then
+							if pd.pvpTeam > 0 then
+								local teamimg = entry:Add("DImage")
+								teamimg:Dock(RIGHT)
+								teamimg:DockMargin(2, 4, 4, 4)
+								teamimg:SetSize(16)
+								teamimg:SetMaterial(jcms.hud_GetPVPTeamMat(pd.pvpTeam))
+								teamimg:SetImageColor(jcms.util_GetPVPColorScoreboard(pd.pvpTeam, true))
+							elseif pd.evacuated then
 								local evac = entry:Add("DImage")
 								evac:Dock(RIGHT)
 								evac:DockMargin(2, 4, 2, 4)
@@ -3403,9 +3415,10 @@ jcms.offgame = jcms.offgame or NULL
 							name:SetFont("jcms_small")
 							name:SetTextColor(colTransparent)
 
-							local totalKils = pd.kills_direct + pd.kills_defenses + pd.kills_explosions
+							local totalKills = pd.kills_direct + pd.kills_defenses + pd.kills_explosions
+							if pd.pvpTeam > 0 then totalKills = pd.kills_pvp end
 							local kills = entry:Add("DLabel")
-							kills:SetText(jcms.util_CashFormat(totalKils))
+							kills:SetText(jcms.util_CashFormat(totalKills))
 							kills:SetPos(160, 0)
 							kills:SetTall(24)
 							kills:SetFont("jcms_small_bolder")
@@ -3486,10 +3499,22 @@ jcms.offgame = jcms.offgame or NULL
 							local entry = pnl.multiPnl.leaderboardSweeper.scrollArea:Add("DPanel")
 							entry:SetTall(18)
 							entry:Dock(TOP)
-							entry:SetBackgroundColor(colBg)
+							if pd.pvpTeam > 0 then
+								local colBgPVP = jcms.util_GetPVPColorScoreboard(pd.pvpTeam)
+								entry:SetBackgroundColor(colBgPVP)
+							else
+								entry:SetBackgroundColor(colBg)
+							end
 							entry:DockMargin(0, 0, 0, 2)
 
-							if pd.evacuated then
+							if pd.pvpTeam > 0 then
+								local teamimg = entry:Add("DImage")
+								teamimg:Dock(RIGHT)
+								teamimg:DockMargin(0, 1, 0, 1)
+								teamimg:SetSize(16, 16)
+								teamimg:SetMaterial(jcms.hud_GetPVPTeamMat(pd.pvpTeam))
+								teamimg:SetImageColor(jcms.util_GetPVPColorScoreboard(pd.pvpTeam, true))
+							elseif pd.evacuated then
 								local evac = entry:Add("DImage")
 								evac:Dock(RIGHT)
 								evac:DockMargin(0, 1, 0, 1)
@@ -3519,9 +3544,10 @@ jcms.offgame = jcms.offgame or NULL
 							name:SetFont("DefaultSmall")
 							name:SetTextColor(colTransparent)
 
-							local totalKils = pd.kills_direct + pd.kills_defenses + pd.kills_explosions
+							local totalKills = pd.kills_direct + pd.kills_defenses + pd.kills_explosions
+							if pd.pvpTeam > 0 then totalKills = pd.kills_pvp end
 							local kills = entry:Add("DLabel")
-							kills:SetText(jcms.util_CashFormat(totalKils))
+							kills:SetText(jcms.util_CashFormat(totalKills))
 							kills:SetPos(160, 0)
 							kills:SetTall(24)
 							kills:SetFont("DefaultSmall")
@@ -3608,7 +3634,12 @@ jcms.offgame = jcms.offgame or NULL
 								local entry = pnl.multiPnl.leaderboardNPC.scrollArea:Add("DPanel")
 								entry:SetTall(24)
 								entry:Dock(TOP)
-								entry:SetBackgroundColor(colBg)
+								if pd.pvpTeam > 0 then
+									local colBgPVP = jcms.util_GetPVPColorScoreboard(pd.pvpTeam)
+									entry:SetBackgroundColor(colBgPVP)
+								else
+									entry:SetBackgroundColor(colBg)
+								end
 								entry:DockMargin(0, 0, 0, 2)
 
 								local av = entry:Add("AvatarImage", 16)
@@ -3652,6 +3683,15 @@ jcms.offgame = jcms.offgame or NULL
 								deaths:SetTall(24)
 								deaths:SetFont("jcms_small_bolder")
 								deaths:SetTextColor(col)
+
+								if pd.pvpTeam > 0 then
+									local teamimg = entry:Add("DImage")
+									teamimg:Dock(RIGHT)
+									teamimg:DockMargin(2, 4, 4, 4)
+									teamimg:SetSize(16, 16)
+									teamimg:SetMaterial(jcms.hud_GetPVPTeamMat(pd.pvpTeam))
+									teamimg:SetImageColor(jcms.util_GetPVPColorScoreboard(pd.pvpTeam, true))
+								end
 							end
 						else
 							pnl.multiPnl.leaderboardNPC.lowres = true
@@ -3691,7 +3731,12 @@ jcms.offgame = jcms.offgame or NULL
 								local entry = pnl.multiPnl.leaderboardNPC.scrollArea:Add("DPanel")
 								entry:SetTall(18)
 								entry:Dock(TOP)
-								entry:SetBackgroundColor(colBg)
+								if pd.pvpTeam > 0 then
+									local colBgPVP = jcms.util_GetPVPColorScoreboard(pd.pvpTeam)
+									entry:SetBackgroundColor(colBgPVP)
+								else
+									entry:SetBackgroundColor(colBg)
+								end
 								entry:DockMargin(0, 0, 0, 2)
 
 								local name = entry:Add("DLabel")
@@ -3722,6 +3767,15 @@ jcms.offgame = jcms.offgame or NULL
 								deaths:SetTall(18)
 								deaths:SetFont("DefaultSmall")
 								deaths:SetTextColor(col)
+
+								if pd.pvpTeam > 0 then
+									local teamimg = entry:Add("DImage")
+									teamimg:Dock(RIGHT)
+									teamimg:DockMargin(0, 1, 0, 1)
+									teamimg:SetSize(16, 16)
+									teamimg:SetMaterial(jcms.hud_GetPVPTeamMat(pd.pvpTeam))
+									teamimg:SetImageColor(jcms.util_GetPVPColorScoreboard(pd.pvpTeam, true))
+								end
 							end
 						end
 					end

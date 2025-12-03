@@ -1320,6 +1320,14 @@ local nmt = FindMetaTable("NPC")
 		end
 	end
 
+	function jcms.util_GetPVPColorScoreboard(teamId, bright)
+		if teamId == 2 then
+			return Color(255, 233, 107, bright and 255 or 16)
+		else
+			return Color(255, 63, 63, bright and 255 or 16)
+		end
+	end
+
 	function jcms.util_GetPVPColor(ent)
 		if IsValid(ent) and ent:GetNWInt("jcms_pvpTeam", -1) == 2 then
 			return Color(255, 217, 0)

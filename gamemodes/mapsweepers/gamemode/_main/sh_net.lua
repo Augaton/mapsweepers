@@ -398,6 +398,8 @@ if SERVER then
 	end
 	
 	function jcms.net_SendMissionEnding(jCorpWon, lateToThePartyPlayer, teamId)
+		local isPVP = jcms.util_IsPVP()
+
 		net.Start("jcms_msg")
 			net.WriteBool(false)
 			net.WriteEntity(game.GetWorld())
@@ -406,13 +408,18 @@ if SERVER then
 
 			net.WriteBool(false)
 			net.WriteBool(jCorpWon) -- Did we win?
+			net.WriteBool(isPVP)
 			net.WriteBool(not not lateToThePartyPlayer) -- Is this a late mission end screen? (don't show animations)
 
-			local winstreak = jcms.runprogress.winstreak or 0 -- Winstreak before getting incremented
-			if jCorpWon then
-				net.WriteUInt(winstreak + 1, 12)
+			if jcms.util_IsPVP() then
+				net.WriteUInt(jcms.director.nukesDropped or 0, 12)
 			else
-				net.WriteUInt(winstreak, 12) -- Our old winstreak
+				local winstreak = jcms.runprogress.winstreak or 0 -- Winstreak before getting incremented
+				if jCorpWon then
+					net.WriteUInt(winstreak + 1, 12)
+				else
+					net.WriteUInt(winstreak, 12) -- Our old winstreak
+				end
 			end
 
 			local stats = jcms.director_GetPostMissionStats()
@@ -424,6 +431,10 @@ if SERVER then
 				net.WriteString(pd.nickname)
 				net.WriteBool(pd.evacuated)
 
+				if isPVP then
+					net.WriteUInt(math.max(0, tonumber(pd.pvpTeam) or 0), 3)
+				end
+
 				net.WriteBool(not not pd.wasSweeper)
 				if pd.wasSweeper then
 					net.WriteString(pd.class)
@@ -431,6 +442,9 @@ if SERVER then
 					net.WriteUInt(pd.kills_defenses, 24)
 					net.WriteUInt(pd.kills_explosions, 24)
 					net.WriteUInt(pd.kills_friendly, 14)
+					if isPVP then
+						net.WriteUInt(pd.kills_pvp, 14)
+					end
 					net.WriteUInt(pd.deaths_sweeper, 14)
 					net.WriteUInt(pd.ordersUsedCounts, 16)
 				end
@@ -1037,14 +1051,21 @@ if CLIENT then
 					jcms.aftergame_bonuses = bonuses
 				else
 					local victory = net.ReadBool()
+					local isPVP = net.ReadBool()
 					local isLate = net.ReadBool()
 					
 					jcms.aftergame = { victory = victory }
 					jcms.aftergame.statistics = {}
 					jcms.aftergame.vote = { choices = {}, votes = {} }
 					
-					local winstreak = net.ReadUInt(12)
-					jcms.aftergame.winstreak = winstreak
+					local winstreak_or_nukes = net.ReadUInt(12)
+					if isPVP then
+						jcms.aftergame.winstreak = 0
+						jcms.aftergame.nukes = winstreak_or_nukes
+					else
+						jcms.aftergame.winstreak = winstreak_or_nukes
+						jcms.aftergame.nukes = 0
+					end
 					
 					local missionTime = net.ReadUInt(32)
 					jcms.aftergame.missionTime = missionTime
@@ -1056,6 +1077,11 @@ if CLIENT then
 						stat.sid64 = net.ReadString()
 						stat.nickname = net.ReadString()
 						stat.evacuated = net.ReadBool()
+						if isPVP then
+							stat.pvpTeam = net.ReadUInt(3)
+						else
+							stat.pvpTeam = 0
+						end
 						stat.ply = player.GetBySteamID64(stat.sid64)
 
 						stat.wasSweeper = net.ReadBool()
@@ -1065,6 +1091,11 @@ if CLIENT then
 							stat.kills_defenses = net.ReadUInt(24)
 							stat.kills_explosions = net.ReadUInt(24)
 							stat.kills_friendly = net.ReadUInt(14)
+							if isPVP then
+								stat.kills_pvp = net.ReadUInt(14)
+							else
+								stat.kills_pvp = 0
+							end
 							stat.deaths_sweeper = net.ReadUInt(14)
 							stat.ordersUsedCounts = net.ReadUInt(16)
 						end

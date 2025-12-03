@@ -2604,6 +2604,7 @@
 					x = x + (lowres and 96 or 132)
 					surface.DrawRect(x - 12, y + 4, 1, (lowres and 46 or 64) - 8)
 					local totalKills = p.stats.kills_direct + p.stats.kills_defenses + p.stats.kills_explosions
+					if p.stats.pvpTeam > 0 then totalKills = p.stats.kills_pvp end
 					draw.SimpleText(("%s: %s"):format(language.GetPhrase("#jcms.stats_kills"), jcms.util_CashFormat(totalKills)), font, x, y, col)
 					draw.SimpleText(("%s: %s"):format(language.GetPhrase("#jcms.stats_kills_direct"), jcms.util_CashFormat(p.stats.kills_direct)), font, x + 4, y + spacing, colPulsing)
 					draw.SimpleText(("%s: %s"):format(language.GetPhrase("#jcms.stats_kills_defenses"), jcms.util_CashFormat(p.stats.kills_defenses)), font, x + 4, y + spacing*2, colPulsing)
@@ -2720,7 +2721,7 @@
 			end
 
 			local winstreakWidth = lowres and 100 or 172
-			if alpha > 0 then
+			if alpha > 0 and not jcms.util_IsPVP() then
 				surface.SetAlphaMultiplier(alpha)
 				surface.SetDrawColor(colPulsing)
 				drawHollowPolyButton(-1, 0, w+2, h, 16)
@@ -2790,44 +2791,53 @@
 
 			-- Winstreak {{{
 			if jcms.aftergame then
-				local winstreak = jcms.aftergame.winstreak
-				local winstreakFailed = not jcms.aftergame.victory
-				local winstreakAnim = math.Clamp(p.time - (stages and #stages or 1)*0.3 - 1.4, 0, 1)
+				if jcms.util_IsPVP() then
+					local nukes = jcms.aftergame.nukes or 0
+					local nukesAnim = math.Clamp(p.time - (stages and #stages or 1)*0.3 - 1.4, 0, 1)
 
-				if winstreakAnim > 0 then
-					surface.SetAlphaMultiplier(winstreakAnim)
-					local font1 = lowres and "jcms_hud_medium" or "jcms_hud_big"
-					local font2 = lowres and "jcms_hud_small" or "jcms_hud_medium"
+					surface.SetAlphaMultiplier(nukesAnim)
+					local font = lowres and "jcms_medium" or "jcms_hud_small"
+					draw.SimpleText(language.GetPhrase("jcms.pvpnukecount"):format(nukes), font, w/2, h/2 + 8 - 16*nukesAnim, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				else
+					local winstreak = jcms.aftergame.winstreak or 0
+					local winstreakFailed = not jcms.aftergame.victory
+					local winstreakAnim = math.Clamp(p.time - (stages and #stages or 1)*0.3 - 1.4, 0, 1)
 
-					if winstreak >= 100 then
-						font1 = "jcms_hud_medium"
-						font2 = "jcms_hud_small"
+					if winstreakAnim > 0 then
+						surface.SetAlphaMultiplier(winstreakAnim)
+						local font1 = lowres and "jcms_hud_medium" or "jcms_hud_big"
+						local font2 = lowres and "jcms_hud_small" or "jcms_hud_medium"
+
+						if winstreak >= 100 then
+							font1 = "jcms_hud_medium"
+							font2 = "jcms_hud_small"
+						end
+
+						local col = winstreak > 0 and colAlt or col
+						surface.SetDrawColor(col.r, col.g, col.b, jcms.color_pulsing.a)
+						drawHollowPolyButton(6, 6, winstreakWidth, h - 12, 12)
+						draw.SimpleText("#jcms.winstreak_title", lowres and "DefaultSmall" or "jcms_medium", 6 + winstreakWidth/2, 12, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+
+						local nx, ny = 6 + winstreakWidth/2, h * 0.6
+						surface.SetFont(font1)
+						local n_width = surface.GetTextSize(winstreak)
+						surface.SetFont(font2)
+						local x_width = surface.GetTextSize("x")
+
+						draw.SimpleText(winstreak, font1, nx + x_width/2, ny, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+						draw.SimpleText("x", font2, nx - n_width/2, ny, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+						if winstreakFailed and winstreak > 0 then
+							draw.NoTexture()
+							surface.SetDrawColor(col)
+							local barLength = lowres and 90 or 150
+							local barWidth = lowres and 2 or 4
+							surface.DrawTexturedRectRotated(nx, ny, barLength, barWidth, 30)
+							surface.DrawTexturedRectRotated(nx, ny, barLength, barWidth, -30)
+						end
 					end
-
-					local col = winstreak > 0 and colAlt or col
-					surface.SetDrawColor(col.r, col.g, col.b, jcms.color_pulsing.a)
-					drawHollowPolyButton(6, 6, winstreakWidth, h - 12, 12)
-					draw.SimpleText("#jcms.winstreak_title", lowres and "DefaultSmall" or "jcms_medium", 6 + winstreakWidth/2, 12, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-
-					local nx, ny = 6 + winstreakWidth/2, h * 0.6
-					surface.SetFont(font1)
-					local n_width = surface.GetTextSize(winstreak)
-					surface.SetFont(font2)
-					local x_width = surface.GetTextSize("x")
-
-					draw.SimpleText(winstreak, font1, nx + x_width/2, ny, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-					draw.SimpleText("x", font2, nx - n_width/2, ny, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-
-					if winstreakFailed and winstreak > 0 then
-						draw.NoTexture()
-						surface.SetDrawColor(col)
-						local barLength = lowres and 90 or 150
-						local barWidth = lowres and 2 or 4
-						surface.DrawTexturedRectRotated(nx, ny, barLength, barWidth, 30)
-						surface.DrawTexturedRectRotated(nx, ny, barLength, barWidth, -30)
-					end
+					surface.SetAlphaMultiplier(1)
 				end
-				surface.SetAlphaMultiplier(1)
 			end
 			-- }}}
 		end

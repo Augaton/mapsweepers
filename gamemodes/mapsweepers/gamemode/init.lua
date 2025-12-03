@@ -1468,15 +1468,20 @@ end
 				jcms.director_stats_AddDeathForSweeper(ply)
 
 				if IsValid(attacker) and attacker:IsPlayer() then
-					if attacker ~= ply and jcms.team_JCorp_player(attacker) and jcms.team_pvpSameTeam(ply, attacker) then
-						jcms.statistics_AddOther(attacker, "ffire", 1)
-						jcms.director_stats_AddKillForSweeper(attacker, 3)
-						if not jcms.playerData_IsPlayerLiability(ply) then
-							jcms.playerData_AddFriendlyKill(attacker)
+					if attacker ~= ply then
+						local samePVPTeam = jcms.team_pvpSameTeam(ply, attacker)
+						if jcms.team_JCorp_player(attacker) and samePVPTeam then
+							jcms.statistics_AddOther(attacker, "ffire", 1)
+							jcms.director_stats_AddKillForSweeper(attacker, 3)
+							if not jcms.playerData_IsPlayerLiability(ply) then
+								jcms.playerData_AddFriendlyKill(attacker)
+							end
+							jcms.announcer_Speak(jcms.ANNOUNCER_FRIENDLYFIRE_KILL)
+						elseif jcms.team_JCorp_player(ply) and not samePVPTeam then
+							jcms.director_stats_AddKillForSweeper(attacker, 4)
+						elseif jcms.team_NPC(attacker) then
+							jcms.director_stats_AddKillForNPC(attacker, 0)
 						end
-						jcms.announcer_Speak(jcms.ANNOUNCER_FRIENDLYFIRE_KILL)
-					elseif jcms.team_NPC(attacker) then
-						jcms.director_stats_AddKillForNPC(attacker, 0)
 					end
 				elseif (not game.SinglePlayer()) and (#jcms.GetAliveSweepers() >= 1) then
 					jcms.announcer_Speak(jcms.ANNOUNCER_DEAD)
@@ -3208,6 +3213,10 @@ end
 				
 				local world = game.GetWorld()
 				util.BlastDamage(world, world, pos + jcms.vectorUp, 1500, 100)
+
+				if jcms.director then
+					jcms.director.nukesDropped = (jcms.director.nukesDropped or 0) + 1
+				end
 			end)
 			timer.Simple(9.55, function()		--POST / Ear-Ring
 				if jcms.director_GetMissionTime() < 10 then return end --Hacky workaround to prevent us from leaking into the next mission

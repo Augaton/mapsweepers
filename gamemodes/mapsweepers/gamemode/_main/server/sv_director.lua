@@ -55,6 +55,7 @@
 				dispensedTipsTimes = {},
 				tags_entdict = {},
 				tags_perplayer = {},
+				nukesDropped = 0,
 
 				-- Steam ID stats {{{
 					cachedNicknames = {},
@@ -66,6 +67,7 @@
 					kills_defenses = {},
 					kills_explosions = {},
 					kills_friendly = {},
+					kills_pvp = {},
 					deaths_sweeper = {},
 					ordersUsedCounts = {},
 
@@ -1838,11 +1840,13 @@
 					pd.wasNPC = d.lockstates[sid64] == "npc" or d.kills_sweepers[sid64]>0 or d.kills_turrets[sid64]>0 or d.deaths_npc[sid64]>0
 
 					pd.class = ply:GetNWString("jcms_desiredclass", "infantry")
+					pd.pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
 					if pd.wasSweeper then
 						pd.kills_direct = d.kills_direct[sid64]
 						pd.kills_defenses = d.kills_defenses[sid64]
 						pd.kills_explosions = d.kills_explosions[sid64]
 						pd.kills_friendly = d.kills_friendly[sid64]
+						pd.kills_pvp = d.kills_pvp[sid64]
 						pd.deaths_sweeper = d.deaths_sweeper[sid64]
 						pd.ordersUsedCounts = d.ordersUsedCounts[sid64]
 					end
@@ -1872,6 +1876,7 @@
 					d.kills_defenses[ sid64 ] = d.kills_defenses[ sid64 ] or 0
 					d.kills_explosions[ sid64 ] = d.kills_explosions[ sid64 ] or 0
 					d.kills_friendly[ sid64 ] = d.kills_friendly[ sid64 ] or 0
+					d.kills_pvp[ sid64 ] = d.kills_pvp[ sid64 ] or 0
 					d.deaths_sweeper[ sid64 ] = d.deaths_sweeper[ sid64 ] or 0
 					d.ordersUsedCounts[ sid64 ] = d.ordersUsedCounts[ sid64 ] or 0
 
@@ -1928,6 +1933,7 @@
 			-- type=1: Defenses
 			-- type=2: Explosives
 			-- type=3: Friendly Kill
+			-- type=4: PVP
 			-- Anything else: Direct kill
 			local works, sid64 = jcms.director_stats_Ensure(jcms.director, ply)
 
@@ -1939,6 +1945,8 @@
 					key = "kills_explosions"
 				elseif type == 3 then
 					key = "kills_friendly"
+				elseif type == 4 then
+					key = "kills_pvp"
 				end
 
 				jcms.director[key][sid64] = (tonumber(jcms.director[key][sid64]) or 0) + 1
