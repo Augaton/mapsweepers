@@ -2294,7 +2294,13 @@
 			
 			if jcms.locPly:Team() == 2 then
 				-- NPC end screen
-				local str = language.GetPhrase(victory and "jcms.missionvictory_npc" or "jcms.missiondefeat_npc")
+				local str
+				if jcms.util_IsPVP() then
+					str = language.GetPhrase(victory and "jcms.missionvictory_pvp" or "jcms.missiondefeat_pvp")
+				else
+					str = language.GetPhrase(victory and "jcms.missionvictory_npc" or "jcms.missiondefeat_npc")
+				end
+
 				local noiseAlpha = 0
 
 				local color1 = jcms.color_bright
@@ -2340,7 +2346,13 @@
 
 					noiseAlpha = math.Remap(p.time, 1.9, 2.35, 0, 255)
 				else
-					local bottomline = victory and "#jcms.bottomline_victory_npc" or "#jcms.bottomline_defeat_npc"
+					local bottomline
+					if jcms.util_IsPVP() then
+						bottomline = victory and "#jcms.bottomline_victory_pvp" or "#jcms.bottomline_defeat_pvp"
+					else
+						bottomline = victory and "#jcms.bottomline_victory_npc" or "#jcms.bottomline_defeat_npc"
+					end
+
 					noiseAlpha = math.Remap(p.time, 3.5, 4, 255, 0)
 
 					surface.SetDrawColor(color1dark)
@@ -2363,11 +2375,16 @@
 				surface.SetDrawColor(r,g,b,noiseAlpha)
 				jcms.hud_DrawNoiseRect(0, 0, w, h, 24)
 			else
-				local bottomline = victory and "#jcms.bottomline_victory" or "#jcms.bottomline_defeat"
+				local bottomline 
+				if jcms.util_IsPVP() then
+					bottomline = victory and "#jcms.bottomline_victory_pvp" or "#jcms.bottomline_defeat_pvp"
+				else
+					bottomline = victory and "#jcms.bottomline_victory" or "#jcms.bottomline_defeat"
+				end
 
 				-- Sweeper end screen
 				if victory then
-					local str = language.GetPhrase("jcms.missionvictory")
+					local str = language.GetPhrase("jcms.missionvictory" .. (jcms.util_IsPVP() and "_pvp" or ""))
 					local r,g,b = jcms.color_dark_alt:Unpack()
 					local r2,g2,b2 = jcms.color_bright_alt:Unpack()
 					local color_faded = ColorAlpha(jcms.color_bright, 100)
@@ -2430,7 +2447,7 @@
 						end
 					end
 				else
-					local str = language.GetPhrase("jcms.missiondefeat")
+					local str = language.GetPhrase("jcms.missiondefeat" .. (jcms.util_IsPVP() and "_pvp" or ""))
 					local r,g,b = jcms.color_dark:Unpack()
 					local r2,g2,b2 = jcms.color_bright:Unpack()
 					local color_faded = ColorAlpha(jcms.color_bright, 100)
