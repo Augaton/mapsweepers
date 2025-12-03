@@ -618,13 +618,6 @@ jcms.npc_types.antlion_mineralguard = {
 			npc.jcms_oreType = jcms.util_ChooseByWeight(weights)
 		end
 
-		local oreData = jcms.oreTypes[ npc.jcms_oreType ]
-		if oreData then
-			npc:SetMaterial(oreData.material)
-			npc.jcms_oreValue = oreData.value
-			npc.jcms_oreColourInt = jcms.util_ColorInteger(oreData.color)
-		end
-
 		npc:SetNWString("jcms_boss", "antlion_guard")
 		jcms.npc_SetupAntlionBurrowCheck(npc)
 	end,
@@ -645,11 +638,8 @@ jcms.npc_types.antlion_mineralguard = {
 			chunk.jcms_miner = attacker
 			chunk:SetPos(pos)
 			chunk:SetAngles(AngleRand())
+			chunk:SetOreType(npc.jcms_oreType)
 			chunk:Spawn()
-			chunk:SetOreColourInt(npc.jcms_oreColourInt or 0)
-			chunk:SetOreName(npc.jcms_oreType)
-			chunk.jcms_oreValue = npc.jcms_oreValue
-			chunk:SetMaterial(npc:GetMaterial())
 
 			local phys = chunk:GetPhysicsObject()
 			phys:Wake()
