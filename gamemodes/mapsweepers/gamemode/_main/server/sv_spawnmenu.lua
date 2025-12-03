@@ -249,7 +249,7 @@
 			local angle = flatNormal:Angle()
 
 			local tr2 = util.TraceHull {
-				mins = Vector(-150, -150, 8), maxs = Vector(150, 150, 150),
+				mins = Vector(-130, -130, 10), maxs = Vector(130, 130, 130),
 				mask = MASK_PLAYERSOLID, start = tr.HitPos, endpos = tr.HitPos + Vector(0, 0, 8)
 			}
 
