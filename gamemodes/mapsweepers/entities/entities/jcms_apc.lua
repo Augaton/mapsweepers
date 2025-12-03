@@ -511,6 +511,7 @@ if SERVER then
 
 			self:SetPassengerCount(#passengers)
 			ply.jcms_lastEnteredAsPassenger = CurTime()
+			ply:EmitSound("physics/body/body_medium_impact_soft3.wav")
 		end
 	end
 

@@ -584,6 +584,7 @@ if SERVER then
 				
 				if IsValid(best) then
 					activator:EnterVehicle(best)
+					best:EmitSound("physics/body/body_medium_impact_soft3.wav")
 					self.nextInteract = CurTime() + 0.25
 					
 					for i=1,6 do
