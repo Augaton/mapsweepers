@@ -1019,6 +1019,7 @@ jcms.npc_types.rebel_alyx = {
 		
 		npc:GetActiveWeapon():SetSaveValue("m_fMaxRange1", 1000)
 		npc:SetSaveValue("m_flDistTooFar", 1000)
+		npc.jcms_noSweeperShields = true
 	end,
 
 	takeDamage = function(npc, dmg) --Alyx self-heals and there's no way (that I've found in the documentation) to disable that. This is a work-around because that's awful.
