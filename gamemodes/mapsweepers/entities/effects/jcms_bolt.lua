@@ -80,6 +80,8 @@ function EFFECT:Init( data )
 	elseif self.type == 5 then
 		self.radius = data:GetMagnitude()
 		self.tout = 0.25 + math.sqrt(self.radius / 1200)
+	elseif self.type == 0 then
+		self.pvpTeam = data:GetMaterialIndex()
 	end
 
 	self.length = self.start:Distance(self.endpos)
@@ -124,10 +126,18 @@ function EFFECT:Render()
 	
 	local width = 24
 	if selfTbl.type == 0 then
-		-- Blue bolt
-		selfTbl.color.r = 64*ff
-		selfTbl.color.g = 255*ff
-		selfTbl.color.b = 255*(1-f)
+		-- Bolter Bolt
+		if self.pvpTeam == 2 then
+			-- Yellow
+			selfTbl.color.r = 255*(1-f)
+			selfTbl.color.g = 250*ff
+			selfTbl.color.b = 150*ff
+		else
+			-- Blue
+			selfTbl.color.r = 64*ff
+			selfTbl.color.g = 255*ff
+			selfTbl.color.b = 255*(1-f)
+		end
 		selfTbl.color.a = 256*ff
 		width = 32
 	elseif selfTbl.type == 4 then

@@ -127,12 +127,14 @@ if SERVER then
 			firerate = 1.1,
 			damagetype = DMG_BULLET + DMG_ALWAYSGIB,
 			muzzleflashScale = 2,
+			pvpMuzzleflashFlags = { [2] = 2 },
 			muzzleflashFlag = 4,
 			clip = 100,
 			
 			radius = 2600,
 			tracer = "jcms_bolt",
 			tracerFlag = 0,
+			tracerUsesPVPTeam = true,
 			hiteffect = "AR2Impact",
 			
 			timeAlert = 1,
@@ -700,12 +702,17 @@ if SERVER then
 		tr.Angle = tr.Normal:Angle()
 
 		local tracerEffect, hitEffect, tracerFlag = data.tracer, data.hiteffect, data.tracerFlag or 0
+		local tracerUsesPVPTeam = data.tracerUsesPVPTeam
+
 		local effectdata = EffectData()
 		effectdata:SetStart(LerpVector(7/tr.StartPos:Distance(tr.HitPos), tr.StartPos, tr.HitPos))
 		effectdata:SetScale(math.random(6500, 9000))
 		effectdata:SetAngles(tr.Angle)
 		effectdata:SetOrigin(tr.HitPos)
 		effectdata:SetFlags(tracerFlag)
+		if tracerUsesPVPTeam then
+			effectdata:SetMaterialIndex(math.max(0, self:GetNWInt("jcms_pvpTeam", -1)))
+		end
 		util.Effect(tracerEffect, effectdata)
 		
 		if hitEffect then
@@ -792,7 +799,11 @@ if SERVER then
 			local effectdata3 = EffectData()
 			effectdata3:SetEntity(self)
 			effectdata3:SetScale(data.muzzleflashScale or 1)
-			effectdata3:SetFlags(data.muzzleflashFlag or 1)
+			if data.pvpMuzzleflashFlags then
+				effectdata3:SetFlags(data.pvpMuzzleflashFlags[self:GetNWInt("jcms_pvpTeam", -1)] or data.muzzleflashFlag or 1)
+			else
+				effectdata3:SetFlags(data.muzzleflashFlag or 1)
+			end
 			util.Effect("jcms_muzzleflash", effectdata3)
 			
 			self:SetTurretClip( self:GetTurretClip() - 1 )
