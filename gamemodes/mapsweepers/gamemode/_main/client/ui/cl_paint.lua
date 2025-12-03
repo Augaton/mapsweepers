@@ -1843,6 +1843,18 @@
 				local _, th = draw.SimpleText("#jcms.shop_noweapons1", lowres and "jcms_small_bolder" or "jcms_big", (w-leftPanelEdge)*0.5 + leftPanelEdge, y1 + 64, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 				p.noWeaponMarkup:Draw(leftPanelEdge + markupPad, y1 + 64 + th + 8)
 			end
+
+			p.existsForTime = (p.existsForTime or 0) + RealFrameTime()
+			if p.existsForTime > 1.5 and jcms.locPly:GetNWInt("jcms_desiredteam", 0) == 0 then
+				local tabPnl = p:GetParent()
+
+				for i, child in ipairs(tabPnl:GetChildren()) do
+					child:Remove()
+				end
+				
+				tabPnl.Paint = nil
+				jcms.offgame_BuildMissionTab(tabPnl)
+			end
 		end
 
 		function jcms.offgame_paint_ControlPanel(p, w, h)

@@ -2328,6 +2328,8 @@ end
 	end, nil, "Gives you a gravity gun", FCVAR_CHEAT)
 	
 	concommand.Add("jcms_ready", function(ply, cmd, args)
+		if jcms.pvp_vote_IsOngoing() then return end
+
 		if (ply:GetObserverMode() == OBS_MODE_FIXED) and ply:GetNWInt("jcms_desiredteam", 0) > 0 then
 			ply:SetNWBool("jcms_ready", not ply:GetNWBool("jcms_ready"))
 		else
@@ -2413,6 +2415,8 @@ end
 	end, nil, "Only works in-lobby. Randomizes pending mission type.")
 
 	concommand.Add("jcms_jointeam", function(ply, cmd, args)
+		if jcms.pvp_vote_IsOngoing() then return end
+
 		local restriction = jcms.cvar_npcteam_restrict:GetInt() -- 0: No restrictions, 1: Only post-evac, 2: Can never be an NPC
 		local canJoinNpcs = false
 		if restriction == 0 then
@@ -2478,6 +2482,10 @@ end
 	end)
 
 	concommand.Add("jcms_jointeam_pvp", function(ply, cmd, args)
+		if jcms.pvp_vote_IsOngoing() then return end
+		
+		if (jcms.director and ply:GetNWInt("jcms_pvpTeam", -1) ~= -1) then return end
+
 		if jcms.util_IsPVP() then
 			local teamId = tonumber(args[1])
 			if jcms.pvp_IsGoodTeamId(teamId) then
@@ -2688,6 +2696,12 @@ end
 		table.Empty( vote.any )
 		vote.processed = false
 
+		for i, ply in ipairs( player.GetAll() ) do
+			ply:SetNWInt("jcms_desiredteam", 0)
+			ply:SetNWInt("jcms_pvpTeam", -1)
+			ply:SetNWBool("jcms_ready", false)
+		end
+
 		jcms.net_SendPVPVoteStart()
 	end
 
@@ -2717,10 +2731,17 @@ end
 		end
 	end
 	
-	hook.Add("PlayerDisconnected", "jcms_VoteDisconnectHandling", function(ply)
+	hook.Add("PlayerDisconnected", "jcms_PVPDisconnectHandling", function(ply)
 		if jcms.pvp_vote_IsOngoing() then
 			jcms.pvp_vote_InsertPlayerByOption(ply, 3)
 			jcms.net_SendPlayerPVPVote(ply, 3)
+		end
+
+		if not jcms.director and jcms.cvar_pvpallowed:GetInt() == 1 then -- Disabling PVP in lobby if 1 person remains
+			local newPlayerCount = player.GetCount() - 1
+			if newPlayerCount <= 1 and jcms.util_IsPVP() then
+				jcms.pvp_SetEnabled(false)
+			end
 		end
 	end)
 
@@ -2758,10 +2779,10 @@ end
 		if jcms.pvp_vote_IsOngoing() then
 			local vote = jcms.pvp_vote
 
-			jcms.net_SendPVPVoteStart()
+			jcms.net_SendPVPVoteStart(ply)
 			for i, tbl in ipairs { vote.yes, vote.no, vote.any } do
-				for j, ply in ipairs(tbl) do
-					jcms.net_SendPlayerPVPVote(ply, i - 1)
+				for j, voter in ipairs(tbl) do
+					jcms.net_SendPlayerPVPVote(voter, i - 1, ply)
 				end
 			end
 		end

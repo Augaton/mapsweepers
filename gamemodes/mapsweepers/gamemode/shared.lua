@@ -1051,8 +1051,10 @@ local nmt = FindMetaTable("NPC")
 			vote.any
 		}
 
+		local oc1, oc2, oc3 = #tables[1], #tables[2], #tables[3]
+
 		for i, tab in ipairs(tables) do
-			table.RemoveByValue(tab, ply)
+			local k = table.RemoveByValue(tab, ply)
 		end
 
 		local tab = tables[option + 1]
@@ -1060,6 +1062,10 @@ local nmt = FindMetaTable("NPC")
 		if tab then
 			table.insert(tab, ply)
 		end
+
+		local nc1, nc2, nc3 = #tables[1], #tables[2], #tables[3]
+
+		return nc1 ~= oc1 or nc2 ~= oc2 or nc3 ~= oc3
 	end
 
 -- // }}}

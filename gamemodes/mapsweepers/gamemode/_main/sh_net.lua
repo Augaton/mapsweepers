@@ -825,7 +825,7 @@ if SERVER then
 		net.Broadcast()
 	end
 
-	function jcms.net_SendPVPVoteStart()
+	function jcms.net_SendPVPVoteStart(toWhom)
 		net.Start("jcms_msg")
 			net.WriteBool(false)
 			net.WriteEntity(game.GetWorld())
@@ -833,10 +833,14 @@ if SERVER then
 
 			net.WriteUInt(0, 2)
 			net.WriteUInt(jcms.pvp_vote.endsAt, 32)
-		net.Broadcast()
+		if IsValid(toWhom) then
+			net.Send(toWhom)
+		else
+			net.Broadcast()
+		end
 	end
 
-	function jcms.net_SendPlayerPVPVote(ply, option)
+	function jcms.net_SendPlayerPVPVote(ply, option, toWhom)
 		-- Option 0: Yes, Option 1: No, Option 2: Any
 		net.Start("jcms_msg")
 			net.WriteBool(false)
@@ -846,7 +850,11 @@ if SERVER then
 			net.WriteUInt(1, 2)
 			net.WritePlayer(ply)
 			net.WriteUInt(option, 2)
-		net.Broadcast()
+		if IsValid(toWhom) then
+			net.Send(toWhom)
+		else
+			net.Broadcast()
+		end
 	end
 
 	function jcms.net_SendEndPVPVote()
@@ -1329,9 +1337,9 @@ if CLIENT then
 				-- Someone voted
 				local ply = net.ReadPlayer()
 				local option = net.ReadUInt(2) -- Yes, No, Any
-				jcms.pvp_vote_InsertPlayerByOption(ply, option)
+				local hadEffect = jcms.pvp_vote_InsertPlayerByOption(ply, option)
 
-				if jcms.offgame and IsValid(jcms.offgame) and (not jcms.pvp_vote.lastSoundFrame or FrameNumber() > jcms.pvp_vote.lastSoundFrame) then
+				if hadEffect and jcms.offgame and IsValid(jcms.offgame) and (not jcms.pvp_vote.lastSoundFrame or FrameNumber() > jcms.pvp_vote.lastSoundFrame) then
 
 					if option == 0 then
 						surface.PlaySound("friends/friend_join.wav")
