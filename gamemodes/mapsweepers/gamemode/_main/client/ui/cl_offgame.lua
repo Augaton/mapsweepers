@@ -2523,6 +2523,50 @@ jcms.offgame = jcms.offgame or NULL
 						end
 					-- }}}
 
+					-- PVP settings {{{
+						do
+							local bar = catList:Add("#jcms.opt_pvpsettings")
+							bar.Paint = jcms.paint_Category
+							bar.dontSubtractHeight = true
+							local content = vgui.Create("DPanel", bar)
+							content:SetPaintBackground(false)
+							content:DockPadding(0, 0, 0, 16)
+							bar:SetContents(content)
+
+							local slidermode = content:Add("DNumSlider")
+							slidermode:SetText("#jcms.opt_pvpallowed")
+							slidermode:SetSize(contentSize - 48, 24)
+							slidermode:SetPos(24, 24)
+							slidermode:SetMinMax(0, 2)
+							slidermode:SetDecimals(0)
+							slidermode:SetConVar("jcms_pvpallowed")
+							slidermode.Paint = jcms.paint_NumSlider
+							local modedesc = content:Add("DLabel")
+							modedesc:SetTextColor(jcms.color_bright)
+							modedesc:SetPos(slidermode:GetX() + 200, slidermode:GetY() + 8)
+							modedesc:SetSize(slidermode:GetWide() - 172, 48)
+							function modedesc:Think()
+								self:SetText(language.GetPhrase("#jcms.opt_pvpallowed" .. math.floor(slidermode:GetValue())))
+							end
+
+							local minplys = content:Add("DNumSlider")
+							minplys:SetText("#jcms.opt_pvpminplayers")
+							minplys:SetSize(contentSize - 48, 24)
+							minplys:SetPos(24, 72)
+							minplys:SetMinMax(0, 32)
+							minplys:SetDecimals(0)
+							minplys:SetConVar("jcms_pvpminplayers")
+							minplys.Paint = jcms.paint_NumSlider
+
+							local cb = content:Add("DCheckBoxLabel")
+							cb:SetPos(24, 72 + 48)
+							cb:SetText("#jcms.opt_pvprespawnmode")
+							cb:SetWide(400)
+							cb:SetConVar("jcms_pvprespawnmode")
+							cb.Paint = jcms.paint_CheckBoxLabel
+						end
+					-- }}}
+
 					-- Difficulty settings {{{
 						do
 							local bar = catList:Add("#jcms.opt_difficultysettings")
