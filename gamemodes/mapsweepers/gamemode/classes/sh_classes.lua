@@ -32,20 +32,11 @@ table.Empty(jcms.classesOrderIndices)
 		ply:SetNWString("jcms_class", class)
 
 		-- Visual
-		ply:SetModel(data.mdl)
+		local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
+		ply:SetModel(data.mdls_pvp and data.mdls_pvp[ pvpTeam ] or data.mdl)
+
 		ply:SetSkin(data.skin or 0)
 		ply:SetPlayerColor(data.playerColorVector or Vector(0.44, 0, 0))
-		if ply:GetNWInt("jcms_pvpTeam", -1) == 2 then
-			--TODO/PLACEHOLDER: TEMPORARY! I think ideally we want a colourable model instead.
-			local classMats = {
-				["infantry"] = "models/jcms/player/PLACEHOLDER_infantry_mafia",
-				["sentinel"] = "models/jcms/player/PLACEHOLDER_sentinel_mafia",
-				["recon"] = "models/jcms/player/PLACEHOLDER_recon_mafia",
-				["engineer"] = "models/jcms/player/PLACEHOLDER_engineer_mafia",
-			}
-
-			ply:SetMaterial(classMats[class]) --:SteamHappy:
-		end
 
 		-- Speed
 		ply:SetLadderClimbSpeed(130 * data.speedMul)

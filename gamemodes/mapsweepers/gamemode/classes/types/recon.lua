@@ -23,7 +23,12 @@ class.orderIndex = 1
 jcms.class_Add("recon", class, true)
 
 -- Kestrel Armor
-class.mdl = "models/player/urban.mdl"
+class.mdl = "models/player/jcms/jcorp_recon.mdl"
+class.mdls_pvp = {
+	[1] = "models/player/jcms/jcorp_recon.mdl",
+	[2] = "models/player/jcms/mafia_recon.mdl"
+}
+
 class.footstepSfx = "NPC_MetroPolice.RunFootstep"
 
 class.health = 75
@@ -42,11 +47,6 @@ class.shareObjectiveMarkers = true
 
 class.noFallDamage = true
 class.sprintHack = true --Allow us to shoot while sprinting
-
-class.matOverrides = { 
-	["models/cstrike/ct_urban"] = "models/jcms/player/recon",
-	["models/cstrike/ct_urban_glass"] = "jcms/jglow"
-}
 
 local function updateJumpAbility(ply, newValue)
 	if SERVER then

@@ -23,7 +23,12 @@ class.orderIndex = 2
 jcms.class_Add("infantry", class, true)
 
 -- Infantry Armor
-class.mdl = "models/player/riot.mdl"
+class.mdl = "models/player/jcms/jcorp_infantry.mdl"
+class.mdls_pvp = {
+	[1] = "models/player/jcms/jcorp_infantry.mdl",
+	[2] = "models/player/jcms/mafia_infantry.mdl"
+}
+
 class.footstepSfx = "NPC_MetroPolice.RunFootstep"
 
 class.health = 100
@@ -35,12 +40,6 @@ class.damage = 1.25 -- This unit deals 25% more damage than others
 class.hurtMul = 1
 class.hurtReduce = 1
 class.speedMul = 1
-
-class.matOverrides = {
-	["models/cstrike/ct_gsg9"] = "models/jcms/player/infantry"
-}
-
-
 
 function class.Think(ply)
 	if CLIENT and ply ~= LocalPlayer() then return end

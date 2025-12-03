@@ -23,7 +23,12 @@ class.orderIndex = 4
 jcms.class_Add("engineer", class, true)
 
 -- Pathfinder Armor
-class.mdl = "models/player/swat.mdl"
+class.mdl = "models/player/jcms/jcorp_engineer.mdl"
+class.mdls_pvp = {
+	[1] = "models/player/jcms/jcorp_engineer.mdl",
+	[2] = "models/player/jcms/mafia_engineer.mdl"
+}
+
 class.footstepSfx = "NPC_MetroPolice.RunFootstep"
 
 class.health = 75
@@ -35,11 +40,6 @@ class.damage = 1
 class.hurtMul = 1
 class.hurtReduce = 1
 class.speedMul = 1
-
-class.matOverrides = { 
-	["models/cstrike/ct_gign"] = "models/jcms/player/engineer", 
-	["models/cstrike/ct_gign_glass"] = "jcms/jglow_engineer"
-}
 
 function class.OnSpawn(ply)
 	ply:Give( "weapon_physcannon", false )

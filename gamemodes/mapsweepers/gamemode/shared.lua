@@ -171,29 +171,6 @@ local nmt = FindMetaTable("NPC")
 		Material("models/humans/male/group03/citizen_sheet"):SetTexture("$basetexture", "models/jcms/rgg_male")
 		Material("models/humans/female/group03/citizen_sheet"):SetTexture("$basetexture", "models/jcms/rgg_female")
 		Material("models/antlion_grub/antlion_grub"):SetTexture("$basetexture", "models/jcms/antlion_bombgrub")
-
-		for classname, data in pairs(jcms.classes) do
-			if data.matOverrides then
-				for matname, newtexture in pairs(data.matOverrides) do
-					local mat = Material(matname)
-					mat:SetTexture("$basetexture", newtexture)
-
-					if newtexture:find("glow") then
-						local flags = mat:GetInt("$flags")
-						local newFlags = bit.bor(64, 128, 16384)
-						mat:SetInt("$flags", newFlags)
-
-						mat:SetInt("$translucent", 0)
-						mat:SetInt("$nocull", 0)
-						mat:SetUndefined("$envmap")
-						mat:SetUndefined("$detail")
-						mat:SetUndefined("$envmapmask")
-						mat:SetUndefined("$translucent")
-						mat:Recompute()
-					end
-				end
-			end
-		end
 	end)
 
 -- }}}
