@@ -207,6 +207,11 @@ jcms.npc_types.combine_soldier = {
 
 	postSpawn = function(npc)
 		npc:SetKeyValue("NumGrenades", "1")
+
+		local wep = npc:GetActiveWeapon()
+		if IsValid(wep) and wep:GetClass() == "weapon_smg1" then 
+			wep:SetSaveValue("m_fMaxRange1", 1000)
+		end
 	end,
 
 	proficiency = WEAPON_PROFICIENCY_VERY_GOOD

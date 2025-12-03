@@ -177,7 +177,7 @@ if SERVER then
 			muzzleflashFlag = 2,
 			clip = 100,
 			
-			radius = 900,
+			radius = 750,
 			tracer = "jcms_laser",
 
 			updateRate = 5, --How often do we try to acquire targets (optimisation)
@@ -228,13 +228,13 @@ if SERVER then
 
 			updateRate = 3, --How often do we try to acquire targets (optimisation)
 			
-			turnSpeedYaw = 45,
-			turnSpeedPitch = 14,
+			turnSpeedYaw = 48,
+			turnSpeedPitch = 16,
 			pitchLockMin = -66,
 			pitchLockMax = 66,
 			
-			spreadX = 2.8,
-			spreadY = 2.2,
+			spreadX = 2.4,
+			spreadY = 2.0,
 			targetingMode = "closestangle",
 			
 			sound = "Weapon_SMG1.NPC_Single",

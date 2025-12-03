@@ -551,16 +551,21 @@
 						end
 
 						local enemyData = jcms.npc_types[ enemyType ]
-						if enemyData and enemyData.aerial then
-							local nearestNode = jcms.pathfinder.getNearestNode(pos)
-							if nearestNode then 
-								pos = nearestNode.pos
+
+						if enemyData then
+							if enemyData.aerial then
+								local nearestNode = jcms.pathfinder.getNearestNode(pos)
+								if nearestNode then 
+									pos = nearestNode.pos
+								end
+							elseif enemyData.hullSize then 
+								local nearestNode = jcms.pathfinder_ain_nearestHullNode(pos, enemyData.hullSize)
+								if nearestNode then 
+									pos = ainReader.nodePositions[nearestNode]
+								end
 							end
-						elseif enemyData.hullSize then 
-							local nearestNode = jcms.pathfinder_ain_nearestHullNode(pos, enemyData.hullSize)
-							if nearestNode then 
-								pos = ainReader.nodePositions[nearestNode]
-							end
+						else
+							jcms.printf("(weird?) enemyType has no enemyData: %s", tostring(enemyType))
 						end
 						
 						if type(enemyType) == "table" then

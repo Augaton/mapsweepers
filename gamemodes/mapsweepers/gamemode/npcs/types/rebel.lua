@@ -676,6 +676,13 @@ jcms.npc_types.rebel_fighter = {
 		npc:SetMaxHealth( npc:Health() + 5 )
 		npc:SetHealth( npc:GetMaxHealth() )
 		npc:Fire("SetMedicOn") 
+
+		local wep = npc:GetActiveWeapon()
+		if IsValid(wep) then
+			if wep:GetClass() ~= "weapon_ar2" then
+				wep:SetSaveValue("m_fMaxRange1", 1000)
+			end
+		end
 	end,
 
 	think = function(npc) 
@@ -710,8 +717,13 @@ jcms.npc_types.rebel_medic = {
 	postSpawn = function(npc)
 		npc:Fire("SetMedicOn")
 		
-		if npc:GetActiveWeapon():GetClass() == "weapon_shotgun" then 
-			npc:SetSaveValue("m_flDistTooFar", 500)
+		local wep = npc:GetActiveWeapon()
+		if IsValid(wep) then
+			if wep:GetClass() == "weapon_shotgun" then 
+				wep:SetSaveValue("m_fMaxRange1", 600)
+			elseif wep:GetClass() == "weapon_smg1" then
+				wep:SetSaveValue("m_fMaxRange1", 1000)
+			end
 		end
 	end,
 	

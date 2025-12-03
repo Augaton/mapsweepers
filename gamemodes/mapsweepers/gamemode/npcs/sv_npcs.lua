@@ -159,7 +159,7 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 		end
 
 		if npc.SetMaxLookDistance then
-			npc:SetMaxLookDistance( math.max(npc:GetMaxLookDistance(), 4096) )
+			npc:SetMaxLookDistance( math.max(npc:GetMaxLookDistance(), 3400) )
 		end
 
 		if not enemyData.isStatic and not enemyData.hullSize then
