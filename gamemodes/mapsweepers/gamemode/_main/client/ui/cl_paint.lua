@@ -1487,7 +1487,8 @@
 				draw.SimpleText("#jcms.pvpvotetitle", "jcms_medium", x2 + 200, 100, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
 				
 				local plyCount = player.GetCount()
-				local bw = (400 - 48) / plyCount - 2
+				local buttonSpacing = 2
+				local bw = (400 - 48) / plyCount - buttonSpacing
 				
 				local vote = jcms.pvp_vote
 
@@ -1505,22 +1506,48 @@
 				jcms.hud_DrawStripedRect(x2 + 8, by - 4 - 4, 400 - 16, 4, 32, t)
 				jcms.hud_DrawStripedRect(x2 + 8, by + 24 + 4, 400 - 16, 4, 32, t)
 
-				for i=1, plyCount do
-					local bx = plyCount == 1 and (400-bw)/2 or math.Remap(i, 1, plyCount, 24, 400 - 24 - bw)
-					jcms.hud_DrawHollowPolyButton(x2 + bx, by, bw, 24, 8)
+				local useSingleBar = bw <= 13
 
-					if i <= yesCount then
+				if useSingleBar then
+					bw = bw + buttonSpacing
+
+					local bx1 = x2 + 24
+					local bx2 = bx1 + 400 - 48
+
+					surface.DrawOutlinedRect(x2 + 24 - 2, by, bx2 - bx1 + 4, 24)
+					
+					if yesCount > 0 then
 						surface.SetDrawColor(jcms.color_bright_alt)
-							jcms.hud_DrawFilledPolyButton(x2 + bx + 2, by + 2, bw - 4, 24 - 4, 6)
+						surface.DrawRect(bx1, by + 2, bw*yesCount, 20)
+					end
+
+					if anyCount > 0 then
 						surface.SetDrawColor(jcms.color_pulsing)
-						draw.SimpleText("v", "jcms_small_bolder", x2 + bx + bw/2, by + 24/2, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-					elseif i >= plyCount - noCount + 1 then
+						surface.DrawRect(bx1 + bw*yesCount, by + 2, bw*anyCount, 20)
+					end
+
+					if noCount > 0 then
 						surface.SetDrawColor(jcms.color_bright)
-							jcms.hud_DrawFilledPolyButton(x2 + bx + 2, by + 2, bw - 4, 24 - 4, 6)
-						surface.SetDrawColor(jcms.color_pulsing)
-						draw.SimpleText("x", "jcms_small_bolder", x2 + bx + bw/2, by + 24/2, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-					elseif i <= yesCount + anyCount then
-						draw.SimpleText("/", "jcms_small_bolder", x2 + bx + bw/2, by + 24/2, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+						surface.DrawRect(bx2 - bw*noCount + 1, by + 2, bw*noCount, 20)
+					end
+				else
+					for i=1, plyCount do
+						local bx = plyCount == 1 and (400-bw)/2 or math.Remap(i, 1, plyCount, 24, 400 - 24 - bw)
+						jcms.hud_DrawHollowPolyButton(x2 + bx, by, bw, 24, 8)
+
+						if i <= yesCount then
+							surface.SetDrawColor(jcms.color_bright_alt)
+								jcms.hud_DrawFilledPolyButton(x2 + bx + 2, by + 2, bw - 4, 24 - 4, 6)
+							surface.SetDrawColor(jcms.color_pulsing)
+							draw.SimpleText("v", "jcms_small_bolder", x2 + bx + bw/2, by + 24/2, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+						elseif i >= plyCount - noCount + 1 then
+							surface.SetDrawColor(jcms.color_bright)
+								jcms.hud_DrawFilledPolyButton(x2 + bx + 2, by + 2, bw - 4, 24 - 4, 6)
+							surface.SetDrawColor(jcms.color_pulsing)
+							draw.SimpleText("x", "jcms_small_bolder", x2 + bx + bw/2, by + 24/2, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+						elseif i <= yesCount + anyCount then
+							draw.SimpleText("/", "jcms_small_bolder", x2 + bx + bw/2, by + 24/2, jcms.color_pulsing, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+						end
 					end
 				end
 			end
