@@ -26,6 +26,6 @@ for i, side in ipairs { "jcorp", "mafia" } do
 		local name = side .. "_" .. class
 
 		player_manager.AddValidModel(name, "models/player/jcms/" .. name .. ".mdl")
-		player_manager.AddValidHands(name, "models/weapons/c_arms_combine.mdl")
+		player_manager.AddValidHands(name, "models/weapons/jcms/c_arms_jcms_" .. side .. ".mdl")
 	end
 end
