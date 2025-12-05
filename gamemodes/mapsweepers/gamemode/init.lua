@@ -494,6 +494,17 @@ end
 		if #currentObjectives > 0 then
 			jcms.net_ShareMissionData(currentObjectives, ply)
 		end
+
+		
+		-- // TODO: PlaceHolder {{{
+			local goodForPVP = jcms.util_IsPVPAllowed()
+			local pvpAllowed = jcms.cvar_pvpallowed:GetInt()
+			if pvpAllowed == 1  and goodForPvp and not jcms.director and not jcms.pvp_firstVote then
+				jcms.pvp_firstVote = true 
+
+				jcms.pvp_StartVote(40)
+			end
+		-- // }}}
 	end)
 
 	hook.Add("PlayerDisconnected", "jcms_OnDisconnect", function(ply)
