@@ -98,6 +98,10 @@ if SERVER then
 
 		local timeReduction = math.Clamp(1 - (jcms.util_GetMissionTime()/60 - 5) / 20, 0, 1)
 		local required = math.ceil(#jcms.GetAliveSweepers() * 0.25 * timeReduction)
+		if jcms.util_IsPVP() then
+			required = math.ceil(math.min(#jcms.PVPGetTeamAlivePlayers(1), #jcms.PVPGetTeamAlivePlayers(2)) * 0.25 * timeReduction)
+		end
+
 		self:SetRequiredSwps(required)
 
 		self:SetSwpNear( #jcms.GetSweepersInRange(selfPos, 650) >= required )
