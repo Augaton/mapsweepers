@@ -132,6 +132,8 @@ end
 
 -- // Resources {{{
 
+	resource.AddWorkshop("3564041088") --TODO: TEMPORARY. Needed for ZMod to work.
+
 	resource.AddSingleFile("resource/fonts/jcms_regular.ttf")
 	resource.AddSingleFile("resource/fonts/jcms_light.ttf")
 	resource.AddSingleFile("resource/fonts/jcms_semibold.ttf")
