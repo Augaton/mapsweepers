@@ -466,7 +466,11 @@
 							if ready then
 								jcms.playerspawn_RespawnAs(ply, "sweeper")
 								jcms.statistics_AddMissionStatus(ply, jcms.director.missionType, jcms.director.faction, false)
-								ply.jcms_isNPC = nil
+								if not jcms.util_IsPVP() then
+									ply.jcms_isNPC = nil
+								else
+									ply.jcms_isNPC = true
+								end
 
 								jcms.director_stats_SetLockedState(jcms.director, ply, "sweeper")
 								if jcms.director_GetMissionTime() > 8 then
