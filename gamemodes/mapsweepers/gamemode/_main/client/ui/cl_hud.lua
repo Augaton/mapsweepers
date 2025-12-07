@@ -363,6 +363,14 @@
 		
 		local mtd = motionTouchupData[id]
 		if mtd.delta then
+			do --Filter out NaN, 
+				local dx, dy, dz = mtd.delta:Unpack()
+				dx = (dx ~= dx) and 0 or dx
+				dy = (dy ~= dy) and 0 or dy
+				dz = (dz ~= dz) and 0 or dz
+				mtd.delta:SetUnpacked(dx, dy, dz)
+			end
+
 			local W = 75
 			local npos = eyePos + mtd.delta
 			local ndelta = pos - eyePos
