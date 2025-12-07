@@ -296,10 +296,14 @@ end
 			if attacker:IsPlayer() then
 				local data = jcms.class_GetData(attacker)
 
-				if ent:IsPlayer() and isEntAndAttackerSameTeam then
-					local dmgAmnt = dmg:GetDamage()
-					local dmgCap = (ent:GetMaxHealth() + ent:GetMaxArmor()) * 0.75
-					dmg:SetDamage( math.Clamp(dmgAmnt, 0, dmgCap) )
+				if ent:IsPlayer() then
+					if isEntAndAttackerSameTeam then 
+						local dmgAmnt = dmg:GetDamage()
+						local dmgCap = (ent:GetMaxHealth() + ent:GetMaxArmor()) * 0.75
+						dmg:SetDamage( math.Clamp(dmgAmnt, 0, dmgCap) )
+					elseif (not jcms.team_pvpSameTeam(attacker, ent)) and jcms.team_JCorp_player(attacker) and jcms.team_JCorp_player(ent) then 
+						dmg:ScaleDamage(0.75) --Slight dmg reduction for PvP players.
+					end
 				end
 
 				if inflictor:IsWeapon() and not inflictor.Base then -- Scale damage done by all engine weapons
