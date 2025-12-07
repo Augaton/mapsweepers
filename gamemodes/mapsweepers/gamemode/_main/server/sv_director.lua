@@ -56,6 +56,7 @@
 				tags_entdict = {},
 				tags_perplayer = {},
 				nukesDropped = 0,
+				teamRespawnWaves = {},
 
 				-- Steam ID stats {{{
 					cachedNicknames = {},
@@ -198,6 +199,8 @@
 
 		function jcms.director_PvpObjectiveCompletedTeam(teamId, pos, nonLocal) --Skips getting player team 
 			if not jcms.util_IsPVP() then return end
+			local teamRespWaves = jcms.director.teamRespawnWaves[teamId] or 0 
+			jcms.director.teamRespawnWaves[teamId] = teamRespWaves + 1
 
 			local weightedAreas = {}
 			if not nonLocal then
@@ -207,7 +210,7 @@
 			end
 
 			if jcms.cvar_pvprespawnmode:GetInt() == 0 then
-				local respCount = math.ceil(player.GetCount()/2) --half the server in Respawns
+				local respCount = math.ceil(player.GetCount()/((teamRespWaves/2) +2)) --half the server in Respawns, decreasing each wave this team gets
 
 				for i=1, respCount, 1 do
 					if nonLocal then
