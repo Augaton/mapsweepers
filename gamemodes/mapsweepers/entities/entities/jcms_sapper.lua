@@ -133,23 +133,40 @@ if SERVER then
 						local closestDist = math.huge
 						local closestZDiff = math.huge
 						
-						for ent, tagInfo in pairs(tagEnts) do 
-							if tagInfo.active and not tagInfo.locatorIgnore then 
-								local entPos = ent:GetPos()
-								local dist = entPos:Distance(selfPos)
-								if dist < closestDist then 
-									closestDist = dist
-									closestEnt = ent
-									closestInfo = tagInfo
-									closestZDiff = entPos.z - selfPos.z
+						if not(jcms.util_IsPVP() and jcms.director.missionData.evacuating) then
+							for ent, tagInfo in pairs(tagEnts) do 
+								if tagInfo.active and not tagInfo.locatorIgnore then 
+									local entPos = ent:GetPos()
+									local dist = entPos:Distance(selfPos)
+									if dist < closestDist then 
+										closestDist = dist
+										closestEnt = ent
+										closestInfo = tagInfo
+										closestZDiff = entPos.z - selfPos.z
+									end
 								end
 							end
+						else 
+							local ourTeam = self:GetNWInt("jcms_pvpTeam", -1)
+
+							for i, ply in ipairs(team.GetPlayers(1)) do 
+								if not jcms.team_pvpSameTeam_optimised(ourTeam, ply:GetNWInt("jcms_pvpTeam", -1)) then
+									local plyPos = ply:GetPos()
+									local dist = plyPos:Distance(selfPos)
+									if dist < closestDist then 
+										closestDist = dist
+										closestEnt = ply
+										closestZDiff = plyPos.z - selfPos.z
+									end
+								end
+							end
+
 						end
 
 						if IsValid(closestEnt) then 
 							self:SetNWInt("jcms_locator_distance", math.floor(closestDist) )
 							self:SetNWInt("jcms_locator_zdiff", math.floor(closestZDiff) )
-							self:SetNWString("jcms_locator_target", closestInfo.name)
+							self:SetNWString("jcms_locator_target", (closestInfo and closestInfo.name) or closestEnt:Nick())
 							self:SetNWInt("jcms_locator_direction", jcms.util_GetCompassDir(selfPos, closestEnt:GetPos()))
 							self:EmitSound("buttons/combine_button5.wav", 100, 110, 1)
 						else
