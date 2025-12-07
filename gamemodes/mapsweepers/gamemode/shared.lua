@@ -1460,6 +1460,39 @@ local nmt = FindMetaTable("NPC")
 		mat:Mul(mat2)
 		return mat:GetAngles()
 	end
+
+	function jcms.util_GetLargestPvpTeamCount()
+		local teamCounts = {}
+
+		for i, ply in player.Iterator() do
+			local teamId = ply:GetNWInt("jcms_pvpTeam", -1)
+			teamCounts[teamId] = (teamCounts[teamId] or 0) + 1
+		end
+
+		local largest = 0
+		for teamId, count in pairs(teamCounts) do 
+			largest = math.max(count, largest)
+		end
+
+		return largest
+	end
+
+	
+	function jcms.util_GetLargestAlivePvpTeamCount()
+		local teamCounts = {}
+
+		for i, ply in ipairs(jcms.GetAliveSweepers()) do
+			local teamId = ply:GetNWInt("jcms_pvpTeam", -1)
+			teamCounts[teamId] = (teamCounts[teamId] or 0) + 1
+		end
+
+		local largest = 0
+		for teamId, count in pairs(teamCounts) do 
+			largest = math.max(count, largest)
+		end
+
+		return largest
+	end
 -- }}}
 
 -- Licenses {{{

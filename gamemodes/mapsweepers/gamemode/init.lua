@@ -2263,7 +2263,7 @@ end
 				ply:ConCommand( "jcms_jointeam 1" )
 				ply:ConCommand( "jcms_ready" )
 				if jcms.util_IsPVP() then 
-					ply:ConConcommand( "jcms_jointeam_pvp " .. tostring(math.random(1,2)) )
+					ply:ConCommand( "jcms_jointeam_pvp " .. tostring(math.random(1,2)) )
 				end
 			end
 

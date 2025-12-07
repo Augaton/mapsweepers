@@ -145,7 +145,7 @@ local prefabs = jcms.prefabs
 				util.Effect("Sparks", ed)
 
 				finalDmg = math.Clamp(finalDmg, 0, 400)
-				finalDmg = finalDmg / #team.GetPlayers(1)
+				finalDmg = finalDmg / (jcms.util_IsPVP() and jcms.util_GetLargestPvpTeamCount() or #team.GetPlayers(1))
 
 				self:SetHealth( math.Clamp(self:Health() - finalDmg, 0, self:GetMaxHealth()) )
 				

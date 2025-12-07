@@ -48,7 +48,7 @@ if SERVER then
 	}
 
 	function jcms.ore_GetValue(type, mass)
-		return (math.ceil((tonumber(mass) or 0) * jcms.oreTypes[type].value)  / math.sqrt(#team.GetPlayers(1)))
+		return (math.ceil((tonumber(mass) or 0) * jcms.oreTypes[type].value)  / math.sqrt(jcms.util_IsPVP() and jcms.util_GetLargestPvpTeamCount() or #team.GetPlayers(1)))
 	end
 
 	jcms.oreTypes = {
