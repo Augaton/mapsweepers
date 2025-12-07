@@ -61,6 +61,7 @@
 				-- Steam ID stats {{{
 					cachedNicknames = {},
 					lockstates = {}, -- "sweeper", "evacuated", "npc". Doesn't let player cheat by re-joining.
+					lockpvpteams = {},
 					deathtimes = {},
 
 					-- As sweeper:
@@ -1938,13 +1939,17 @@
 			end
 		end
 
-		function jcms.director_stats_SetLockedState(d, ply, state)
+		function jcms.director_stats_SetLockedState(d, ply, state, pvpTeam)
 			if d and (not d.gameover) and IsValid(ply) then
 				local sid64 = ply:IsBot() and ("BOT_" .. ply:Nick()) or ply:SteamID64()
 				-- "sweeper": We spawned in at least once. Upon rejoining we'll be dead, but will be able to respawn as a sweeper or an NPC.
 				-- "evacuated": We are still a sweeper, but we can't respawn. We can go NPC and still be credited as a sweeper.
 				-- "npc": We've chosen to be an NPC. We can't respawn as a sweeper, and we won't be credited as one.
 				d.lockstates[ sid64 ] = state
+				if pvpTeam then
+					d.lockpvpteams[ sid64 ] = pvpTeam
+				end
+
 				jcms.director_stats_Ensure(d, ply)
 			end
 		end
@@ -1972,7 +1977,7 @@
 		function jcms.director_stats_GetLockedState(d, ply)
 			if d and IsValid(ply) then
 				local sid64 = ply:IsBot() and ("BOT_" .. ply:Nick()) or ply:SteamID64()
-				return d.lockstates[ sid64 ]
+				return d.lockstates[ sid64 ], d.lockpvpteams[ sid64 ]
 			end
 		end
 

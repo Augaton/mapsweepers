@@ -452,7 +452,7 @@
 									ply.jcms_isNPC = true
 								end
 
-								jcms.director_stats_SetLockedState(jcms.director, ply, "sweeper")
+								jcms.director_stats_SetLockedState(jcms.director, ply, "sweeper", ply:GetNWInt("jcms_pvpTeam", -1))
 								if jcms.director_GetMissionTime() > 8 then
 									jcms.net_SendRespawnEffect(ply)
 									jcms.announcer_Speak(jcms.ANNOUNCER_JOIN)

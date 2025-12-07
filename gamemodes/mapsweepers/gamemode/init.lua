@@ -1389,7 +1389,7 @@ end
 							jcms.net_SendMissionEnding(d.victory, ply)
 						else
 							-- Handle the player according to their pre-rejoin session.
-							local state = jcms.director_stats_GetLockedState(d, ply)
+							local state, pvpTeam = jcms.director_stats_GetLockedState(d, ply)
 
 							if state == "sweeper" then
 								-- We've been here before. Now we're considered dead.
@@ -1399,6 +1399,12 @@ end
 
 								if jcms.util_IsPVP() then
 									ply.jcms_isNPC = true
+
+									if (pvpTeam and pvpTeam > 0) then
+										ply:SetNWInt("jcms_pvpTeam", pvpTeam)
+									end
+								else
+									ply:SetNWInt("jcms_pvpTeam", -1)
 								end
 							elseif state == "evacuated" then
 								-- We've evacuated before. Now we're just spectating with the option to be an NPC.
