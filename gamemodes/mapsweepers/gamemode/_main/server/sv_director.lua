@@ -1261,7 +1261,7 @@
 									jcms.director_InvalidateRespawnBeacon(beacon)
 								end
 							end)
-						elseif isvector(beacon) then
+						elseif isvector(beacon) or isfunction(beacon) then
 							ply.jcms_lastRespawnTime = CurTime()
 							
 							--Instantly droppod us in.
