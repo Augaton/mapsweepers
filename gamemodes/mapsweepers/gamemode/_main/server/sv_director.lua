@@ -350,11 +350,7 @@
 
 			if ply.jcms_playerRespawnVectors and #ply.jcms_playerRespawnVectors > 0 then 
 				table.Shuffle(ply.jcms_playerRespawnVectors)
-				if isfunction(ply.jcms_playerRespawnVectors[1]) then 
-					return ply.jcms_playerRespawnVectors[1](ply), true
-				else
-					return ply.jcms_playerRespawnVectors[1], true
-				end
+				return ply.jcms_playerRespawnVectors[1], true
 			end
 			
 			local beacons = d.respawnBeacons
@@ -381,11 +377,7 @@
 
 			if d.respawnVectors[teamId] and #d.respawnVectors[teamId] > 0 then
 				table.Shuffle(d.respawnVectors[teamId]) --I did this because it's done to beacons but do we actually want a random order?
-				if isfunction(d.respawnVectors[teamId][1]) then 
-					return d.respawnVectors[teamId][1](ply), false
-				else
-					return d.respawnVectors[teamId][1], false
-				end
+				return d.respawnVectors[teamId][1], false
 			end 
 		end
 
@@ -1223,8 +1215,8 @@
 
 					if (timeSinceDeath >= respawnDelay) and (timeSinceRespawnAttempt >= respawnInterval) and timeTabbedOut < 20 then
 						local beacon, playerOriented = jcms.director_FindRespawnBeacon(false, ply)
-						
-						if IsValid(beacon) and isentity(beacon) then
+
+						if isentity(beacon) and IsValid(beacon) then
 							ply.jcms_lastRespawnTime = CurTime()
 							local delay = 3
 							
@@ -1263,9 +1255,14 @@
 							end)
 						elseif isvector(beacon) or isfunction(beacon) then
 							ply.jcms_lastRespawnTime = CurTime()
+
+							local vec = beacon
+							if isfunction(beacon) then --Dynamic respawns
+								vec = beacon(ply)
+							end
 							
 							--Instantly droppod us in.
-							jcms.playerspawn_RespawnAs(ply, "sweeper", beacon) 
+							jcms.playerspawn_RespawnAs(ply, "sweeper", vec) 
 
 							local pvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
 							if pvpTeam == -1 then pvpTeam = 1 end --Default 1 to work with normal mode.
