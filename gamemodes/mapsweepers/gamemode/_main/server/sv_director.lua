@@ -433,7 +433,8 @@
 			end
 
 			--Pick final area / vec
-			return jcms.util_ChooseByWeight(areaWeights):GetCenter()
+			local area = jcms.util_ChooseByWeight(areaWeights)
+			return area:GetCenter()
 		end
 
 		function jcms.director_InvalidateRespawnBeacon(beacon)
@@ -453,7 +454,7 @@
 		end
 
 		function jcms.director_InvalidateRespawnVector(vec, teamId)
-			if not jcms.director or not isvector(vec) then return end
+			if not jcms.director then return end
 			if teamId == -1 or not teamId then teamId = 1 end
 
 			local vectorTbl = jcms.director.respawnVectors[teamId]
