@@ -2262,11 +2262,17 @@ end
 			for i, ply in player.Iterator() do 
 				ply:ConCommand( "jcms_jointeam 1" )
 				ply:ConCommand( "jcms_ready" )
+				if jcms.util_IsPVP() then 
+					ply:ConConcommand( "jcms_jointeam_pvp " .. tostring(math.random(1,2)) )
+				end
 			end
 
 			for i, bot in ipairs(player.GetBots()) do
 				bot:SetNWInt("jcms_desiredteam", 1)
 				bot:SetNWBool("jcms_ready", true)
+				if jcms.util_IsPVP() then 
+					bot:SetNWInt( "jcms_pvpTeam", math.random(1,2) )
+				end
 			end
 
 			--TODO: Tell director to teleport spawn us instead of using the droppod
@@ -2698,6 +2704,8 @@ end
 		jcms.runprogress_UpdateAllPlayers()
 		game.GetWorld():SetNWInt("jcms_winstreak", state and 0 or jcms.runprogress.winstreak)
 		game.GetWorld():SetNWInt("jcms_difficulty", state and 1 or jcms.runprogress.difficulty)
+
+		jcms.mission_Randomize()
 	end
 
 	function jcms.pvp_StartVote(time)

@@ -501,6 +501,9 @@ jcms.missions.datadownload = {
 					if md.defenseProgress < 1 then
 						if not(downloadSucceeded) then
 							jcms.net_SendTip("all", true, "#jcms.datadownload_failed", tonumber(md.defenseProgress) or 0)
+							if jcms.util_IsPVP() then --Resets in PvP
+								md.defenseProgress = 0
+							end
 						else
 							--TODO: Datadownload succeeded tip.
 						end

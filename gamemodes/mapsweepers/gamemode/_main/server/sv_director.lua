@@ -85,7 +85,7 @@
 					local defaultWeights = {}
 					local areaPositions = {}
 					for i, area in ipairs( jcms.mapgen_MainZone() ) do 
-						defaultWeights[area] = math.sqrt(area:GetSizeX() * area:GetSizeY())
+						defaultWeights[area] = math.sqrt(area:GetSizeX() * area:GetSizeY()) / #area:GetVisibleAreas()
 						areaPositions[area]  = area:GetCenter()
 					end
 					local avoidVectors = {}
@@ -199,29 +199,32 @@
 		function jcms.director_PvpObjectiveCompletedTeam(teamId, pos, nonLocal) --Skips getting player team 
 			if not jcms.util_IsPVP() then return end
 
-			local areas
-			if nonLocal then 
-				areas = jcms.mapgen_MainZone()
-			else
-				areas = jcms.director_GetAreasAwayFrom(jcms.mapgen_MainZone(), {pos}, 100, 1250)
-			end
-
 			local weightedAreas = {}
-			for i, area in ipairs(areas) do
-				weightedAreas[area] = area:GetSizeX() * area:GetSizeY()
+			if not nonLocal then
+				for i, area in ipairs(jcms.director_GetAreasAwayFrom(jcms.mapgen_MainZone(), {pos}, 100, 1250)) do
+					weightedAreas[area] = area:GetSizeX() * area:GetSizeY()
+				end
 			end
 
 			if jcms.cvar_pvprespawnmode:GetInt() == 0 then
 				local respCount = math.ceil(player.GetCount()/2) --half the server in Respawns
 
 				for i=1, respCount, 1 do
-					local area = jcms.util_ChooseByWeight(weightedAreas) --TODO: account for no areas? Although that should be impossible.
-					jcms.director_InsertRespawnVector(area:GetCenter(), teamId)
+					if nonLocal then
+						jcms.director_InsertRespawnVector(jcms.director_PvpDynamicRespawn, teamId)
+					else
+						local area = jcms.util_ChooseByWeight(weightedAreas) --TODO: account for no areas? Although that should be impossible.
+						jcms.director_InsertRespawnVector(area:GetCenter(), teamId)
+					end
 				end
 			elseif jcms.cvar_pvprespawnmode:GetInt() == 1 then 
 				for i, ply in ipairs(jcms.PVPGetTeamPlayers(teamId)) do 
-					local area = jcms.util_ChooseByWeight(weightedAreas)
-					jcms.director_GiveRespawnVector(area:GetCenter(), ply)
+					if nonLocal then
+						jcms.director_GiveRespawnVector(jcms.director_PvpDynamicRespawn, ply)
+					else
+						local area = jcms.util_ChooseByWeight(weightedAreas)
+						jcms.director_GiveRespawnVector(area:GetCenter(), ply)
+					end
 				end
 			end
 		end
@@ -344,7 +347,11 @@
 
 			if ply.jcms_playerRespawnVectors and #ply.jcms_playerRespawnVectors > 0 then 
 				table.Shuffle(ply.jcms_playerRespawnVectors)
-				return ply.jcms_playerRespawnVectors[1], true
+				if isfunction(ply.jcms_playerRespawnVectors[1]) then 
+					return ply.jcms_playerRespawnVectors[1](ply), true
+				else
+					return ply.jcms_playerRespawnVectors[1], true
+				end
 			end
 			
 			local beacons = d.respawnBeacons
@@ -371,12 +378,16 @@
 
 			if d.respawnVectors[teamId] and #d.respawnVectors[teamId] > 0 then
 				table.Shuffle(d.respawnVectors[teamId]) --I did this because it's done to beacons but do we actually want a random order?
-				return d.respawnVectors[teamId][1], false
+				if isfunction(d.respawnVectors[teamId][1]) then 
+					return d.respawnVectors[teamId][1](ply), false
+				else
+					return d.respawnVectors[teamId][1], false
+				end
 			end 
 		end
 
 		function jcms.director_InsertRespawnVector(vec, teamId)
-			if not jcms.director or not isvector(vec) then return end
+			if not jcms.director then return end
 			if teamId == -1 or not teamId then teamId = 1 end
 
 			jcms.director.respawnVectors[teamId] = jcms.director.respawnVectors[teamId] or {}
@@ -387,6 +398,39 @@
 		function jcms.director_GiveRespawnVector(vec, ply)
 			ply.jcms_playerRespawnVectors = ply.jcms_playerRespawnVectors or {} 
 			table.insert(ply.jcms_playerRespawnVectors, vec)
+		end
+
+		function jcms.director_PvpDynamicRespawn(ply) --TODO: Prefer outside of radiation.
+			local plyPos = ply:WorldSpaceCenter()
+			local plyTeam = ply:GetNWInt("jcms_pvpTeam", -1)
+
+			--Get enemy positions
+			local enemyVecs = {}
+			for i, otherPly in ipairs(team.GetPlayers(1)) do 
+				if not jcms.team_pvpSameTeam_optimised(plyTeam, otherPly:GetNWInt("jcms_pvpTeam", -1)) then 
+					table.insert(enemyVecs, otherPly:WorldSpaceCenter())
+				end
+			end
+
+			--Calculate weights
+			local areaWeights = {}
+			for i, area in ipairs(jcms.mapgen_MainZone()) do 
+				--Limit impact of differently sized areas, avoid very open / visible areas.
+				areaWeights[area] = math.sqrt(area:GetSizeX() * area:GetSizeY()) / math.sqrt(#area:GetVisibleAreas())
+
+				local closest = math.huge
+				for i, vec in ipairs(enemyVecs) do
+					local dist = plyPos:Distance(vec)
+					closest = math.min(closest, dist)
+				end
+
+				if not(closest == math.huge) then --Avoid enemies.
+					areaWeights[area] = areaWeights[area] * math.sqrt(closest)
+				end
+			end
+
+			--Pick final area / vec
+			return jcms.util_ChooseByWeight(areaWeights):GetCenter()
 		end
 
 		function jcms.director_InvalidateRespawnBeacon(beacon)
