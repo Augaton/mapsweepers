@@ -48,7 +48,7 @@ prefabs.combine_floorturrets = {
 
 		local weight = indoorTrace.HitSky and 0.01 or 1 --Prefer indoors / hidden
 		weight = weight * (#area:GetAdjacentAreas() <= 2 and 1 or 0.25)
-		return weight  --* #area:GetVisibleAreas() / #area:GetAdjacentAreas() --Prefer Corners with high visible area-count.
+		return weight  --* math.max(#area:GetVisibleAreas(), 1) / #area:GetAdjacentAreas() --Prefer Corners with high visible area-count.
 	end,
 
 	stamp = function(area, data)

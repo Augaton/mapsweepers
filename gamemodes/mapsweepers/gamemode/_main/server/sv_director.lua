@@ -86,7 +86,7 @@
 					local defaultWeights = {}
 					local areaPositions = {}
 					for i, area in ipairs( jcms.mapgen_MainZone() ) do 
-						defaultWeights[area] = math.sqrt(area:GetSizeX() * area:GetSizeY()) / #area:GetVisibleAreas()
+						defaultWeights[area] = math.sqrt(area:GetSizeX() * area:GetSizeY()) / math.max(#area:GetVisibleAreas(), 1)
 						areaPositions[area]  = area:GetCenter()
 					end
 					local avoidVectors = {}
@@ -409,9 +409,10 @@
 
 			--Calculate weights
 			local areaWeights = {}
+
 			for i, area in ipairs(jcms.mapgen_MainZone()) do 
 				--Limit impact of differently sized areas, avoid very open / visible areas.
-				areaWeights[area] = math.sqrt(area:GetSizeX() * area:GetSizeY()) / math.sqrt(#area:GetVisibleAreas())
+				areaWeights[area] = math.sqrt(area:GetSizeX() * area:GetSizeY()) /math.sqrt(math.max(#area:GetVisibleAreas(), 1))
 
 				local closest = math.huge
 				for i, vec in ipairs(enemyVecs) do

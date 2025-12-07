@@ -40,7 +40,7 @@ prefabs.rebel_jammer = {
 
 		--Prefer indoors / hidden
 		local weight = indoorTrace.HitSky and 0.01 or 1
-		return weight / math.sqrt(#area:GetVisibleAreas())
+		return weight / math.sqrt(math.max(#area:GetVisibleAreas(), 1))
 	end,
 
 	stamp = function(area, data)

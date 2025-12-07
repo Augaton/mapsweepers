@@ -31,7 +31,7 @@ prefabs.antlion_grubbombs = {
 	end,
 
 	areaWeight = function(area)
-		return (1 / (#area:GetAdjacentAreas() * math.sqrt(#area:GetVisibleAreas())) )
+		return (1 / (#area:GetAdjacentAreas() * math.sqrt(math.max(#area:GetVisibleAreas(), 1))) )
 	end,
 
 	stamp = function(area, data)

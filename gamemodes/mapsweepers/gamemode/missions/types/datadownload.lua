@@ -40,7 +40,7 @@ jcms.missions.datadownload = {
 			-- // Area Weights {{{
 				local weightedAreas = {}
 				for i, area in ipairs(jcms.mapgen_MainZone()) do --Prioritise outdoor areas, ignore too small ones.
-					weightedAreas[area] = #area:GetVisibleAreas()
+					weightedAreas[area] = math.max(#area:GetVisibleAreas(), 1)
 					if area:GetSizeX() < 250 or area:GetSizeY() < 250 then
 						weightedAreas[area] = nil
 					elseif not jcms.mapgen_AreaFlat(area) then
