@@ -314,6 +314,7 @@
 				teamCounts[teamId] = (teamCounts[teamId] or 0) + 1
 				teamCountsNoPersonal[teamId] = teamCounts[teamId]
 			end
+			
 
 			--Respawn Vectors
 			for i, vecTbl in pairs(d.respawnVectors) do --Could technically be discontinuous.
@@ -1251,8 +1252,12 @@
 									ply:SetAngles(respawnAngle)
 
 									beacon:DoPostRespawnEffect(ply)
-									beacon:SetRespawnBusy(false)
+									
 									jcms.director_InvalidateRespawnBeacon(beacon)
+								end
+
+								if IsValid(beacon) then 
+									beacon:SetRespawnBusy(false)
 								end
 							end)
 						elseif isvector(beacon) or isfunction(beacon) then
