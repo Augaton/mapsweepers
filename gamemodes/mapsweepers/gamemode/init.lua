@@ -2507,12 +2507,40 @@ end
 
 	concommand.Add("jcms_jointeam_pvp", function(ply, cmd, args)
 		if jcms.pvp_vote_IsOngoing() then return end
-		
 		if (jcms.director and ply:GetNWInt("jcms_pvpTeam", -1) ~= -1) then return end
 
 		if jcms.util_IsPVP() then
 			local teamId = tonumber(args[1])
-			if jcms.pvp_IsGoodTeamId(teamId) then
+			local autobalance = jcms.cvar_pvpautobalance:GetInt()
+			
+			local populations = { [1] = 0, [2] = 0 }
+			for i, oply in ipairs( player.GetAll() ) do
+				local oplyTeamId = oply:GetNWInt("jcms_pvpTeam", -1)
+				if oplyTeamId > 0 then
+					populations[ oplyTeamId ] = (populations[ oplyTeamId ] or 0) + 1
+				end
+			end
+
+			local lowest = math.huge
+			for id, count in pairs(populations) do
+				lowest = math.min(lowest, count)
+			end
+
+			if autobalance == 2 then
+				-- Automatically assign player to team with least players
+				local options = {}
+
+				for id, count in pairs(populations) do
+					if count == lowest then
+						table.insert(options, id)
+					end
+				end
+
+				teamId = options[ math.random(1, #options) ]
+			end
+
+			if jcms.pvp_IsGoodTeamId(teamId)
+			and ((autobalance == 0) or (not populations[teamId] or populations[teamId] == lowest)) then
 				ply:SetNWInt("jcms_pvpTeam", teamId)
 				ply:ConCommand("jcms_jointeam 1")
 			end
@@ -2697,10 +2725,20 @@ end
 -- // PVP {{{
 
 	function jcms.pvp_SetEnabled(state)
-		for i, oply in player.Iterator() do
-			oply:SetNWBool("jcms_ready", false)
-			oply:SetNWInt("jcms_desiredteam", 0)
-			oply:SetNWInt("jcms_pvpTeam", -1)
+		for i, ply in player.Iterator() do
+			ply:SetNWBool("jcms_ready", false)
+			ply:SetNWInt("jcms_desiredteam", 0)
+			ply:SetNWInt("jcms_pvpTeam", -1)
+		end
+
+		if state and jcms.cvar_pvpautobalance:GetInt() == 2 then
+			-- Randomly assign each player to a team
+			local players = player.GetAll()
+			table.Shuffle(players)
+
+			for i, ply in ipairs(players) do
+				ply:SetNWInt("jcms_pvpTeam", i%2 + 1)
+			end
 		end
 
 		game.GetWorld():SetNWBool("jcms_pvpmode", state)
@@ -2752,6 +2790,17 @@ end
 
 		if approvalRatio >= 0.75 then
 			jcms.pvp_SetEnabled(true)
+			
+			if jcms.cvar_pvpautobalance:GetInt() == 2 then
+				-- Randomly assign each player to a team
+				local players = player.GetAll()
+				table.Shuffle(players)
+
+				for i, ply in ipairs(players) do
+					ply:SetNWInt("jcms_pvpTeam", i%2 + 1)
+					ply:SetNWInt("jcms_desiredteam", 1)
+				end
+			end
 		else
 			jcms.pvp_SetEnabled(false)
 		end

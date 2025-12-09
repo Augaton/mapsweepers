@@ -833,7 +833,43 @@ jcms.offgame = jcms.offgame or NULL
 					pnlPVE:SetVisible(not isPVP)
 					pnlPVP:SetVisible(isPVP)
 
-					if not isPVP then
+					if isPVP then
+						local autobalance = jcms.cvar_pvpautobalance:GetInt()
+
+						if autobalance == 0 then
+							bJoinTeam1:SetText("#jcms.joinas_pvp1")
+							bJoinTeam1:SetVisible(true)
+							bJoinTeam1:SetEnabled(true)
+
+							bJoinTeam2:SetVisible(true)
+							bJoinTeam2:SetEnabled(true)
+						elseif autobalance == 2 then
+							-- Just one button
+							bJoinTeam1:SetText("#jcms.joinas_pvp_rand")
+							bJoinTeam1:SetVisible(true)
+							bJoinTeam1:SetEnabled(true)
+							
+							bJoinTeam2:SetVisible(false)
+							bJoinTeam2:SetEnabled(false)
+						elseif autobalance == 1 then
+							local populations = { 0, 0 }
+							
+							for i, ply in ipairs(player.GetAll()) do
+								local plyPvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
+								
+								if populations[ plyPvpTeam ] then
+									populations[ plyPvpTeam ] = populations[ plyPvpTeam ] + 1
+								end
+							end
+
+							bJoinTeam1:SetText("#jcms.joinas_pvp1")
+							bJoinTeam1:SetVisible(true)
+							bJoinTeam1:SetEnabled(populations[1] <= populations[2])
+
+							bJoinTeam2:SetVisible(true)
+							bJoinTeam2:SetEnabled(populations[1] >= populations[2])
+						end
+					else
 						bJoinNPC:SetVisible(jcms.cvar_npcteam_restrict:GetInt() == 0)
 					end
 

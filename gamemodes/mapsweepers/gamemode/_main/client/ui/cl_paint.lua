@@ -176,9 +176,12 @@
 		local cond = p:IsEnabled() and p:IsHovered()
 		local clr = cond and jcms.color_bright_alt or jcms.color_bright
 		local clr_dark = cond and jcms.color_dark_alt or jcms.color_dark
-		
+		local faded = not p:IsEnabled()
+
+		if faded then surface.SetAlphaMultiplier(0.333) end
 		surface.SetDrawColor(clr)
 		drawFilledPolyButton(0, 0, w, h, pad)
+		if faded then surface.SetAlphaMultiplier(1) end
 		
 		draw.SimpleText(p:GetText(), p.jFont or "jcms_small_bolder", w/2 - 1, h/2 - 1, clr_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		
