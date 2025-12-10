@@ -993,7 +993,7 @@ local nmt = FindMetaTable("NPC")
 		local plys = jcms.GetAliveSweepers()
 		for i=#plys, 1, -1 do 
 			local ply = plys[i] 
-			if not(ply:GetNWInt("jcms_desiredteam", -1) == 1) then
+			if not jcms.team_pvpSameTeam_optimised(pvpTeam, ply:GetNWInt("jcms_pvpTeam", -1)) then
 				table.remove(plys, i)
 			end
 		end
