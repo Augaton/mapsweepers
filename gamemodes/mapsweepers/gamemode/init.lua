@@ -1210,7 +1210,7 @@ end
 	end)
 	
 	function GM:PlayerCanPickupItem(ply, item)
-		return jcms.team_JCorp_player(ply) and item:IsPlayerHolding()
+		return jcms.team_JCorp_player(ply) and (item:IsPlayerHolding() or item.jcms_autoPickup)
 	end
 
 	function GM:PlayerCanPickupWeapon(ply, wep)
