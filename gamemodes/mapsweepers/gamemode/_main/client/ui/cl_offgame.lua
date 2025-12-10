@@ -3340,11 +3340,17 @@ jcms.offgame = jcms.offgame or NULL
 						end
 					end
 
-					table.sort(pnl.multiPnl.leaderboardSweeper.entries, function(first, last)
-						local totalFirst = (first.kills_direct or 0) + (first.kills_defenses or 0) + (first.kills_explosions or 0)
-						local totalLast = (last.kills_direct or 0) + (last.kills_defenses or 0) + (last.kills_explosions or 0)
-						return totalFirst > totalLast
-					end)
+					if jcms.util_IsPVP() then
+						table.sort(pnl.multiPnl.leaderboardSweeper.entries, function(first, last)
+							return (first.kills_pvp or 0) > (last.kills_pvp or 0)
+						end)
+					else
+						table.sort(pnl.multiPnl.leaderboardSweeper.entries, function(first, last)
+							local totalFirst = (first.kills_direct or 0) + (first.kills_defenses or 0) + (first.kills_explosions or 0)
+							local totalLast = (last.kills_direct or 0) + (last.kills_defenses or 0) + (last.kills_explosions or 0)
+							return totalFirst > totalLast
+						end)
+					end
 
 					table.sort(pnl.multiPnl.leaderboardNPC.entries, function(first, last)
 						local totalFirst = (first.kills_sweepers or 0) + (first.kills_turrets or 0)
