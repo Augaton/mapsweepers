@@ -59,6 +59,8 @@
 		["4b0bf4d9b4a8b6a5d2dd3cb1c0cdeb8479724e5de7cd8313a1a8c82541cdcf37"] = "supporter", -- n
 		["02a7975c58da0334e0e5f8de91b0d9a2b8d29ef5d2352d2e821ed1219e445bb1"] = "supporter", -- de
 
+		["0718768ecdf6b1aa28d7a41f6c0262e581fa533fd6c09128f86363d3147e3575"] = "supporter", --f
+
 
 	}
 
