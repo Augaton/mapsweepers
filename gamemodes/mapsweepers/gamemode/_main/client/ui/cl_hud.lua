@@ -1015,6 +1015,54 @@
 		end,
 	}
 
+	function jcms.draw_Crosshair_SprintBoost(x, y, col)
+		local me = jcms.locPly
+		local classData = jcms.class_GetLocPlyData()
+		
+		local frac = math.TimeFraction(classData.runSpeed, classData.boostedRunSpeed, me:GetRunSpeed())
+			
+		render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
+			if frac <= 0 then
+				jcms.hud_playedBoostSound = false
+				surface.SetDrawColor(col)
+				jcms.draw_Circle(x, y, 64, 64, 12, 16)
+
+				surface.SetAlphaMultiplier(0.5)
+				surface.SetDrawColor(col)
+				
+				local n = 4
+				local a = (CurTime() % 1) * math.pi*2
+				local aSpan = math.pi*2 / n
+				for i=1, n do
+					jcms.draw_Circle(x, y, 96, 96, 12, 16, a+aSpan*(i-1), a+aSpan*i-0.5)
+				end
+			else
+				if not jcms.hud_playedBoostSound then
+					surface.PlaySound("player/suit_sprint.wav")
+					jcms.hud_playedBoostSound = true
+				end
+
+				local aSpan = frac * math.pi / 2
+				if frac >= 1 then
+					surface.SetAlphaMultiplier(1 - CurTime() % 0.5)
+				else
+					surface.SetAlphaMultiplier(0.5 + frac*0.5)
+				end
+
+				surface.SetDrawColor(col)
+				jcms.draw_Circle(x, y, 96, 96, 12, 16, math.pi/2 + aSpan/2, math.pi*5/2 - aSpan/2)
+				
+				surface.SetAlphaMultiplier(0.3)
+				surface.SetDrawColor(col)
+				jcms.draw_Circle(x, y, 128, 128, 24, 16, 0, math.pi)
+
+				surface.SetAlphaMultiplier(1)
+				surface.SetDrawColor(col)
+				jcms.draw_Circle(x, y, 128, 128, 20, 16, math.pi/2 - aSpan, math.pi/2 + aSpan)
+			end
+		render.OverrideBlend( false )
+	end
+
 	function jcms.draw_Crosshair()
 		local me = jcms.locPly
 		if not(IsValid(me) and me:Alive()) then return end
@@ -1035,48 +1083,7 @@
 		local classData = jcms.class_GetLocPlyData()
 
 		if classData and classData.disallowSprintAttacking and classData.boostedRunSpeed and me:IsSprinting() then
-			local frac = math.TimeFraction(classData.runSpeed, classData.boostedRunSpeed, me:GetRunSpeed())
-			
-			render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
-				if frac <= 0 then
-					jcms.hud_playedBoostSound = false
-					surface.SetDrawColor(jcms.color_bright_alt)
-					jcms.draw_Circle(0, 0, 64, 64, 12, 16)
-
-					surface.SetAlphaMultiplier(0.5)
-					surface.SetDrawColor(jcms.color_bright_alt)
-					
-					local n = 4
-					local a = (CurTime() % 1) * math.pi*2
-					local aSpan = math.pi*2 / n
-					for i=1, n do
-						jcms.draw_Circle(0, 0, 96, 96, 12, 16, a+aSpan*(i-1), a+aSpan*i-0.5)
-					end
-				else
-					if not jcms.hud_playedBoostSound then
-						surface.PlaySound("player/suit_sprint.wav")
-						jcms.hud_playedBoostSound = true
-					end
-
-					local aSpan = frac * math.pi / 2
-					if frac >= 1 then
-						surface.SetAlphaMultiplier(1 - CurTime() % 0.5)
-					else
-						surface.SetAlphaMultiplier(0.5 + frac*0.5)
-					end
-
-					surface.SetDrawColor(jcms.color_bright_alt)
-					jcms.draw_Circle(0, 0, 96, 96, 12, 16, math.pi/2 + aSpan/2, math.pi*5/2 - aSpan/2)
-					
-					surface.SetAlphaMultiplier(0.3)
-					surface.SetDrawColor(jcms.color_bright_alt)
-					jcms.draw_Circle(0, 0, 128, 128, 24, 16, 0, math.pi)
-
-					surface.SetAlphaMultiplier(1)
-					surface.SetDrawColor(jcms.color_bright_alt)
-					jcms.draw_Circle(0, 0, 128, 128, 20, 16, math.pi/2 - aSpan, math.pi/2 + aSpan)
-				end
-			render.OverrideBlend( false )
+			jcms.draw_Crosshair_SprintBoost(0,0, jcms.color_bright_alt)
 		else
 			jcms.hud_playedBoostSound = false
 

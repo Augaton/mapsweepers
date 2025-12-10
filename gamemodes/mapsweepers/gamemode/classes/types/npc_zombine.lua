@@ -35,9 +35,11 @@ class.damage = 1
 class.hurtMul = 0.9
 class.hurtReduce = 1
 class.speedMul = 1
-class.walkSpeed = 50
-class.runSpeed = 150
 class.jumpPower = 200
+class.walkSpeed = 100
+class.runSpeed = 150
+class.boostedRunSpeed = 250
+class.disallowSprintAttacking = true
 
 class.playerColorVector = Vector(0.6, 0, 0)
 
@@ -138,6 +140,22 @@ function class.Ability(ply)
 	end
 end
 
+function class.SetupMove(ply, mv, cmd) --Long-Distance-Running (Lifted from Sentinel)
+	local sprintDelay = 0.5 --Delay to start speeding up
+
+	if ply:IsSprinting() and not ply.sentinel_isSprinting then
+		ply.sentinel_sprintStart = CurTime()
+	end
+	ply.sentinel_isSprinting = ply:IsSprinting()
+
+	if ply.sentinel_isSprinting then
+		local sprintFrac = (CurTime() - ply.sentinel_sprintStart - sprintDelay)/3 --Progress to max
+		ply:SetRunSpeed(Lerp( sprintFrac, class.runSpeed, class.boostedRunSpeed))
+	else
+		ply:SetRunSpeed(class.runSpeed)
+	end
+end
+
 function class.OnDeath(ply)
 	local crab = ents.Create("npc_headcrab")
 	if IsValid(crab) then
@@ -162,7 +180,11 @@ if CLIENT then
 		cam.Start2D()
 			jcms.hud_npc_DrawTargetIDs(col, colAlt)
 			jcms.hud_npc_DrawHealthbars(ply, col, colAlt)
-			jcms.hud_npc_DrawCrosshairMelee(ply, weapon, col)
+			if not ply:IsSprinting() then
+				jcms.hud_npc_DrawCrosshairMelee(ply, weapon, col)
+			else 
+				jcms.draw_Crosshair_SprintBoost(sw/2, sh/2, col)
+			end
 			jcms.hud_npc_DrawSweeperStatus(col, colAlt)
 			jcms.hud_npc_DrawObjectives(col, colAlt)
 			jcms.hud_npc_DrawDamage(col, colAlt)
