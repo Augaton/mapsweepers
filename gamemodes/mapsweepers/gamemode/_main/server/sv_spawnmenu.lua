@@ -469,7 +469,7 @@
 			category = jcms.SPAWNCAT_ORBITALS,
 			cost = 250,
 			cooldown = 15,
-			slotPos = 5,
+			slotPos = 6,
 			argparser = "orbital_cone",
 			func = function(ply, target)
 				local skyPos = jcms.util_GetSky(target:GetPos())
@@ -522,6 +522,59 @@
 
 				jcms.announcer_SpeakChance(0.2, jcms.ANNOUNCER_ORBITALBEAM)
 				jcms.net_NotifyGeneric(ply, jcms.NOTIFY_ORDERED, "#jcms.orbitalbeam")
+			end
+		},
+
+		smoke = {
+			category = jcms.SPAWNCAT_ORBITALS,
+			cost = 150,
+			cooldown = 30,
+			slotPos = 5,
+			argparser = "orbital_fixed",
+			func = function(ply, pos)
+				local dif = pos - ply:GetPos()
+				dif:Normalize()
+				dif.z = 0
+				local right = dif:Angle():Right()
+				right:Mul(300)
+				
+				jcms.net_SendLocator("all", nil, "#jcms.smoke", pos, jcms.LOCATOR_TIMED, 2.5)
+
+				jcms.spawnmenu_Airstrike {
+					model = "models/props_junk/propane_tank001a.mdl",
+					pos = pos - right,
+					pos2 = pos + right,
+					
+					delay = { 0.1, 0.25 },
+					arrival = 2,
+					count = 5,
+					
+					radius = 300,
+					radius2 = 350,
+					
+					callback = function(bomb)
+						bomb.jcms_owner = ply
+						bomb:GetPhysicsObject():EnableDrag(false)
+
+						bomb:CallOnRemove( "jcms_smokeburst", function()
+							bomb:EmitSound("weapons/flaregun/fire.wav", 120, 80)
+							local ed = EffectData()
+							ed:SetMagnitude(10)
+							ed:SetOrigin(bomb:WorldSpaceCenter())
+							ed:SetNormal(bomb:GetAngles():Up())
+							ed:SetRadius(350)
+							ed:SetFlags(3)
+							util.Effect("jcms_blast", ed)
+							
+							if jcms.smokeScreens then
+								table.insert(jcms.smokeScreens, { pos = bomb:WorldSpaceCenter(), rad = 340, expires = CurTime() + 9 }) 
+							end
+						end)
+					end
+				}
+				
+				jcms.util_JetSound(pos)
+				jcms.net_NotifyGeneric(ply, jcms.NOTIFY_ORDERED, "#jcms.smoke")
 			end
 		},
 		
