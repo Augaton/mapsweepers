@@ -107,6 +107,8 @@
 					for k, order in pairs(jcms.orders) do
 						if order.pvpBlacklisted then
 							jcms.net_RemoveOrder(k)
+						elseif order.pvpExclusive then
+							jcms.net_SendOrder(k, order)
 						end
 					end
 				else
@@ -114,6 +116,8 @@
 					for k, order in pairs(jcms.orders) do
 						if order.pvpBlacklisted then
 							jcms.net_SendOrder(k, order)
+						elseif order.pvpExclusive then
+							jcms.net_RemoveOrder(k)
 						end
 					end
 				end

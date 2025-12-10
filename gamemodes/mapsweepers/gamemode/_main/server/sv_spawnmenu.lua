@@ -531,6 +531,8 @@
 			cooldown = 30,
 			slotPos = 5,
 			argparser = "orbital_fixed",
+			pvpExclusive = true,
+
 			func = function(ply, pos)
 				local dif = pos - ply:GetPos()
 				dif:Normalize()
@@ -1140,7 +1142,8 @@
 		if orderData then
 			local costMult, coolDownMult = jcms.class_GetCostMultipliers(jcms.class_GetData(ply), orderData)
 			local cost = orderData.cost_override or orderData.cost
-			if cost <= 0 or (jcms.util_IsPVP() and orderData.pvpBlacklisted) then
+			local isPvp = jcms.util_IsPVP()
+			if cost <= 0 or (isPvp and orderData.pvpBlacklisted) or (not isPvp and orderData.pvpExclusive)  then
 				return false, 0
 			end
 
