@@ -41,7 +41,7 @@ jcms.missions.hell = {
 
 		local diffMult = jcms.runprogress_GetDifficulty() ^ (2/3)
 		missionData.progress = 0
-		missionData.duration = 60*7.5 * diffMult
+		missionData.duration = (jcms.util_IsPVP() and 60*4.5 or 60*7.5) * diffMult --4:30 baseline for PvP, 7:30 baseline for Normal
 
 		if jcms.util_IsPVP() then --Make things a little more interesting by spreading extra respawn chambers around in PvP.
 			local function weightOverride(name, ogWeight)
@@ -49,6 +49,13 @@ jcms.missions.hell = {
 			end
 
 			jcms.mapgen_PlaceNaturals(jcms.mapgen_AdjustCountForMapSize( 2 + math.ceil(1.5 * #jcms.GetLobbySweepers())), weightOverride)
+
+			--Higher starting respawns
+			for teamId=1, 2 do
+				for i=1, math.ceil(player.GetCount()/4) do --TODO: jcms.util_getUsedTeams
+					jcms.director_InsertRespawnVector(jcms.director_PvpDynamicRespawn, teamId)
+				end
+			end
 		end
 	end,
 	

@@ -98,17 +98,8 @@
 				jcms.director.fullyInited = true
 
 				if jcms.util_IsPVP() then
-					local defaultWeights = {}
-					local areaPositions = {}
-					for i, area in ipairs( jcms.mapgen_MainZone() ) do 
-						defaultWeights[area] = math.sqrt(area:GetSizeX() * area:GetSizeY())
-						areaPositions[area]  = area:GetCenter()
-					end
-					
-					local avoidVectors = {}
-
 					for teamId=1, 2 do
-						for i=1, math.ceil(player.GetCount()/2) do
+						for i=1, math.ceil(player.GetCount()/2) do --TODO: jcms.util_getUsedTeams
 							jcms.director_InsertRespawnVector(jcms.director_PvpDynamicRespawn, teamId)
 						end
 					end
@@ -239,7 +230,7 @@
 		local lastMis, lastFac = jcms.runprogress_GetLastMissionTypes()
 		local newType = jcms.mission_GetRandomType( lastMis, jcms.util_IsPVP() )
 		local data = assert(jcms.missions[ newType ], "error randomizing mission type, picked an invalid one: '" .. tostring(newType) .. "'")
-		
+
 		game.GetWorld():SetNWString("jcms_missiontype", newType)
 		if data.faction == "any" then
 			local otherFactions = {}
