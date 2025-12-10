@@ -31,7 +31,7 @@ class.shield = 0
 class.shieldRegen = 0
 class.shieldDelay = 64
 
-class.damage = 1
+class.damage = 0.4
 class.hurtMul = 1
 class.hurtReduce = 0
 class.speedMul = 1.5
@@ -49,7 +49,7 @@ end
 if SERVER then
 	
 	function class.PrimaryAttack(ply, wep)
-		wep:SetNextPrimaryFire(CurTime() + 1.5)
+		wep:SetNextPrimaryFire(CurTime() + 1.9)
 
 		local origin
 		ply:EmitSound("NPC_Antlion.PoisonShoot")
@@ -70,7 +70,7 @@ if SERVER then
 			spit:SetPos(origin)
 			spit:Spawn()
 
-			local mul = 1400 + i*100
+			local mul = 1200 + i*100
 			local fwd = fwdNormal * mul
 			fwd:Rotate(AngleRand(-i, i))
 
