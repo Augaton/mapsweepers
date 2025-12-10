@@ -383,6 +383,8 @@ jcms.terminal_modeTypes = {
 						if clipSize < 0 then
 							clipSize = weaponModeTable and tonumber(weaponModeTable.DefaultClip) or 1
 						end
+
+						clipSize = math.max(clipSize, 1)
 						
 						local totalPrice = math.ceil(math.ceil(ammoPrice * clipSize)*ammoPriceMul)
 						if balance >= totalPrice then
@@ -410,6 +412,8 @@ jcms.terminal_modeTypes = {
 						if clipSize < 0 then
 							clipSize = weaponModeTable and tonumber(weaponModeTable.DefaultClip) or 1
 						end
+
+						clipSize = math.max(clipSize, 1)
 						
 						local totalPrice = math.floor( math.max(1, ammoPrice*clipSize*0.5*ammoPriceMul) )
 						if plyAmmo >= clipSize then
