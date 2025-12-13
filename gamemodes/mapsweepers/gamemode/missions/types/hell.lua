@@ -144,7 +144,7 @@ jcms.missions.hell = {
 			missionData.progress = missionData.progress + 1
 
 			if jcms.director_GetMissionTime() > 120 and #director.npcs < 15 then
-				missionData.progress = missionData.progress + (missionData.duration / (60 * 7.5))
+				missionData.progress = missionData.progress + (missionData.duration / (60 * 4.5))
 			end
 		end
 	end

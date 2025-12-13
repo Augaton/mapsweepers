@@ -658,6 +658,7 @@ jcms.npc_types.antlion_mineralguard = {
 			npc.jcms_oreType = jcms.util_ChooseByWeight(weights)
 		end
 
+		npc:SetMaterial(jcms.oreTypes[npc.jcms_oreType].material)
 		npc:SetNWString("jcms_boss", "antlion_guard")
 		jcms.npc_SetupAntlionBurrowCheck(npc)
 	end,
@@ -888,7 +889,9 @@ jcms.npc_types.antlion_ultracyberguard = {
 				
 				npc:SetPlaybackRate(0.85)
 				timer.Simple(0.9, function()
-					if not IsValid(npc) or not(npc:GetCurrentSchedule() == SCHED_RANGE_ATTACK1) then return end 
+					if not IsValid(npc) or not(npc:GetCurrentSchedule() == SCHED_RANGE_ATTACK1) then
+						return 
+					end 
 					npc:SetPlaybackRate(0.15)
 
 					local boneId = 4 --Head
@@ -1020,7 +1023,7 @@ jcms.npc_types.antlion_grubbomb = {
 	swarmWeight = 0.0000001,
 
 	class = "npc_antlion_grub",
-	bounty = 20,
+	bounty = 15, --TODO: This is getting the inair bonus and it's fucking up its actual cost.
 
 	anonymous = true,
 	isStatic = true,

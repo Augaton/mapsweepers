@@ -532,6 +532,11 @@ jcms.terminal_modeTypes = {
 		end,
 
 		generate = function(ent)
+			if ent.jcms_manuallyHacked == false then --Autohacks allow payload to move. THE COMPARISON IS NEEDED HERE. We want to ignore nil
+				local worked, newdata = ent.jcms_terminal_Callback(ent, cmd, data, ply)
+				return worked, newdata
+			end
+
 			if ent.nodeWasCrossed then
 				return "p"
 			else
@@ -881,8 +886,10 @@ function jcms.terminal_Unlock(ent, hacker, intrusive)
 	if IsValid(hacker) and hacker:IsPlayer() then
 		jcms.statistics_AddOther(hacker, "hacks", 1)
 		ent.jcms_hackedBy = hacker
+		ent.jcms_manuallyHacked = true
 	elseif IsValid(hacker) and IsValid(hacker.jcms_owner) then
 		ent.jcms_hackedBy = hacker.jcms_owner
+		ent.jcms_manuallyHacked = false
 	end
 
 	ent.jcms_hackType = nil
