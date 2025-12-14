@@ -54,12 +54,14 @@
 		["185f5d86bf27e1920a57b7664087c41f3862f01b215f39e099fb12a31ded0db2"] = "supporter",
 		["6fd09cbbf6c5c986667a5145d430d7bc4c085a6b6c5b94397a3c1b5993612bda"] = "supporter",
 
-		["71989b94d1ec6ce1e559b8ff2a0bfb7f766950aef7f4355a571100c5ba2261a0"] = "supporter", -- d
+		["71989b94d1ec6ce1e559b8ff2a0bfb7f766950aef7f4355a571100c5ba2261a0"] = "supporter", -- do
 		["41d98165e676f01874738c2e88a98869007fb9216f0fb810b585d7d49877f39d"] = "supporter", -- ss
-		["4b0bf4d9b4a8b6a5d2dd3cb1c0cdeb8479724e5de7cd8313a1a8c82541cdcf37"] = "supporter", -- n
+		["4b0bf4d9b4a8b6a5d2dd3cb1c0cdeb8479724e5de7cd8313a1a8c82541cdcf37"] = "supporter", -- na
 		["02a7975c58da0334e0e5f8de91b0d9a2b8d29ef5d2352d2e821ed1219e445bb1"] = "supporter", -- de
 
-		["0718768ecdf6b1aa28d7a41f6c0262e581fa533fd6c09128f86363d3147e3575"] = "supporter", --f
+		["0718768ecdf6b1aa28d7a41f6c0262e581fa533fd6c09128f86363d3147e3575"] = "supporter", --fl
+
+		["310d9af23cf5c7a9f88db0c190da0232e0f9a07d62c2d21acc319e78aa46b9f2"] = "supporter", --pu
 
 
 	}

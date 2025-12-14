@@ -33,7 +33,7 @@ jcms.missions.miningoperations = {
 		missionData.refineries_main = refineries_main
 		missionData.refineries_secondary = refineries_secondary
 
-		local diffMult = jcms.runprogress_GetDifficulty() ^ (2/3)
+		local diffMult = jcms.runprogress_GetDifficulty() ^ (1/2)
 		missionData.totalToRefine = math.ceil(1750 * diffMult)
 
 
