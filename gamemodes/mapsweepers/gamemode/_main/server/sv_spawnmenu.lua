@@ -561,7 +561,7 @@
 						bomb:CallOnRemove( "jcms_smokeburst", function()
 							bomb:EmitSound("weapons/flaregun/fire.wav", 120, 80)
 							local ed = EffectData()
-							ed:SetMagnitude(10)
+							ed:SetMagnitude(20)
 							ed:SetOrigin(bomb:WorldSpaceCenter())
 							ed:SetNormal(bomb:GetAngles():Up())
 							ed:SetRadius(350)
@@ -569,7 +569,7 @@
 							util.Effect("jcms_blast", ed)
 							
 							if jcms.smokeScreens then
-								table.insert(jcms.smokeScreens, { pos = bomb:WorldSpaceCenter(), rad = 340, expires = CurTime() + 9 }) 
+								table.insert(jcms.smokeScreens, { pos = bomb:WorldSpaceCenter(), rad = 340, expires = CurTime() + 19 }) 
 							end
 						end)
 					end
