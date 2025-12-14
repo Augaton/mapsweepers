@@ -146,7 +146,7 @@ if SERVER then
 		--Is the target an ore and do we have space for it?
 		local hitEnt = data.HitEntity
 
-		if self.lastEjected + self.EjectionCooldown < CurTime() and hitEnt:GetClass() == "jcms_orechunk" and self:GetHeldCapacity() + hitEnt.jcms_oreMass < self:GetMaxCapacity() and not hitEnt.jcms_physAte then
+		if not hitEnt.jcms_physAte and self.lastEjected + self.EjectionCooldown < CurTime() and (hitEnt:GetClass() == "jcms_orechunk") and self:GetHeldCapacity() + hitEnt.jcms_oreMass < self:GetMaxCapacity() then
 			self:Eat(hitEnt)
 		elseif not self.jcms_attachedToVehicle and self.lastVehicleAttached + self.AttachCooldown < CurTime() and hitEnt.jcms_attachedCrates and self:FindAttachSlot(hitEnt) then
 			self:ForcePlayerDrop()

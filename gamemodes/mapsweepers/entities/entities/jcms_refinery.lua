@@ -91,6 +91,7 @@ if SERVER then
 
 			ent.jcms_oreMass = nil
 			ent.jcms_oreValue = nil
+			ent.jcms_physAte = true
 			ent:Remove()
 
 			local ed = EffectData()
