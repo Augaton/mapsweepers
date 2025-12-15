@@ -3422,6 +3422,25 @@ end
 		end
 	end
 
+	function jcms.ClearTinyProps()
+		local function clearIfSmall(ent)
+			local mins, maxs = ent:OBBMins(), ent:OBBMaxs()
+			local bounds = maxs - mins
+			local x,y,z = bounds:Unpack()
+
+			if (x*y*z)^(1/3) < 25 then
+				ent:Remove()
+			end
+		end
+
+		for i, ent in ipairs(ents.FindByClass("prop_physics")) do 
+			clearIfSmall(ent)
+		end
+		for i, ent in ipairs(ents.FindByClass("prop_dynamic")) do 
+			clearIfSmall(ent)
+		end
+	end
+
 	hook.Run("MapSweepersReady") -- If you want to make an addon that adds new content into Map Sweepers, use this hook.
 
 -- // }}}

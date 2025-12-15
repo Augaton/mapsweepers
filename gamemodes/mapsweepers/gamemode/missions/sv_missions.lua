@@ -83,6 +83,9 @@
 			jcms.RecolorAllDollies()
 			jcms.ReplaceAllCrates()
 			jcms.DisableThumpers()
+			if jcms.cvar_performanceMode:GetBool() then 
+				jcms.ClearTinyProps()
+			end
 			
 			game.GetWorld():SetNWString("jcms_missiontype", missionType)
 			game.GetWorld():SetNWString("jcms_missionfaction", factionType)
