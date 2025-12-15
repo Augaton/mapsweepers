@@ -405,7 +405,7 @@
 				deviate.z = 0
 				
 				local arrival = math.Rand(2, 5)
-				local count = 55
+				local count = jcms.isPlayerEngineer(ply) and 50 or 60
 
 				jcms.net_SendLocator("all", nil, "#jcms.shelling", pos, jcms.LOCATOR_WARNING, 5)
 
@@ -825,7 +825,7 @@
 				
 				mine.Radius = 170
 				mine.Damage = 100
-				mine.BlastCount = 4
+				mine.BlastCount = jcms.isPlayerEngineer(ply) and 4 or 5
 				mine.BlastCooldown = 1.5
 				mine.RequiredTargets = 1
 				mine.Proximity = 120

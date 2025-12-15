@@ -201,6 +201,7 @@ if SERVER then
 			
 			boosted = { --engineer.
 				tracerFlag = 1,
+				spreadX = 9,
 
 				OnHit = function(turret, target, dmgInfo, tr)
 					if not jcms.team_JCorp(target) then 
