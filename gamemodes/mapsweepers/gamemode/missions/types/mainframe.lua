@@ -169,7 +169,6 @@ function jcms.mapgen_MainframeGenerateTrack(missionObjects, sectorDistances, are
 			
 			local terminal = ents.Create("jcms_terminal")
 			terminal:SetPos(targetArea:GetCenter())
-			terminal:Spawn()
 
 			table.insert(missionObjects, terminal)
 			table.insert(terminals, terminal)
@@ -357,6 +356,7 @@ jcms.missions.mainframe = {
 				for j, terminal in ipairs(terminals) do --This is a bit messy
 					terminal.trackId = i
 					
+					terminal:Spawn()
 					terminal:InitAsTerminal("models/jcms/rgg_node.mdl", "mainframe_terminal")
 				end
 			end

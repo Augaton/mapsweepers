@@ -68,6 +68,7 @@
 -- // Logic {{{
 
 	function jcms.mission_Start(missionType, factionType)
+		jcms.mission_generating = true
 		local co = coroutine.create( function()
 			math.randomseed( os.time() - CurTime() * ( math.pi / 4 ) )
 
@@ -183,9 +184,11 @@
 			local success, shouldEnd = coroutine.resume(co)
 			if not success then 
 				ErrorNoHalt(shouldEnd) --"shouldEnd" is actually the error string in this context, the variable's just named with the other case in-mind.
+				jcms.mission_generating = false
 			end
 
 			if shouldEnd then 
+				jcms.mission_generating = false
 				timer.Remove("jcms_mission_run")
 				game.GetWorld():SetNWFloat("jcms_mapgen_progress", 1)
 
@@ -504,7 +507,7 @@
 				jcms.mission_ResetStartTimer()
 			end
 
-			if timerIsGoing and CurTime() >= startTime then
+			if timerIsGoing and CurTime() >= startTime and not jcms.mission_generating then
 				game.GetWorld():SetNWFloat("jcms_mapgen_progress", 0.01)
 				jcms.mission_StartFromCVar()
 			end

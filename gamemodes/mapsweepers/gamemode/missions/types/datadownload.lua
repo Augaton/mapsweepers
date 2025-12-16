@@ -382,6 +382,13 @@ jcms.missions.datadownload = {
 		
 		local pillarsShouldBeActive = false
 		local downloadSucceeded = false
+		
+		for i=#md.pillars, 1, -1 do --Clean up invalid / destroyed pillars
+			local pillar = md.pillars[i]
+			if not IsValid(pillar) then
+				table.remove(md.pillars, i)
+			end
+		end
 
 		if md.defenseCompleted then
 			md.defenseProgress = 1
@@ -405,8 +412,6 @@ jcms.missions.datadownload = {
 				local totalPillars = 0
 				local activePillars = 0
 				for i, pillar in ipairs(md.pillars) do 
-					if not IsValid(pillar) then continue end
-
 					totalPillars = totalPillars + 1
 					if not pillar:GetIsDisrupted() then activePillars = activePillars + 1 end
 				end

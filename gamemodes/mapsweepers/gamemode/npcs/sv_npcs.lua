@@ -62,7 +62,7 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 			missionTimeMult = 1 + (jcms.director_GetMissionTime() / (60*60))
 		end
 
-		return (data.danger == jcms.NPC_DANGER_STRONG and data.swarmWeight * jcms.runprogress_GetDifficulty() * missionTimeMult) or data.swarmWeight or 1
+		return (data.danger == jcms.NPC_DANGER_STRONG and data.swarmWeight * math.min(jcms.runprogress_GetDifficulty() * missionTimeMult, 5) ) or data.swarmWeight or 1
 	end
 
 -- // }}
