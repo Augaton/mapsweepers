@@ -345,10 +345,14 @@ if SERVER then
 		local count = table.Count(orders)
 		local i = 0
 		
+		local isPvp = jcms.util_IsPVP() 
+
 		for orderId, orderData in pairs(orders) do
 			local _i =  i + 1
 			timer.Simple(i*delay, function()
-				jcms.net_SendOrder(orderId, orderData, onlyToPlayer)
+				if (isPvp and not orderData.pvpBlacklisted) or (not isPvp and not orderData.pvpExclusive) then
+					jcms.net_SendOrder(orderId, orderData, onlyToPlayer)
+				end
 			end)
 			i = i + 1
 		end
