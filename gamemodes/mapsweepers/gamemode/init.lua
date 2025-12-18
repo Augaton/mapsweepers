@@ -2087,7 +2087,7 @@ end
 			end
 		end
 		
-		local bounty = npc.jcms_bounty or 0
+		local bounty = (npc.jcms_bounty or 0) * (IsValid(attacker) and attacker.jcms_bountyMul or 1)
 		
 		if bounty > 0 then
 			bounty = bounty * jcms.cvar_cash_mul_base:GetFloat()

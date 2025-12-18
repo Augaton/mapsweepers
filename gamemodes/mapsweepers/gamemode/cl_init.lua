@@ -1485,6 +1485,7 @@ end)
 	end
 
 	hook.Add("ChatText", "jcms_trackChatHistory", function(plyIndex, plyName, text, type)
+		if type == "joinleave" and jcms.aftergame then return end --Don't track join/Leave messages post-match.
 		jcms.chatHistory_Add(plyName, text, type)
 	end)
 
