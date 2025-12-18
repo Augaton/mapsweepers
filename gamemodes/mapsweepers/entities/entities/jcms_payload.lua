@@ -146,7 +146,7 @@ if SERVER then
 	end
 	
 	function ENT:GetSpeedFromPlayers(count)
-		if jcms.director then
+		if jcms.director and not jcms.mission_generating then
 			local pushing = self:GetPushingPlayerCount()
 			local living = math.max(1, jcms.director.livingPlayers)
 			local mul = math.sqrt(pushing / living)

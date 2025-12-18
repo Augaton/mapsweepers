@@ -64,7 +64,7 @@ function class.SetupMove(ply, mv, cmd)
 
 	if ply:GetObserverMode() == OBS_MODE_NONE and ply:Alive() and ply:GetMoveType() == MOVETYPE_WALK and not ply:OnGround() and ply:WaterLevel()<3 and not IsValid(ply:GetNWEntity("jcms_vehicle")) then
 		if ply.jcms_CanJump and mv:KeyPressed(IN_JUMP) then
-			local coyoteTime = (CurTime() - ply.jcms_lastOnGround < coyoteTime) and not ply.jcms_HasJumped
+			local coyoteTime = (CurTime() - (ply.jcms_lastOnGround or 0) < coyoteTime) and not ply.jcms_HasJumped
 			if not coyoteTime then
 				updateJumpAbility(ply, false)
 			elseif SERVER then 

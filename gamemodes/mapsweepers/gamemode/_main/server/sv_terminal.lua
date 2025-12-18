@@ -169,7 +169,7 @@ jcms.terminal_modeTypes = {
 					end
 				elseif cmd == 2 then
 					-- Shield upgrade
-					ply:SetMaxArmor( math.floor(ply:GetMaxArmor() * 1.25) )
+					ply:SetMaxArmor( math.floor(ply:GetMaxArmor() * 1.5) )
 				elseif cmd == 3 then
 					-- Explosive Ammo upgrade
 					ply.jcms_explosiveUpgrade = (ply.jcms_explosiveUpgrade and ply.jcms_explosiveUpgrade + 1) or 1
