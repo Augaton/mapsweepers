@@ -502,7 +502,7 @@ end
 		local pvpAllowed = jcms.cvar_pvpallowed:GetInt()
 		if (pvpAllowed == 1) and (jcms.util_IsPVPAllowed()) and (not jcms.director) and (not jcms.pvp_firstVote) then
 			jcms.pvp_firstVote = true 
-			jcms.pvp_StartVote(40)
+			jcms.pvp_StartVote(60)
 		end
 	end)
 
@@ -709,6 +709,7 @@ end
 	end
 
 -- // }}}
+
 
 -- // Friendly-Fire Tracking / other player data {{{
 	jcms.playerData = jcms.playerData or {
@@ -3393,7 +3394,6 @@ end
 -- // }}}
 
 -- // Post {{{
-
 	function jcms.RecolorAllDollies()
 		-- this is EXTREMELY important
 		for i, ent in ipairs(ents.GetAll()) do
