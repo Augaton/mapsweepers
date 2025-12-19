@@ -35,7 +35,7 @@ prefabs.combine_floorturrets = {
 			return false 
 		end
 
-		return jcms.prefab_CheckOverlooking(area)
+		return true
 	end,
 
 	areaWeight = function(area)
@@ -52,11 +52,13 @@ prefabs.combine_floorturrets = {
 	end,
 
 	stamp = function(area, data)
+		local ang, pos = jcms.prefab_CalcOverlooking(area, true)
+
 		local ent = ents.Create("npc_turret_floor")
 		if not IsValid(ent) then return end
 
-		ent:SetAngles(data.ang)
-		ent:SetPos(data.pos + Vector(0,0,12.5) - data.ang:Forward() * 30)
+		ent:SetAngles(ang)
+		ent:SetPos(pos + Vector(0,0,5) + ang:Forward() * 30)
 		
 		ent:Spawn()
 		ent:Fire("Disable")

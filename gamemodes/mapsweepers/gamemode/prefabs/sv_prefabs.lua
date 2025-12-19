@@ -160,68 +160,45 @@
 		return true, tr_Main.HitPos, tr_Main.HitNormal
 	end
 
-	function jcms.prefab_CheckOverlooking(area)
-		--Check function for prefabs meant to overlook large spaces. 
-		--This is a really janky way of doing this.
+	function jcms.prefab_CalcSideVisibilities(area)
+		local centre = area:GetCenter()
 
-		local c1, c2, c3, c4 = area:GetCorner(1), area:GetCorner(2), area:GetCorner(3), area:GetCorner(0)
-		local corners = { c1, c2, c3, c4 }
-		local sideVisibilities = { 0, 0, 0, 0 }
-		local weighed = {}
-		local sideVectors = {}
+		local sideVisCounts = {0,0,0,0}
+		local areas = area:GetVisibleAreas()
+		for i, otherArea in ipairs(areas) do 
+			if otherArea == area then continue end
 
-		local tr = {}
-		local traceData = {
-			mins = Vector(-2, -2, 0),
-			maxs = Vector(2, 2, 4),
-			mask = MASK_SHOT,
-			output = tr
-		}
+			--Get the side the area's on, using closest instead of centre because large areas might have heavily offset centres
+			local toTarget = area:ComputeDirection(otherArea:GetClosestPointOnArea(centre))
 
-		for side=1, 4 do
-			local v = corners[side%4+1] + corners[(side+1)%4+1]
-			v:Div(2)
-			v.z = v.z + 24
-
-			sideVectors[side] = v
-			traceData.start = v
-
-			for i = 1, 3 do
-				for j = 1, 6 do
-					local ang = Angle((i-1)*10, 90*side + math.Remap(j, 1, 6, -45, 45), 0)
-					traceData.endpos = ang:Forward()
-					traceData.endpos:Mul(500+i*500)
-					traceData.endpos:Add(v)
-					util.TraceHull(traceData)
-					
-					sideVisibilities[side] = sideVisibilities[side] + tr.Fraction
-				end
-			end
-
-			v.z = v.z - 24 - 10
+			sideVisCounts[toTarget+1] = sideVisCounts[toTarget+1] + 1
 		end
 
-		do
-			local maximum = 0
-			for side=1,4 do
-				if sideVisibilities[side] > maximum then
-					maximum = sideVisibilities[side]
-				end
-			end
+		return sideVisCounts
+	end
 
-			local threshold = (maximum >= 10) and 9.5 or (maximum >= 5) and 3 or 9999999
-			for side=1,4 do
-				if sideVisibilities[side] > threshold then
-					weighed[side] = sideVisibilities[side] + 1
-				end
+	function jcms.prefab_CalcOverlooking(area, rearEdge)
+		--Get the side with the most visible areas, and give us an angle / pos facing that way
+		--rearEdge = get the back (wall) instead of the front (edge). used for floor-turrets (default behv is used for emplacement prefab)
+		local sideVisCounts = jcms.prefab_CalcSideVisibilities(area)
+
+		local highestSide
+		local highestCount = -1
+		for side, count in ipairs(sideVisCounts) do 
+			if count > highestCount then
+				highestSide = side 
+				highestCount = count
 			end
 		end
+		
+		local edgePos = jcms.mapgen_GetAreaEdgePos(area, highestSide -1)
+		local angle = (edgePos - area:GetCenter()):Angle()
 
-		local chosen = jcms.util_ChooseByWeight(weighed)
-		if chosen then
-			return true, { pos = sideVectors[ chosen ], ang = Angle(0, 90*chosen, 0) }
-		else
-			return false
+		if rearEdge then
+			local edge = (highestSide + 1)%4 --+2 but we're excluding the -1
+			edgePos = jcms.mapgen_GetAreaEdgePos(area, edge)
 		end
+
+		return angle, edgePos 
 	end
 -- // }}}

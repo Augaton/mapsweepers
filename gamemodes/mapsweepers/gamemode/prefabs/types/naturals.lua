@@ -215,23 +215,26 @@ local prefabs = jcms.prefabs
 				return false
 			end
 
-			if #area:GetVisibleAreas() < jcms.mapgen_GetVisData().avg then
-				return false
-			end
-			
 			if not jcms.mapgen_AreaFlat(area) then 
 				return false 
 			end
 
-			return jcms.prefab_CheckOverlooking(area)
+			return true
+		end,
+		
+		areaWeight = function(area)
+			local zheight = (area:GetCenter().z + 32768) / 32768
+			return (math.max(#area:GetVisibleAreas(), 1) * math.sqrt(zheight)) / (jcms.mapdata.areaDepths[area] + 1)^2
 		end,
 
 		stamp = function(area, data)
 			local ent = ents.Create("jcms_emplacement")
 			if not IsValid(ent) then return end
 
-			ent:SetAngles(data.ang)
-			ent:SetPos(data.pos)
+			local ang, pos = jcms.prefab_CalcOverlooking(area, false)
+
+			ent:SetAngles(ang)
+			ent:SetPos(pos)
 			ent:Spawn()
 
 			return ent

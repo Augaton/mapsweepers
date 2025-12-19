@@ -1083,7 +1083,7 @@ jcms.MAPGEN_CONSTRUCT_DIAMETER = math.sqrt(82411875)
 	function jcms.mapgen_DemonstrateNavmeshDepths()
 		timer.Simple(0.5, function()
 			local u = Vector(0, 0, 4)
-			local maxDepth = jcms.data.areaDepthMax
+			local maxDepth = jcms.mapdata.areaDepthMax
 			local avgDepth = jcms.mapdata.areaDepthAvg
 			for area, depth in pairs(jcms.mapdata.areaDepths) do
 				local col = HSVToColor(depth/maxDepth*240, 0.75, depth > avgDepth and 1 or 0.5)
