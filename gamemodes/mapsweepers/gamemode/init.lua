@@ -1356,8 +1356,6 @@ end
 	end
 
 	function GM:PlayerSpawn(ply, transition)
-		ply.jcms_lastDeathTime = ply.jcms_lastDeathTime or 0
-		
 		if jcms.inTutorial then
 			ply.jcms_justSpawned = true
 			ply:SetNWString("class", "infantry")
@@ -1390,7 +1388,7 @@ end
 								-- We've been here before. Now we're considered dead.
 								ply:SetNWInt("jcms_desiredteam", 1)
 								jcms.playerspawn_RespawnAs(ply, "spectator")
-								ply.jcms_lastDeathTime = CurTime()
+								ply:SetNWFloat("jcms_lastDeathTime", CurTime())
 
 								if jcms.util_IsPVP() then
 									ply.jcms_isNPC = true
@@ -1525,7 +1523,7 @@ end
 			end
 
 			ply:CreateRagdoll()
-			ply.jcms_lastDeathTime = ct
+			ply:SetNWFloat("jcms_lastDeathTime", ct)
 		end
 	end
 
@@ -1561,7 +1559,7 @@ end
 		
 		-- NOTE: Will not get called for evacuated players and players in-lobby.
 		if not jcms.director then
-			if not ply.jcms_lastDeathTime or CurTime() - ply.jcms_lastDeathTime > 5 then
+			if CurTime() - ply:GetNWFloat("jcms_lastDeathTime", 0) > 5 then
 				ply:Spawn()
 				if jcms.mapdata.valid then
 					jcms.playerspawn_Menu(ply)

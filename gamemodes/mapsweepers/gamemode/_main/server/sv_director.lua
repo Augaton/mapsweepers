@@ -1143,7 +1143,7 @@
 					evacCount = evacCount + 1
 					
 					if ply.jcms_isNPC and not ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE then
-						if CurTime() - (ply.jcms_lastDeathTime or 0) > 6 then
+						if CurTime() - ply:GetNWFloat("jcms_lastDeathTime", 0) > 6 then
 							jcms.playerspawn_RespawnAs(ply, "spectator")
 						end
 					end
@@ -1171,7 +1171,7 @@
 					elseif not ply:Alive() and (ply:GetObserverMode() == OBS_MODE_NONE or ply:GetObserverMode() == OBS_MODE_CHASE) then
 						table.insert(deadPlayers, ply)
 
-						if CurTime() - (ply.jcms_lastDeathTime or 0) > 6 then
+						if CurTime() - ply:GetNWFloat("jcms_lastDeathTime", 0) > 6 then
 							jcms.playerspawn_RespawnAs(ply, "spectator")
 						end
 						
@@ -1204,15 +1204,16 @@
 
 			if #deadPlayers > 0 then
 				table.sort(deadPlayers, function(first, last)
-					return (first.jcms_lastDeathTime or 0) < (last.jcms_lastDeathTime or 0)
+					return first:GetNWFloat("jcms_lastDeathTime", 0) < last:GetNWFloat("jcms_lastDeathTime", 0)
 				end)
 
 				local ct = CurTime()
 				for i, ply in ipairs(deadPlayers) do
+					ply:SetNWInt("jcms_respawnQueuePos", i)
 					local respawnDelay = (game.SinglePlayer() or #jcms.PVPGetTeamAlivePlayers(ply:GetNWInt("jcms_pvpTeam", -1)) == 0) and 5 or 22.5
 					local respawnInterval = 5
 
-					local timeSinceDeath = ct - (ply.jcms_lastDeathTime or 0)
+					local timeSinceDeath = ct - ply:GetNWFloat("jcms_lastDeathTime", 0)
 					local timeSinceRespawnAttempt = ply.jcms_lastRespawnTime and ct - ply.jcms_lastRespawnTime or respawnInterval + 1
 					local timeTabbedOut = ply:IsBot() and 0 or (CurTime() - ((jcms.playerAfkPings and jcms.playerAfkPings[ply]) or 0))
 
