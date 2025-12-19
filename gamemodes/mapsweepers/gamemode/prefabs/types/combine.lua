@@ -61,6 +61,8 @@ prefabs.combine_floorturrets = {
 		ent:Spawn()
 		ent:Fire("Disable")
 
+		ent:Fire( "AddOutput", "OnTipped !self:SelfDestruct:0:1" )
+
 		local timerName = "jcms_"..tostring(ent).."beep"
 		local function ping()
 			if not IsValid(ent) then
