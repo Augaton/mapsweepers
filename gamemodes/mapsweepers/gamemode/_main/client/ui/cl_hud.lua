@@ -2767,7 +2767,7 @@
 			surface.DrawRect(-2,-2,jcms.scrW+4,jcms.scrH+4)
 		cam.End2D()
 
-		if not game.SinglePlayer() then 
+		if not game.SinglePlayer() and not jcms.locPly:GetNWBool("jcms_evacuated") then 
 			jcms.setup3d2dCentral("top")
 				jcms.hud_SpectatorDraw_RespawnInfo()
 			cam.End3D2D()
