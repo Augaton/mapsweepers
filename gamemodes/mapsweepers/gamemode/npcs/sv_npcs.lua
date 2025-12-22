@@ -621,7 +621,11 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 		["npc_headcrab"] = { bounty = 1, faction = "zombie" },
 		["npc_headcrab_fast"] = { bounty = 1, faction = "zombie" },
 		["npc_headcrab_poison"] = { bounty = 2, faction = "zombie" },
-		["npc_headcrab_black"] = { bounty = 2, faction = "zombie" }
+		["npc_headcrab_black"] = { bounty = 2, faction = "zombie" },
+
+		["npc_combine_s"] = { bounty = 70, faction = "combine" },
+		["npc_metropolice"] = { bounty = 40, faction = "combine" },
+		["npc_sniper"] = { bounty = 120, faction = "combine" },
 	}
 
 	hook.Add("OnEntityCreated", "jcms_npcTracker", function(ent)
