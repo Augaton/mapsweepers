@@ -807,6 +807,47 @@
 				end
 			end
 		},
+
+		antirad = {
+			category = jcms.SPAWNCAT_SUPPLIES,
+			cost = 400,
+			cooldown = 5 * 60,
+			slotPos = 3,
+			pvpExclusive = true,
+			argparser = "orbital_fixed",
+			
+			func = function(ply, pos)
+				local teamInt = -1
+				local faction = "jcorp"
+				if IsValid(ply) then
+					teamInt = ply:GetNWInt("jcms_pvpTeam", -1)
+					faction = jcms.util_GetFactionNamePVP(ply)
+				end
+
+				local col
+				if faction == "mafia" then
+					col = Color(193, 255, 79)
+				else
+					col = Color(96, 255, 124)
+				end
+
+				local crate, flare = jcms.spawnmenu_Airdrop(pos, "jcms_restock", 2, "#jcms.antirad", col, ply)
+				crate:SetAmmoCashInside( 0 )
+				crate:SetHealthInside( 0 )
+				crate:SetAntiradInside( 60 )
+				crate:SetOwnerNickname( ply:Nick() )
+				crate:SetLocalAngularVelocity( AngleRand(48, 128) )
+				crate:SetMaterial("models/jcms/"..faction.."_crate_heal")
+				crate:SetColor(col)
+				crate:SetNWInt("jcms_pvpTeam", teamInt)
+
+				jcms.announcer_SpeakChance(0.4, jcms.ANNOUNCER_SUPPLIES)
+				jcms.net_NotifyGeneric(ply, jcms.NOTIFY_ORDERED, "#jcms.antirad")
+				if CPPI then
+					crate:CPPISetOwner( game.GetWorld() )
+				end
+			end
+		},
 		
 		-- Mines
 		mine_multiblast = {

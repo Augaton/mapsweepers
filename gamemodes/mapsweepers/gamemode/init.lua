@@ -216,13 +216,18 @@ end
 		return enabled == false
 	end)
 	
-	hook.Add("EntityTakeDamage", "jcms_Adjustments", function(ent, dmg)
+	hook.Add("EntityTakeDamage", "jcms_Adjustments", function(ent, dmg) --TODO: This hook has become a bit of a mess. 
 		local attacker = dmg:GetAttacker()
 		local inflictor = dmg:GetInflictor()
 		local dmgType = dmg:GetDamageType()
 
 		if ent:IsNPC() then
 			ent.jcms_lastDamageType = dmgType
+		end
+
+		if ent:IsPlayer() and ent:GetNWInt("jcms_antirad", 0) > 0 then --Radiation invulnerability
+			dmg:ScaleDamage(0)
+			return true
 		end
 
 		if (inflictor == attacker) and attacker:IsPlayer() and bit.band(dmgType, bit.bor(DMG_BUCKSHOT, DMG_BULLET)) > 0 then
@@ -869,6 +874,12 @@ end
 	hook.Add("PlayerPostThink", "jcms_PlayerThink", function(ply)
 		if ply:IsOnFire() and ply:WaterLevel() > 0 then
 			ply:Extinguish()
+		end
+
+		ply.jcms_nextRadThink = ply.jcms_nextRadThink or 0
+		if ply.jcms_nextRadThink < CurTime() then
+			ply:SetNWInt("jcms_antirad", math.max(ply:GetNWInt("jcms_antirad", 0)-1, 0))
+			ply.jcms_nextRadThink = CurTime() + 1
 		end
 
 		ply:SetNoTarget(ply:GetObserverMode() ~= OBS_MODE_NONE)

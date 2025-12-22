@@ -47,6 +47,7 @@ function ENT:SetupDataTables()
 	self:NetworkVar("String", 0, "OwnerNickname")
 	self:NetworkVar("Int", 0, "AmmoCashInside")
 	self:NetworkVar("Int", 1, "HealthInside")
+	self:NetworkVar("Int", 2, "AntiradInside")
 end
 
 if SERVER then
@@ -149,9 +150,17 @@ if SERVER then
 		return health > 0, math.max(0, health)
 	end
 
+	function ENT:TryGiveAntirad(ply, radOverride)
+		local rad = radOverride or self:GetAntiradInside()
+		ply:SetNWInt("jcms_antirad", ply:GetNWInt("jcms_antirad", 0) + rad)
+
+		return rad > 0
+	end
+
 	function ENT:TryGiveSuppliesAndBreak(ply)
 		local workedHealth, givenHealth = self:TryGiveHealth(ply, math.min(25, self:GetHealthInside()))
 		local workedAmmo = self:TryGiveAmmo(ply)
+		local workedRad = self:TryGiveAntirad(ply)
 		local pos = self:WorldSpaceCenter()
 
 		if workedHealth then
@@ -191,7 +200,31 @@ if SERVER then
 			end)
 		end
 
-		if not (workedHealth or workedAmmo) then
+		if workedRad then 
+			self:EmitSound("items/suitchargeok1.wav", 75, 85, 0.3)
+			self:EmitSound("items/nvg_on.wav")
+			self:SetAntiradInside(0)
+
+			timer.Simple(0.02, function() --Not sure why we're using a timer but the other 2 have it so I'm repeating it here - J
+				if IsValid(ply) then
+					local ed = EffectData()
+					ed:SetEntity(ply)
+					ed:SetOrigin(pos)
+					ed:SetMagnitude(1)
+					ed:SetScale(5)
+					ed:SetFlags(5)
+					util.Effect("jcms_chargebeam", ed)
+					
+					local ed = EffectData()
+					ed:SetEntity(hackTarget)
+					ed:SetFlags(1)
+					ed:SetColor(jcms.util_ColorInteger(Color(55,255,55)))
+					util.Effect("jcms_shieldeffect", ed)
+				end
+			end)
+		end
+
+		if not (workedHealth or workedAmmo or workedRad) then
 			self:EmitSound("items/suitchargeno1.wav")
 		end
 
@@ -267,12 +300,16 @@ if CLIENT then
 
 		local nick = self:GetOwnerNickname()
 
-		local str1 = language.GetPhrase("jcms.firstaid")
-		local str2 = language.GetPhrase("jcms.restockammo")
+		local strFirstAid = language.GetPhrase("jcms.firstaid")
+		local strAmmo = language.GetPhrase("jcms.restockammo")
+		local strAntirad = language.GetPhrase("jcms.antirad")
+
 		local ammoCashInside = self:GetAmmoCashInside()
 		local healthInside = self:GetHealthInside()
-		local str3 = language.GetPhrase("jcms.firstaidtip"):format(healthInside)
-		local str4 = language.GetPhrase("jcms.restocktip")
+		local antiradInside = self:GetAntiradInside()
+		local strFFirstaid = language.GetPhrase("jcms.firstaidtip"):format(healthInside)
+		local strFAmmo = language.GetPhrase("jcms.restocktip")
+		local strFAntirad = language.GetPhrase("jcms.antiradtip"):format(antiradInside)
 
 		local binding = (input.LookupBinding("+use") or "USE"):upper()
 
@@ -283,20 +320,23 @@ if CLIENT then
 
 			local _, bth = draw.SimpleText("[ " .. binding .. " ]", "jcms_hud_big", 0, 0, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 			if healthInside > 0 then
-				draw.SimpleText(str3, "jcms_medium", 0, bth - 4, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				draw.SimpleText(strFFirstaid, "jcms_medium", 0, bth - 4, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 			end
 
 			if ammoCashInside > 0 and healthInside > 0 then
-				draw.SimpleText(str2, "jcms_medium", 0, -16, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
-				draw.SimpleText(str1, "jcms_medium", 0, -22, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-				draw.SimpleText(str3, "jcms_medium", 0, bth - 4, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-				draw.SimpleText(str4, "jcms_medium", 0, bth - 4 + 16, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				draw.SimpleText(strAmmo, "jcms_medium", 0, -16, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText(strFirstAid, "jcms_medium", 0, -22, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				draw.SimpleText(strFFirstaid, "jcms_medium", 0, bth - 4, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				draw.SimpleText(strFAmmo, "jcms_medium", 0, bth - 4 + 16, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 			elseif healthInside > 0 then
-				draw.SimpleText(str1, "jcms_hud_small", 0, -16, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-				draw.SimpleText(str3, "jcms_medium", 0, bth - 4, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				draw.SimpleText(strFirstAid, "jcms_hud_small", 0, -16, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText(strFFirstaid, "jcms_medium", 0, bth - 4, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 			elseif ammoCashInside > 0 then
-				draw.SimpleText(str2, "jcms_hud_small", 0, -16, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-				draw.SimpleText(str4, "jcms_medium", 0, bth - 4, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				draw.SimpleText(strAmmo, "jcms_hud_small", 0, -16, jcms.color_dark, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText(strFAmmo, "jcms_medium", 0, bth - 4, jcms.color_dark_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+			elseif antiradInside > 0 then
+				draw.SimpleText(strAntirad, "jcms_hud_small", 0, -16, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText(strFAntirad, "jcms_medium", 0, bth - 4, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 			end
 		cam.End3D2D()
 
@@ -308,16 +348,19 @@ if CLIENT then
 			end
 
 			if ammoCashInside > 0 and healthInside > 0 then
-				draw.SimpleText(str2, "jcms_medium", 0, -16, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
-				draw.SimpleText(str1, "jcms_medium", 0, -22, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-				draw.SimpleText(str3, "jcms_medium", 0, bth - 4, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
-				draw.SimpleText(str4, "jcms_medium", 0, bth - 4 + 16, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				draw.SimpleText(strAmmo, "jcms_medium", 0, -16, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+				draw.SimpleText(strFirstAid, "jcms_medium", 0, -22, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				draw.SimpleText(strFFirstaid, "jcms_medium", 0, bth - 4, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				draw.SimpleText(strFAmmo, "jcms_medium", 0, bth - 4 + 16, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 			elseif healthInside > 0 then
-				draw.SimpleText(str1, "jcms_hud_small", 0, -16, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-				draw.SimpleText(str3, "jcms_medium", 0, bth - 4, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				draw.SimpleText(strFirstAid, "jcms_hud_small", 0, -16, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText(strFFirstaid, "jcms_medium", 0, bth - 4, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 			elseif ammoCashInside > 0 then
-				draw.SimpleText(str2, "jcms_hud_small", 0, -16, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-				draw.SimpleText(str4, "jcms_medium", 0, bth - 4, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+				draw.SimpleText(strAmmo, "jcms_hud_small", 0, -16, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText(strFAmmo, "jcms_medium", 0, bth - 4, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+			elseif antiradInside > 0 then
+				draw.SimpleText(strAntirad, "jcms_hud_small", 0, -16, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText(strFAntirad, "jcms_medium", 0, bth - 4, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 			end
 
 			draw.SimpleText("[ " .. binding .. " ]", "jcms_hud_big", 0, -1, jcms.color_bright_alt, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)

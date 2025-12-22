@@ -570,6 +570,8 @@
 		end
 	end
 
+	local colorRad = Color(55,225,55)
+	local colorRadDark = Color(0,55,0)
 	function jcms.draw_HUDHealthbar()
 		local me = jcms.locPly
 		if not IsValid(me) then return end 
@@ -586,6 +588,7 @@
 			surface.SetAlphaMultiplier(1)
 
 			local bubbleshields = me:GetNWInt("jcms_shield", 0)
+			local antirad = me:GetNWInt("jcms_antirad", 0)
 			local healthWidth = ( me:GetMaxHealth() * 4 )
 			local armorWidth = ( me:GetMaxArmor() * 4 )
 			local addX = 64
@@ -713,6 +716,19 @@
 					for i=1, bubbleshields do
 						draw.SimpleText("⛊", "jcms_hud_medium", 124 + addX + offsetArmor + armorWidth - 34*(i-1), -48 - 12 - offsetArmor, jcms.color_bright_alt, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 					end
+				render.OverrideBlend( false )
+			end
+
+			if antirad > 0 then 
+				local str = tostring(antirad) .. "s"
+
+				local colDark = antirad > 10 and colorRadDark or jcms.color_dark
+				local col = antirad > 10 and colorRad or jcms.color_alert
+
+				draw.SimpleText(str, "jcms_hud_medium", 124 + addX + armorWidth, -54 - 12, colDark, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
+
+				render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
+					draw.SimpleText(str, "jcms_hud_medium", 124 + addX + armorWidth + offsetArmor/3, -54 - 12, col, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM)
 				render.OverrideBlend( false )
 			end
 		else

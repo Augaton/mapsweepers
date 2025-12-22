@@ -58,6 +58,7 @@ table.Empty(jcms.classesOrderIndices)
 		ply:SetGravity( data.gravity or 1 )
 		ply:SetBodyGroups( string.rep("0", 32) )
 		ply:SetNWInt("jcms_shield", 0)
+		ply:SetNWInt("jcms_antirad", 0)
 		ply.jcms_bounty = nil
 		ply.jcms_bountyMul = nil
 		ply.jcms_damageShare = nil
