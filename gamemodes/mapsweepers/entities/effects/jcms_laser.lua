@@ -28,6 +28,7 @@ function EFFECT:Init( data )
 	self.start = data:GetStart()
 	self.endpos = data:GetOrigin()
 	self.isIncendiary = data:GetFlags() == 1
+	self.pvpTeam = data:GetMaterialIndex()
 
 	self:SetRenderBoundsWS(self.start, self.endpos)
 
@@ -52,8 +53,14 @@ function EFFECT:Render()
 	local f = selfTbl.t / selfTbl.tout
 	local ff = math.ease.InCirc(1 - f)
 	
-	selfTbl.color:SetUnpacked(255, 200*ff, 200*ff, 256*ff)
-	
+	if selfTbl.pvpTeam == 2 then 
+		-- Yellow
+		selfTbl.color:SetUnpacked(255*ff, 255*ff, 100*ff, 256*ff)
+	else
+		-- Red
+		selfTbl.color:SetUnpacked(255, 200*ff, 200*ff, 256*ff)
+	end
+
 	render.SetMaterial(selfTbl.mat)
 	render.DrawBeam(selfTbl.start, selfTbl.endpos, (selfTbl.isIncendiary and 32 or 16)*ff, 0.1, 0.5, selfTbl.color)
 	render.SetMaterial(selfTbl.mat_light)

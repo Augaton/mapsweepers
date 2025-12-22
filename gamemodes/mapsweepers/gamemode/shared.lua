@@ -142,6 +142,7 @@ local nmt = FindMetaTable("NPC")
 	jcms.cvar_pvpautobalance = CreateConVar("jcms_pvpautobalance", game.IsDedicated() and "1" or "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "0=No autobalancing; 1=Restrict joining to the smallest team; 2=Randomize teams before the round")
 	jcms.cvar_pvpdebug = CreateConVar("jcms_pvpdebug", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "Stops PVP mode from ending when only 1 team is present")
 	jcms.cvar_pvprespawnmode = CreateConVar("jcms_pvprespawnmode", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "0=Team-wide, 1=Per-Player")
+	jcms.cvar_pvptracers = CreateConVar("jcms_pvptracer", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "Whether players get given team-coloured tracers") --TODO: Rename to jcms_pvptracers and change default after testing
 
 	jcms.cvar_performanceMode = CreateConVar("jcms_performancemode", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "Various more aggressive changes to improve performance")
 	

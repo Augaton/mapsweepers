@@ -596,10 +596,27 @@ end
 	end)
 
 	hook.Add("PlayerCanSeePlayersChat", "jcms_teamChat", function(text, teamOnly, listener, speaker)
-		return not teamOnly or jcms.team_SameTeam(listener, speaker)
+		local isPvp = jcms.util_IsPVP()
+		return not teamOnly or (not isPvp and jcms.team_SameTeam(listener, speaker)) or (isPvp and jcms.team_pvpSameTeam(listener, speaker))
 	end)
 	hook.Add("PlayerCanHearPlayersVoice", "jcms_teamChat", function(listener, speaker)
-		return not jcms.util_IsPVP() or jcms.team_SameTeam(listener, speaker)
+		return not jcms.util_IsPVP() or jcms.team_pvpSameTeam(listener, speaker)
+	end)
+
+	hook.Add("PostEntityFireBullets", "jcms_pvpTracers", function(ent, bulletData)
+		if not ent:IsPlayer() or not jcms.util_IsPVP() or not jcms.cvar_pvptracers:GetBool() then return end
+
+		--Having to network this for literally every bullet is kinda awful, but this hook isn't called clientside at all for some reason.
+		local tr = bulletData.Trace
+		local effectdata = EffectData()
+		effectdata:SetStart(LerpVector(7/tr.StartPos:Distance(tr.HitPos), tr.StartPos, tr.HitPos))
+		effectdata:SetScale(math.random(6500, 9000))
+		effectdata:SetAngles(tr.Normal:Angle())
+		effectdata:SetOrigin(tr.HitPos)
+		effectdata:SetFlags(0)
+		effectdata:SetMaterialIndex(math.max(0, ent:GetNWInt("jcms_pvpTeam", -1)))
+
+		util.Effect("jcms_laser", effectdata)
 	end)
 -- // }}}
 
