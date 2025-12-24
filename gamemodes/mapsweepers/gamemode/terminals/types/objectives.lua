@@ -509,7 +509,7 @@ if CLIENT then
 			draw.SimpleText(str5, "jcms_hud_medium", tw + 16, 164, color_bg)
 
 			local t = CurTime()*7
-			local symbolId = math.floor( t % #random_data ) + 1
+			local symbolId = math.floor( t % #jcms.terminal_random_data ) + 1
 
 			local bx, by, bw, bh = 0, h/2+32, w/2 - 64, h/3
 			if mx >= bx and my >= by and mx <= bx+bw and my <= by+bh then
@@ -523,10 +523,10 @@ if CLIENT then
 			
 			for row = 1, 3 do
 				for column = 1, 5 do
-					draw.SimpleText(random_data[symbolId] or "?", "jcms_hud_big", w/2 + column*108, h/2 + row*84, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+					draw.SimpleText(jcms.terminal_random_data[symbolId] or "?", "jcms_hud_big", w/2 + column*108, h/2 + row*84, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
 					symbolId = symbolId + 1
-					if symbolId > #random_data then
+					if symbolId > #jcms.terminal_random_data then
 						symbolId = 1
 					end
 				end
