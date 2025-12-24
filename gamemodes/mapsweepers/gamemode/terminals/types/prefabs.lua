@@ -533,7 +533,7 @@ if CLIENT then
 
 		render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
 		draw.SimpleText("#jcms.terminal_cashcache", "jcms_hud_small", w/2, -8, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
-		local matrix = getGlitchMatrix(8)
+		local matrix = jcms.terminal_getGlitchMatrix(8)
 		local cash = tonumber(modedata) or 0
 		cam.PushModelMatrix(matrix, true)
 			local tw = draw.SimpleText("#jcms.terminal_cashcache", "jcms_hud_small", w/2, -8, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
@@ -635,7 +635,7 @@ if CLIENT then
 		draw.SimpleText("#jcms.terminal_augmentstation", "jcms_hud_medium", w/2, 0, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 		draw.SimpleText(language.GetPhrase("jcms.terminal_cost"):format(cost), "jcms_hud_big", w/2, 72*4, color_bg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 
-		cam.PushModelMatrix(getGlitchMatrix(), true)
+		cam.PushModelMatrix(jcms.terminal_getGlitchMatrix(), true)
 			render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
 			draw.SimpleText("#jcms.terminal_augmentstation", "jcms_hud_medium", w/2, 0, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 
@@ -765,7 +765,7 @@ if CLIENT then
 			surface.DrawRect(bx, by, bw, bh)
 		end
 		
-		cam.PushModelMatrix(getGlitchMatrix(), true)
+		cam.PushModelMatrix(jcms.terminal_getGlitchMatrix(), true)
 			render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD)
 			draw.SimpleText(str1, "jcms_hud_medium", w/2, 0, color_fg, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
 			draw.SimpleText(str2, "jcms_hud_small", 24, 54, color_accent, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
