@@ -3333,6 +3333,12 @@ end
 		end
 	end
 
+	function jcms.ClearWindows()
+		for i, ent in ipairs(ents.FindByClass("func_breakable_surf")) do 
+			ent:Remove()
+		end
+	end
+
 	hook.Run("MapSweepersReady") -- If you want to make an addon that adds new content into Map Sweepers, use this hook.
 
 -- // }}}
