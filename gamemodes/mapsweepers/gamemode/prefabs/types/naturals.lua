@@ -224,7 +224,7 @@ local prefabs = jcms.prefabs
 		
 		areaWeight = function(area)
 			local zheight = (area:GetCenter().z + 32768) / 32768
-			return (math.max(#area:GetVisibleAreas(), 1) * math.sqrt(zheight)) / (jcms.mapdata.areaDepths[area] + 1)^2
+			return (math.max(#area:GetVisibleAreas(), 1) * math.sqrt(zheight)) / ((jcms.mapdata.areaDepths[area] or 0) + 1)^2
 		end,
 
 		stamp = function(area, data)
