@@ -592,6 +592,8 @@ jcms.npc_types.rebel_rgg = {
 		npc.jcms_rgg_nextTeleport = CurTime()
 		npc.jcms_rgg_teleporting = false
 		npc.jcms_noSweeperShields = true
+
+		npc:CapabilitiesRemove( CAP_ANIMATEDFACE )
 	end,
 	
 	takeDamage = function(npc, dmg)
@@ -692,6 +694,8 @@ jcms.npc_types.rebel_fighter = {
 				wep:SetSaveValue("m_fMaxRange1", 1000)
 			end
 		end
+		
+		npc:CapabilitiesRemove( CAP_ANIMATEDFACE )
 	end,
 
 	think = function(npc) 
@@ -734,6 +738,8 @@ jcms.npc_types.rebel_medic = {
 				wep:SetSaveValue("m_fMaxRange1", 1000)
 			end
 		end
+		
+		npc:CapabilitiesRemove( CAP_ANIMATEDFACE )
 	end,
 	
 	think = function(npc)
@@ -788,6 +794,8 @@ jcms.npc_types.rebel_vanguard = {
 
 		npc:EmitSound("streetwar.fire_medium")
 		--npc/zombie/moan_loop1.wav (1-4)
+		
+		npc:CapabilitiesRemove( CAP_ANIMATEDFACE )
 	end,
 
 	takeDamage = function(npc, dmgInfo) 
@@ -963,6 +971,8 @@ jcms.npc_types.rebel_odessa = {
 		npc:SetSaveValue("m_flDistTooFar", 5000)
 
 		npc.jcms_odessa_nextFlee = CurTime()
+		
+		npc:CapabilitiesRemove( CAP_ANIMATEDFACE )
 	end,
 	
 	think = function(npc, state)
@@ -1020,6 +1030,8 @@ jcms.npc_types.rebel_alyx = {
 		npc:GetActiveWeapon():SetSaveValue("m_fMaxRange1", 1000)
 		npc:SetSaveValue("m_flDistTooFar", 1000)
 		npc.jcms_noSweeperShields = true
+
+		npc:CapabilitiesRemove( CAP_ANIMATEDFACE )
 	end,
 
 	takeDamage = function(npc, dmg) --Alyx self-heals and there's no way (that I've found in the documentation) to disable that. This is a work-around because that's awful.
@@ -1164,6 +1176,7 @@ jcms.npc_types.rebel_vortigaunt = {
 		npc.jcms_vortCharging = false 
 		
 		npc.jcms_vortNextCharge = CurTime() + 12.5
+		npc:CapabilitiesRemove( CAP_ANIMATEDFACE )
 
 
 		local timerName = "jcms_vort_fastThink_" .. tostring(npc:EntIndex())
