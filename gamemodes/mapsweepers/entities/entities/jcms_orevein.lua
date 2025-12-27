@@ -61,11 +61,11 @@ if SERVER then
 			proxMax = 1500,
 
 			-- // Chunk {{{
-			chunkTakeDamage = function(ent, dmgInfo) --Immune to explosives
-				if bit.band(dmgInfo:GetDamageType(), bit.bor(DMG_BLAST,DMG_BLAST_SURFACE)) ~= 0 then
-					dmgInfo:ScaleDamage(0)
+				chunkTakeDamage = function(ent, dmgInfo) --Immune to explosives
+					if bit.band(dmgInfo:GetDamageType(), bit.bor(DMG_BLAST,DMG_BLAST_SURFACE)) ~= 0 then
+						dmgInfo:ScaleDamage(0)
+					end
 				end
-			end
 			-- // }}}
 		},
 
@@ -245,7 +245,7 @@ if SERVER then
 					local inflictor = dmgInfo:GetInflictor()
 					local attacker = dmgInfo:GetAttacker()
 
-					if IsValid(attacker) and jcms.util_IsStunstick(inflictor) then
+					if IsValid(attacker) and attacker:IsPlayer() and jcms.util_IsStunstick(inflictor) then
 						local rtnDmgInfo = DamageInfo()	
 						rtnDmgInfo:SetAttacker(ent)
 						rtnDmgInfo:SetInflictor(ent)
@@ -499,7 +499,7 @@ if SERVER then
 
 					self.OreDamageAccum = self.OreDamageAccum - threshold
 					reps = reps + 1
-				until (self.OreDamageAccum < threshold)
+				until (self.OreDamageAccum < threshold or reps > 20) --reps >20 is for safety, Zmod got stuck in an infinite loop here and I'm not sure how.
 
 				local ed = EffectData()
 				ed:SetOrigin(pos)
