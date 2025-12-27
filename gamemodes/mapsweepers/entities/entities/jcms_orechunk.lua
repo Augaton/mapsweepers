@@ -51,6 +51,15 @@ if SERVER then
 		self:SetOreColourInt(jcms.util_ColorInteger(data.color) or 0)
 
 		self:SetMaterial(data.material)
+
+		if data.chunkSetup then 
+			data.chunkSetup(self)
+		end
+
+		self.ChunkTakeDamage = data.chunkTakeDamage
+		self.ChunkPhysCollide = data.chunkPhysCollide
+		self.ChunkDestroyed = data.chunkDestroyed
+		self.Think = data.chunkThink --More optimised than having all of them check if they have it every second, change if Think is needed for anything else.
 	end
 
 	function ENT:Initialize()
@@ -70,7 +79,7 @@ if SERVER then
 		self:PhysicsInit(SOLID_VPHYSICS)
 		self:SetUseType(SIMPLE_USE)
 
-		self:SetMaxHealth(mass + 15)
+		self:SetMaxHealth((mass*1.25) + 15)
 		self:SetHealth(self:GetMaxHealth())
 
 		self.jcms_oreMass = mass
@@ -83,28 +92,35 @@ if SERVER then
 		self:SetWorth( jcms.ore_GetValue(self:GetOreName(), mass) )
 	end
 
+	function ENT:OnRemove()
+		local ed = EffectData()
+		ed:SetOrigin(self:WorldSpaceCenter())
+		ed:SetColor(self:GetOreColourInt() or 0)
+		ed:SetRadius(math.Rand(2, 5))
+		util.Effect("jcms_oremine", ed)
+	end
+
 	function ENT:Use(activator)
 		if IsValid(activator) and activator:IsPlayer() and jcms.team_JCorp_player(activator) then
 			activator:PickupObject(self)
 			self.jcms_lastPickedUp = activator
+			self.jcms_lastPickedUpTime = CurTime()
 		end
 	end
 
 	function ENT:OnTakeDamage(dmg)
+		if self.ChunkTakeDamage then
+			self:ChunkTakeDamage(dmg)
+		end
+
 		self:TakePhysicsDamage(dmg)
 
 		local mul = 1
 		local dmgType = dmg:GetDamageType()
 
 		local resists = bit.bor(DMG_SHOCK, DMG_BURN, DMG_DROWN, DMG_NERVEGAS, DMG_POISON)
-		local vuln = bit.bor(DMG_ACID, DMG_BLAST, DMG_PLASMA, DMG_DISSOLVE )
-
-		if bit.band( dmgType, vuln ) > 0 then
-			mul = mul * 2.1
-		end
-		
 		if bit.band( dmgType, resists ) > 0 then
-			mul = mul * 0.4
+			mul = 0
 		end
 
 		self:SetHealth( math.Clamp(self:Health() - dmg:GetDamage()*mul, 0, self:GetMaxHealth()) )
@@ -124,9 +140,18 @@ if SERVER then
 			ed:SetRadius(dmg:GetDamage())
 			util.Effect("jcms_oremine", ed)
 		end
+
+		if self:Health() <= 0 and self.ChunkDestroyed and not self.jcms_died then
+			self.jcms_died = true
+			self:ChunkDestroyed()
+		end
 	end
 
 	function ENT:PhysicsCollide(colData, collider)
+		if self.ChunkPhysCollide then
+			self:ChunkPhysCollide(colData, collider)
+		end
+
 		if colData.Speed > 250 then
 			self:EmitSound("Rock.ImpactHard")
 		elseif colData.Speed > 100 then

@@ -49,7 +49,7 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 	end
 
 	function jcms.npc_GetScaledDamage(override)
-		local plyCount = override or #team.GetPlayers(1)
+		local plyCount = override or (jcms.util_IsPVP() and jcms.util_GetLargestPvpTeamCount() or #team.GetPlayers(1))
 		return (1 + math.max((plyCount-1) * 0.125, 0)) * jcms.runprogress_GetDifficulty() * jcms.cvar_damage_mul:GetFloat()
 	end
 
@@ -187,6 +187,7 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 		if enemyData.danger == jcms.NPC_DANGER_BOSS or enemyData.danger == jcms.NPC_DANGER_RAREBOSS then --Make bosses stronger the more players there are
 			local npcHP, npcMHP = npc:Health(), npc:GetMaxHealth()
 			local plyCount = jcms.director and jcms.director.livingPlayers or 1 --NOTE: Should be reconsidered. Unsure if it's worth changing to total players. I don't think tankier bosses would actually help end rounds faster, and this is dependent more on player firepower.
+			--TODO: jcms.util_IsPVP() and jcms.util_GetLargestPvpTeamCount() or #team.GetPlayers(1)
 
 			--Add 50% of the boss's base HP to its pool for each player over 1.
 			local mult = 0.55 * math.Max(plyCount-1, 0)

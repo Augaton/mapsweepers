@@ -58,25 +58,118 @@ if SERVER then
 			value = 1,
 
 			proxMin = 150,
-			proxMax = 1500
+			proxMax = 1500,
+
+			-- // Chunk {{{
+			chunkTakeDamage = function(ent, dmgInfo) --Immune to explosives
+				if bit.band(dmgInfo:GetDamageType(), bit.bor(DMG_BLAST,DMG_BLAST_SURFACE)) ~= 0 then
+					dmgInfo:ScaleDamage(0)
+				end
+			end
+			-- // }}}
 		},
 
 		["argegeum"] = {
 			color = Color(214, 61, 245),
 			material = "models/jcms/ore/argegeum",
-			value = 3,
+			value = 4,
 			
 			proxMin = 1500,
-			proxMax = 4000
+			proxMax = 4000,
+
+			-- // Chunk {{{
+				chunkSetup = function(ent) --Zero G
+					--PLACEHOLDER, purple particles emitting from the chunk would be preferred.
+
+					local ed = EffectData()
+					ed:SetEntity(ent)
+					ed:SetScale(0) --Activation time (Infinite)
+					ed:SetMagnitude(5)
+					ed:SetColor( jcms.util_ColorIntegerFast(230, 32, 255) )
+					ed:SetMaterialIndex(1)
+					util.Effect("jcms_electricarcs", ed)
+				end,
+
+				chunkThink = function(ent) --Decay
+					local wth = ent:GetWorth() - 1
+					ent:SetWorth(wth)
+					ent:NextThink(CurTime() + 2)
+
+					if wth <= 0 then 
+						ent:Remove()
+					end
+
+					return true
+				end
+			-- // }}}
 		},
 
 		["jaycorpium"] = {
 			color = Color(145, 22, 49),
 			material = "models/jcms/ore/jaycorpium",
-			value = 5,
+			value = 6,
 
 			proxMin = 4000,
-			proxMax = 64000
+			proxMax = 64000,
+			
+			-- // Vein {{{
+				veinTakeDamage = function(ent, dmgInfo, takenDmg) --Spark when hit
+					ent:EmitSound("npc/sniper/sniper1.wav", 100, 160 + math.Rand(-40,40))
+				end,
+			-- // }}}
+
+			-- // Chunk {{{
+				chunkPhysCollide = function(ent, colData, collider) --Spark on impact, explode if velocity's too high.
+					if CurTime() - (ent.jcms_lastPickedUpTime or 0) < 0.5 then
+						return --Forgiveness for the first 0.25s after pickup, we can often get jammed into things in a way that isn't really the player's fault.
+					end
+
+					local velSqr = colData.HitSpeed:LengthSqr()
+					if velSqr > 175^2 then
+						ent:GetPhysicsObject():ApplyForceOffset(colData.HitNormal * -650, colData.HitPos)
+						ent:EmitSound("npc/sniper/sniper1.wav", 100, 160 + math.Rand(-40,40))
+
+						local effectdata = EffectData()
+						effectdata:SetStart(colData.HitPos)
+						effectdata:SetScale(math.random(6500, 9000))
+						effectdata:SetMagnitude(15)
+						effectdata:SetAngles(colData.HitNormal:Angle())
+						effectdata:SetOrigin(ent:WorldSpaceCenter())
+						effectdata:SetFlags(5)
+						util.Effect("jcms_bolt", effectdata)
+
+						if velSqr > 1000^2 then
+							ent:TakeDamage(math.huge)
+						end
+					end
+				end,
+
+				chunkTakeDamage = function(ent, dmgInfo) --Track last attacker
+					local attacker = dmgInfo:GetAttacker()
+					if IsValid(attacker) then
+						ent.lastTookDamageFrom = attacker
+					end
+				end,
+
+				chunkDestroyed = function(ent)
+					local damage = (ent.jcms_oreMass or 1) * 5
+					local radius = (ent.jcms_oreMass or 1) * 6
+
+					local ed = EffectData()
+					ed:SetMagnitude(1)
+					ed:SetOrigin(ent:WorldSpaceCenter())
+					ed:SetRadius(radius)
+					ed:SetNormal(ent:GetAngles():Up())
+					ed:SetFlags(1)
+					util.Effect("jcms_blast", ed)
+					util.Effect("Explosion", ed)
+
+					--Priority order: last picked up, last attacked, miner, ent
+					local attacker = (IsValid(ent.jcms_lastPickedUp) and ent.jcms_lastPickedUp) or (IsValid(ent.lastTookDamageFrom) and ent.lastTookDamageFrom) or (IsValid(ent.jcms_miner) and ent.jcms_miner) or ent
+
+					util.BlastDamage(ent, attacker, ent:WorldSpaceCenter(), radius, damage )
+				end,
+			-- // }}}
 		},
 
 		["ectoplasm"] = {
@@ -86,7 +179,36 @@ if SERVER then
 
 			proxMin = 3000,
 			proxMax = 64000,
-			weight = 0.007
+			weight = 0.01,
+
+			-- // Vein {{{
+				veinSetup = function(ent)
+					ent.loopingSound = "d3_citadel.combine_ball_field_loop" .. tostring(math.random(1,3))
+					ent:EmitSound(ent.loopingSound)
+				end,
+
+				veinDestroyed = function(ent)
+					ent:StopSound(ent.loopingSound)
+				end,
+			-- // }}}
+
+			-- // Chunk {{{
+				chunkSetup = function(ent) --Zero G
+					timer.Simple(0, function()
+						local phys = ent:GetPhysicsObject()
+						phys:EnableGravity(false)
+						phys:SetDragCoefficient( 0.75 )
+					end)
+				end,
+
+				chunkTakeDamage = function(ent, dmgInfo) --More resistant, 
+					dmgInfo:ScaleDamage(0.25)
+				end,
+
+				chunkThink = function(ent) --Give us *some* downward force so we don't float infinitely.
+					ent:GetPhysicsObject():ApplyForceCenter( Vector(0,0,-150) )
+				end
+			-- // }}}
 		},
 
 		["cat"] = {
@@ -97,7 +219,183 @@ if SERVER then
 			proxMin = 1000,
 			proxMax = 2000,
 			weight = 0.0001
+		},
+
+		--New Rare Ores
+		["flesh"] = {
+			color = Color(150, 0, 0),
+			material = "models/flesh",
+			value = 10,
+
+			proxMin = 1750,
+			proxMax = 64000,
+
+			weight = 0.025,
+
+			-- // Vein {{{
+				veinSetup = function(ent)
+					ent:EmitSound("ambient/levels/citadel/citadel_ambient_scream_loop1.wav")
+				end,
+
+				veinDestroyed = function(ent)
+					ent:StopSound("ambient/levels/citadel/citadel_ambient_scream_loop1.wav")
+				end,
+
+				veinTakeDamage = function(ent, dmgInfo, takenDmg) --Thorns
+					local inflictor = dmgInfo:GetInflictor()
+					local attacker = dmgInfo:GetAttacker()
+
+					if IsValid(attacker) and jcms.util_IsStunstick(inflictor) then
+						local rtnDmgInfo = DamageInfo()	
+						rtnDmgInfo:SetAttacker(ent)
+						rtnDmgInfo:SetInflictor(ent)
+						rtnDmgInfo:SetReportedPosition(ent:WorldSpaceCenter())
+						rtnDmgInfo:SetDamageType(DMG_ACID)
+						rtnDmgInfo:SetDamage(takenDmg)
+						rtnDmgInfo:SetDamagePosition(dmgInfo:GetReportedPosition())
+
+						attacker:TakeDamageInfo(rtnDmgInfo)
+
+						ent:EmitSound("NPC_PoisonZombie.Throw")
+					else
+						ent:EmitSound("NPC_PoisonZombie.Pain")
+					end
+				end,
+			-- // }}}
+
+			-- // Chunk {{{
+				chunkTakeDamage = function(ent, dmgInfo) --Flesh sounds
+					dmgInfo:ScaleDamage(0.25)
+					ent:EmitSound("Flesh.BulletImpact")
+				end,
+
+				chunkPhysCollide = function(ent, colData, collider) --Flesh sounds
+					if colData.HitSpeed:LengthSqr() > 100^2 then
+						ent:EmitSound("Flesh.BulletImpact")
+					end
+				end,
+			-- // }}}
+		},
+
+		["healthium"] = {
+			color = Color(96, 255, 124),
+			material = "models/jcms/ore/healthium",
+			value = 7,
+
+			weight = 0.025,
+
+			proxMin = 4000,
+			proxMax = 64000,
+
+			-- // Chunk {{{
+				chunkTakeDamage = function(ent, dmgInfo) --Track last attacker
+					local attacker = dmgInfo:GetAttacker()
+					if IsValid(attacker) then
+						ent.lastTookDamageFrom = attacker
+					end
+				end,
+
+				chunkDestroyed = function(ent) --Heal nearby players
+					ent:EmitSound("items/medshot4.wav", 75, 90, 1)
+
+					local function heal(target, amnt)
+						local ed = EffectData()
+						ed:SetEntity(target)
+						ed:SetOrigin(ent:WorldSpaceCenter())
+						ed:SetMagnitude(1)
+						ed:SetScale(5)
+						ed:SetFlags(5)
+						util.Effect("jcms_chargebeam", ed)
+						
+						amnt = math.min(target:GetMaxHealth() - target:Health(), amnt)
+						target:SetHealth( target:Health() + amnt )
+					end
+
+					--Give a bunch of HP to whoever broke us (if they're close enough)
+					if IsValid(ent.lastTookDamageFrom) and ent.lastTookDamageFrom:IsPlayer() and ent.lastTookDamageFrom:GetPos():DistToSqr(ent:WorldSpaceCenter()) < 500^2 then
+						heal(ent.lastTookDamageFrom, (ent.jcms_oreMass or 5) * 4)
+					end
+					
+					--Give a bit less to everyone else nearby
+					for i, ply in ipairs(jcms.GetSweepersInRange(ent:WorldSpaceCenter(), 500)) do
+						if ply == ent.lastTookDamageFrom then continue end
+						
+						heal(ent.lastTookDamageFrom, (ent.jcms_oreMass or 5))
+					end
+				end
+			-- // }}}
+		},
+
+		["thumpium"] = {
+			color = Color(50, 50, 200),
+			material = "models/props_combine/combinethumper002",
+			value = 7,
+
+			weight = 0.025,
+
+			proxMin = 4000,
+			proxMax = 64000,
+
+			-- // Vein {{{
+				veinSetup = function(ent)
+					ent.nextThump = 0
+
+					ent:EmitSound("ambient/machines/thumper_amb.wav")
+
+					--Stops ants from jumping in
+					local rep = ents.Create("point_antlion_repellant")
+					rep:SetKeyValue("repelradius", 750)
+					rep:SetPos(ent:WorldSpaceCenter())
+					rep:Spawn()
+					rep:SetParent(ent)
+					rep:Fire("Enable")
+					ent.jcms_antlionRepellant = rep
+
+					--Scares off ants
+					local aiSnd = ents.Create("ai_sound")
+					aiSnd:SetKeyValue("volume", 750)
+					aiSnd:SetKeyValue("duration", 1)
+					aiSnd:SetKeyValue("soundtype", 256) --Thumper sound
+
+					aiSnd:SetPos(ent:WorldSpaceCenter())
+					aiSnd:Spawn()
+					aiSnd:SetParent(ent)
+					ent.jcms_aiSound = aiSnd
+				end,
+
+				veinDestroyed = function(ent)
+					ent:StopSound("ambient/machines/thumper_amb.wav")
+				end,
+
+				veinTakeDamage = function(ent, dmgInfo, takenDmg)
+					--TODO: SFX
+				end,
+
+				veinThink = function(ent)
+					if ent.nextThump > CurTime() then return end
+
+					ent:EmitSound("coast.thumper_top")
+					timer.Simple(0.3, function()
+						if not IsValid(ent) then return end
+
+						ent:EmitSound("coast.thumper_hit")
+						ent:EmitSound("coast.thumper_dust")
+						ent.jcms_aiSound:Fire("EmitAISound")
+	
+						local ed = EffectData()
+							ed:SetScale(1000)
+							ed:SetOrigin(ent:GetPos())
+							ed:SetEntity(ent)
+						util.Effect("ThumperDust", ed)
+					end)
+
+					ent.nextThump = CurTime() + 3
+				end
+			-- // }}}
+
 		}
+
+		--TODO: Charple ore
 	}
 
 	function ENT:SetOreType(oretype)
@@ -106,6 +404,14 @@ if SERVER then
 		self.OreColInt = jcms.util_ColorInteger(data.color)
 		self.OreName = oretype
 		self:SetMaterial(data.material)
+
+		if data.veinSetup then 
+			data.veinSetup(self)
+		end
+
+		self.VeinThink = data.veinThink
+		self.VeinDestroyed = data.veinDestroyed
+		self.VeinTakeDamage = data.veinTakeDamage
 	end
 	
 	function ENT:Initialize()
@@ -126,6 +432,10 @@ if SERVER then
 	end
 
 	function ENT:OnRemove()
+		if self.VeinDestroyed then
+			self:VeinDestroyed()
+		end
+
 		local r = self:BoundingRadius()
 		for i=1, math.random(6, 8) do
 			local low, high = self:WorldSpaceAABB()
@@ -142,7 +452,8 @@ if SERVER then
 	function ENT:OnTakeDamage(dmg)
 		local attacker = dmg:GetAttacker()
 		local inflictor = dmg:GetInflictor()
-		if IsValid(attacker) and IsValid(inflictor) and attacker:IsPlayer() and jcms.team_JCorp_player(attacker) then
+
+		if IsValid(attacker) and IsValid(inflictor) and attacker:IsPlayer() and jcms.team_JCorp_player(attacker) then			
 			local damageTaken = 0
 			local damageAmount = dmg:GetDamage()
 			local doPickSound = false
@@ -153,6 +464,10 @@ if SERVER then
 			elseif bit.band(dmg:GetDamageType(), DMG_BLAST) > 0 then
 				self.OreDamageAccum = self.OreDamageAccum + damageAmount^0.9 + 37
 				damageTaken = damageAmount + 5
+			end
+
+			if self.VeinTakeDamage then 
+				self:VeinTakeDamage(dmg, damageTaken)
 			end
 
 			local didBreakSound = false
@@ -216,6 +531,10 @@ if SERVER then
 
 	function ENT:Think()
 		self:SetSaveValue("m_vecAbsVelocity", Vector(0,0,0))
+
+		if self.VeinThink then 
+			self:VeinThink()
+		end
 
 		self:NextThink(CurTime() + 1)
 		return true

@@ -1562,7 +1562,7 @@ end
 		ply:GodDisable()
 		if jcms.util_IsPVP() then		
 			ply.jcms_isNPC = true
-			jcms.giveCash(ply, 100)
+			jcms.giveCash(ply, 125)
 		end
 
 		ply:SetNWBool("jcms_ready", false)

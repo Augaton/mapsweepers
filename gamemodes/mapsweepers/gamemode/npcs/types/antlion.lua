@@ -31,6 +31,17 @@
 		return false
 	end
 
+	function jcms.npc_NearAntRepellant(target)
+		local repellants = ents.FindByClass("point_antlion_repellant")
+		local nPos = target:GetPos()
+		for i, v in ipairs(repellants) do
+			if v:GetInternalVariable("m_bEnabled") and v:GetPos():DistToSqr(nPos) < 750^2 then --Radius is actually 1k but they can attack things at the edges.
+				return true
+			end
+		end
+		return false
+	end
+
 	function jcms.DischargeEffect(pos, duration, radius, intervalMin, intervalMax, beamCountMin, beamCountMax, thickMin, thickMax, lifeMin, lifeMax)
 		-- // Defaults {{{
 			--Pos is required, everything else is optional
@@ -154,7 +165,7 @@
 
 	function jcms.npc_AntlionFodder_Think(npc)
 		local enemy = npc:GetEnemy()
-		if not IsValid(enemy) or not jcms.npc_NearThumper(enemy) then return end
+		if not IsValid(enemy) or not jcms.npc_NearAntRepellant(enemy) then return end
 
 		npc:SetSaveValue("vLastKnownLocation", enemy:GetPos())
 		npc:IgnoreEnemyUntil(enemy, CurTime() + 10)

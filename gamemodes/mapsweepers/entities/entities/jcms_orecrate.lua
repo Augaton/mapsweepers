@@ -203,6 +203,7 @@ if SERVER then
 		local targetData = {
 			type = target:GetOreName(),
 			model = target:GetModel(),
+			worth = target:GetWorth(),
 			owner = target.jcms_miner
 		}
 		table.insert(self.crate_contents, targetData)
@@ -240,6 +241,8 @@ if SERVER then
 			ore:SetOreType(oreData.type)
 			ore.jcms_miner = oreData.owner
 			ore:Spawn()
+
+			ore:SetWorth(oreData.worth) --Worth override (RGGium)
 
 			local tr = util.TraceEntity(trData, ore)
 			ore:SetPos(tr.HitPos) 
