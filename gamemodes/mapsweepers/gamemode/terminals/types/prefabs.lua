@@ -279,7 +279,7 @@ if SERVER then
 				ent:SetCycle(0)
 				ent:EmitSound("doors/door_latch1.wav", 75, 137, 1)
 
-				local gunstats = jcms.gunstats_GetExpensive(ent.jcms_weaponclass)
+				local gunstats = jcms.gunstats_Get(ent.jcms_weaponclass)
 				if gunstats then
 					jcms.net_NotifyGeneric(ply, jcms.NOTIFY_OBTAINED, gunstats.name or "#"..ent.jcms_weaponclass)
 				end
@@ -302,6 +302,7 @@ if SERVER then
 				local weights = {}
 				for k,v in pairs(jcms.weapon_prices) do
 					if v <= 0 then continue end
+					if not jcms.gunstats_Get(k) then continue end
 					--weights[k] = (v <= 3200 and (v/5) or (math.min(20000, v)^1.12 + 6000)) / 100
 					local cost = v * jcms.util_GetLobbyWeaponCostMultiplier()
 
@@ -716,7 +717,7 @@ if CLIENT then
 
 		if ent.jcms_cachedGunClass ~= class then
 			ent.jcms_cachedGunClass = class
-			ent.jcms_cachedGunData = jcms.gunstats_GetExpensive(class)
+			ent.jcms_cachedGunData = jcms.gunstats_Get(class)
 		end
 
 		local gundata = ent.jcms_cachedGunData
@@ -908,8 +909,9 @@ if CLIENT then
 
 				for weapon, cost in pairs(jcms.weapon_prices) do
 					if cost <= 0 then continue end
+					if not jcms.gunstats_Get(weapon) then continue end
 					if not ent.gunStatsCache[ weapon ] then
-						ent.gunStatsCache[ weapon ] = jcms.gunstats_GetExpensive(weapon)
+						ent.gunStatsCache[ weapon ] = jcms.gunstats_Get(weapon)
 					end
 					local stats = ent.gunStatsCache[ weapon ]
 					local category = stats and stats.category or "_"
@@ -968,7 +970,7 @@ if CLIENT then
 						local canAfford = me:GetNWInt("jcms_cash", 0) >= price
 
 						if not ent.gunStatsCache[ wepclass ] then
-							ent.gunStatsCache[ wepclass ] = jcms.gunstats_GetExpensive(wepclass)
+							ent.gunStatsCache[ wepclass ] = jcms.gunstats_Get(wepclass)
 						end
 						local wepstats = ent.gunStatsCache[ wepclass ]
 						local owned = me:HasWeapon(wepclass)
@@ -1007,8 +1009,10 @@ if CLIENT then
 							local col = canAfford and color_fg or color_bg
 							surface.SetDrawColor(col)
 							surface.DrawOutlinedRect(wx, wy, wsize, wsize, 4)
-							local len = #wepstats.name
-							draw.SimpleText(wepstats.name, len>10 and "jcms_small" or "jcms_medium", wx+wsize/2, wy+wsize/2, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+							
+							local wepname = wepstats and wepstats.name or wepclass
+							local len = #wepname
+							draw.SimpleText(wepname, len>10 and "jcms_small" or "jcms_medium", wx+wsize/2, wy+wsize/2, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 						end
 
 						if owned then
@@ -1049,7 +1053,7 @@ if CLIENT then
 				local mat = jcms.gunstats_GetMat(wepclass)
 				
 				if not ent.gunStatsCache[ wepclass ] then
-					ent.gunStatsCache[ wepclass ] = jcms.gunstats_GetExpensive(wepclass)
+					ent.gunStatsCache[ wepclass ] = jcms.gunstats_Get(wepclass)
 				end
 				local stats = ent.gunStatsCache[ wepclass ]
 				local owned = me:HasWeapon(wepclass)
@@ -1186,13 +1190,14 @@ if CLIENT then
 				local col_dark = canAfford and color_accent_dark or color_dark
 				surface.SetDrawColor(col)
 				
+				local wepname = hoveredWeaponStats and hoveredWeaponStats.name or hoveredWeaponClass
 				local font = "jcms_hud_small"
 				surface.SetFont(font)
-				local tw = surface.GetTextSize(hoveredWeaponStats.name) + 32
+				local tw = surface.GetTextSize(wepname) + 32
 				jcms.hud_DrawStripedRect(mx - tw/2 - 8, my + 32 - 8, tw + 16, 38 + 16, 64)
 				surface.SetDrawColor(col_dark)
 				surface.DrawRect(mx - tw/2, my + 32, tw, 38)
-				draw.SimpleText(hoveredWeaponStats.name, "jcms_hud_small", mx, my + 48, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText(wepname, "jcms_hud_small", mx, my + 48, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
 				draw.SimpleTextOutlined(jcms.util_CashFormat(price) .. " J", "jcms_hud_medium", mx, my + 108, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 2, col_dark)
 			cam.PopModelMatrix()

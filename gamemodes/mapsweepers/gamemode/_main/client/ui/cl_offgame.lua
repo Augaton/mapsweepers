@@ -1150,9 +1150,11 @@ jcms.offgame = jcms.offgame or NULL
 					local mode = self.catMode
 
 					if not tab.loadoutPnl.gunStats[ class ] then
-						tab.loadoutPnl.gunStats[ class ] = jcms.gunstats_GetExpensive(class)
+						tab.loadoutPnl.gunStats[ class ] = jcms.gunstats_Get(class)
 					end
 					local stats = tab.loadoutPnl.gunStats[ class ]
+
+					if not stats then return "_" end
 
 					if mode == 1 then
 						return stats.category
@@ -1224,6 +1226,7 @@ jcms.offgame = jcms.offgame or NULL
 
 					for weapon, cost in pairs(jcms.weapon_prices) do
 						if cost <= 0 then continue end
+						if not jcms.gunstats_Get(weapon) then continue end
 						
 						local category = self:CategorizeGun(weapon)
 						if not categorizedGuns[ category ] then
@@ -2742,8 +2745,8 @@ jcms.offgame = jcms.offgame or NULL
 								if gunData.Spawnable then
 									local class = gunData.ClassName
 									local price = jcms.weapon_prices[class] or 0
-									local success, gunStats = pcall(jcms.gunstats_GetExpensive, class)
-									if success and gunStats then
+									local gunStats = jcms.gunstats_Get(class)
+									if gunStats then
 										local l = listview:AddLine(class, gunStats.name, gunStats.base, price, math.ceil(price * jcms.util_GetLobbyWeaponCostMultiplier()))
 										l.class = class
 										l.price = price

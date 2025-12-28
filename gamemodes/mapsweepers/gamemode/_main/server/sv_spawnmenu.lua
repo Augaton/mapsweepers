@@ -1321,7 +1321,7 @@
 			end
 			
 			counts[class] = count
-			gunstats[class] = jcms.gunstats_GetExpensive(class)
+			gunstats[class] = jcms.gunstats_Get(class)
 			table.insert(classes, class)
 		end
 		
@@ -1379,7 +1379,7 @@
 			
 			consumedCash = consumedCash + math.ceil((jcms.weapon_prices[class] or 0)*gunPriceMul)
 			
-			local stats = jcms.gunstats_GetExpensive(class)
+			local stats = jcms.gunstats_Get(class)
 			
 			if stats then
 				local ammotype = stats.ammotype
@@ -1411,7 +1411,7 @@
 		local plyCash = ply:GetNWInt("jcms_cash", 0)
 		
 		if type(cost) == "number" and cost > 0 then
-			local stats = jcms.gunstats_GetExpensive(class)
+			local stats = jcms.gunstats_Get(class)
 
 			if ply:HasWeapon(class) then
 
@@ -1472,7 +1472,7 @@
 
 		if cost and cost > 0 then
 			cost = math.ceil(cost * jcms.util_GetLobbyWeaponCostMultiplier())
-			local stats = jcms.gunstats_GetExpensive(class)
+			local stats = jcms.gunstats_Get(class)
 
 			if ply.jcms_pendingLoadout[ class ] and ply.jcms_pendingLoadout[ class ] >= 1 then
 				
@@ -1522,7 +1522,7 @@
 					earnedBack = earnedBack + cost
 				end
 
-				local stats = jcms.gunstats_GetExpensive(class)
+				local stats = jcms.gunstats_Get(class)
 				if stats and stats.ammotype ~= "none" and (ply.jcms_pendingLoadout[ class ] > 1) then
 					earnedBack = earnedBack + jcms.gunstats_ExtraAmmoCostData(stats, count - (count == ply.jcms_pendingLoadout[ class ] and 1 or 0))
 				end

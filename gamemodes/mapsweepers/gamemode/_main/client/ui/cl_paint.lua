@@ -592,7 +592,7 @@
 
 					if p.gunStats then
 						if not p.gunStats[ class ] then
-							p.gunStats[ class ] = jcms.gunstats_GetExpensive(class)
+							p.gunStats[ class ] = jcms.gunstats_Get(class)
 						end
 
 						local stats = p.gunStats[ class ]
@@ -1725,7 +1725,7 @@
 					wbtn.gunSale = jcms.util_GetLobbyWeaponCostMultiplier()
 					wbtn.ammoSale = 1
 					wbtn.gunClass = class 
-					wbtn.gunStats = jcms.gunstats_GetExpensive(class)
+					wbtn.gunStats = jcms.gunstats_Get(class)
 					wbtn.cost = jcms.weapon_prices[class]
 					p.weaponButtons[i] = wbtn
 				end

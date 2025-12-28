@@ -441,6 +441,8 @@ local nmt = FindMetaTable("NPC")
 		["frag grenades"] = true,
 	}
 
+	jcms.weapon_statsCache = jcms.weapon_statsCache or {}
+
 	function jcms.gunstats_GetExpensive(class)
 		local gunData = weapons.Get(class) or jcms.default_weapons_datas[class]
 		if not gunData then return end
@@ -698,13 +700,37 @@ local nmt = FindMetaTable("NPC")
 			stats.slot = gunData.Slot or 5
 			stats.icon = gunData.IconOverride
 
+		if not jcms.weapon_statsCache[class] then
+			jcms.weapon_statsCache[class] = stats
+		end
+		
 		return stats
+	end
+
+	function jcms.gunstats_Get(class)
+		local cached = jcms.weapon_statsCache[ class ]
+
+		if cached == nil then
+			s, rtn = pcall(jcms.gunstats_GetExpensive, class)
+
+			if s and type(rtn) == "table" then
+				cached = rtn
+			else
+				cached = false
+			end
+
+			jcms.weapon_statsCache[ class ] = cached
+		end
+		
+		if cached then 
+			return cached -- so that we return 'nil' instead of 'false'
+		end
 	end
 
 	if CLIENT then
 		function jcms.gunstats_GetMat(class)
 			if not jcms.gunMats[ class ] then
-				local wepstats = jcms.gunstats_GetExpensive(class)
+				local wepstats = jcms.gunstats_Get(class)
 
 				jcms.gunMats[class] = Material(wepstats and wepstats.icon or "vgui/entities/"..class..".png")
 				if jcms.gunMats[class]:IsError() then
@@ -752,6 +778,8 @@ local nmt = FindMetaTable("NPC")
 	end
 
 	function jcms.gunstats_CalcWeaponPrice(stats, noDivider)
+		if type(stats) ~= "table" then return 0 end
+
 		if stats.costOverride then 
 			return stats.costOverride
 		end
