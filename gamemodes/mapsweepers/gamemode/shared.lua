@@ -1022,6 +1022,7 @@ local nmt = FindMetaTable("NPC")
 
 	function jcms.PVPGetTeamAlivePlayers( pvpTeam ) 
 		local plys = jcms.GetAliveSweepers()
+		
 		for i=#plys, 1, -1 do 
 			local ply = plys[i] 
 			if not jcms.team_pvpSameTeam_optimised(pvpTeam, ply:GetNWInt("jcms_pvpTeam", -1)) then

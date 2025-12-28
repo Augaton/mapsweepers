@@ -222,9 +222,52 @@ jcms.missions.miningoperations = {
 				{ type = "bringore" },
 			}
 
-			for i, refinery in ipairs(missionData.refineries_main) do 
+			local thresholds = {
+				0.25,
+				0.5,
+				0.75,
+				0.9
+			}
+
+			for i, refinery in ipairs(missionData.refineries_main) do
+				if not IsValid(refinery) then continue end
+
+				local valueInside = refinery:GetValueInside()
+				local valueTotal = missionData.totalToRefine
+				local fraction = math.Clamp(valueInside / valueTotal, 0, 1)
+
+				local passedThreshold = false
+				local lastFrac = refinery.lastRefinedFraction or 0
+				for j, threshold in ipairs(thresholds) do
+					if (fraction >= threshold) and (threshold > lastFrac) then
+						refinery.lastRefinedFraction = threshold
+						passedThreshold = true
+					end
+				end
+
+				if passedThreshold then
+					local refineryTeam = refinery:GetNWInt("jcms_pvpTeam", -1)
+					
+					local sameTeam, notSameTeam = {}, {}
+					for j, ply in ipairs(jcms.GetAliveSweepers()) do
+						if jcms.team_pvpSameTeam_optimised(refineryTeam, ply:GetNWInt("jcms_pvpTeam", -1)) then
+							table.insert(sameTeam, ply)
+						else
+							table.insert(notSameTeam, ply)
+						end
+					end
+
+					if #sameTeam > 0 then
+						jcms.net_SendTip("all", true, "#jcms.miningoperations_completion", fraction)
+					end
+
+					if #notSameTeam > 0 then
+						jcms.net_SendTip("all", true, "#jcms.miningoperations_completion_enemy", fraction)
+					end
+				end
+				
 				table.insert(objectives, 
-					{ type = "refineore", progress = refinery:GetValueInside(), total = missionData.totalToRefine , format = { missionData.totalToRefine  } }
+					{ type = "refineore", progress = valueInside, total = valueTotal, format = { valueTotal } }
 				)
 			end
 
