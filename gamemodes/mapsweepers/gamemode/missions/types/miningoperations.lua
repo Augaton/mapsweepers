@@ -258,11 +258,11 @@ jcms.missions.miningoperations = {
 					end
 
 					if #sameTeam > 0 then
-						jcms.net_SendTip("all", true, "#jcms.miningoperations_completion", fraction)
+						jcms.net_SendTip(sameTeam, true, "#jcms.miningoperations_completion", fraction)
 					end
 
 					if #notSameTeam > 0 then
-						jcms.net_SendTip("all", true, "#jcms.miningoperations_completion_enemy", fraction)
+						jcms.net_SendTip(notSameTeam, true, "#jcms.miningoperations_completion_enemy", fraction)
 					end
 				end
 				
