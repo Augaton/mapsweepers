@@ -181,6 +181,7 @@ jcms.missions.datadownload = {
 				
 					function computer:jcms_terminal_Callback(cmd, data, ply)
 						if tonumber(data) and not missionData.defenseOngoing and not missionData.defenseCompleted then
+							local plyPvpTeam = ply:GetNWInt("jcms_pvpTeam", -1)
 							missionData.defenseOngoing = true
 
 							if missionData.defenseAttempts == 0 then
@@ -193,12 +194,12 @@ jcms.missions.datadownload = {
 								pillar:SetIsDisrupted(false)
 								pillar:SetHealth( pillar:GetMaxHealth() )
 								pillar:SetHealthFraction(1)
-								pillar:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+								pillar:SetNWInt("jcms_pvpTeam", plyPvpTeam)
 							end
 
 							self:EmitSound("ambient/alarms/klaxon1.wav", 150, 108, 1)
 							util.ScreenShake(self:GetPos(), 3, 50, 1, 2048, true)
-							
+
 							for j, comp in ipairs(missionData.computers) do
 								if comp.soundDownload then
 									comp.soundDownload:Stop()
@@ -217,10 +218,26 @@ jcms.missions.datadownload = {
 								comp.soundHum:PlayEx(1, 107)
 
 								comp:SetNWString("jcms_terminal_modeData", "upload")
-								comp:SetNWInt("jcms_pvpTeam", ply:GetNWInt("jcms_pvpTeam", -1))
+								comp:SetNWInt("jcms_pvpTeam", plyPvpTeam)
 							end
 
-							jcms.net_SendTip("all", true, "#jcms.datadownload_started", tonumber(missionData.defenseProgress) or 0)
+							local sameTeam, notSameTeam = {}, {}
+							for j, otherPly in ipairs(jcms.GetAliveSweepers()) do
+								if jcms.team_pvpSameTeam_optimised(plyPvpTeam, otherPly:GetNWInt("jcms_pvpTeam", -1)) then
+									table.insert(sameTeam, ply)
+								else
+									table.insert(notSameTeam, ply)
+								end
+							end
+
+							if #sameTeam > 0 then
+								jcms.net_SendTip(sameTeam, true, "#jcms.datadownload_started", tonumber(missionData.defenseProgress) or 0)
+							end
+
+							if #notSameTeam > 0 then
+								jcms.net_SendTip(notSameTeam, true, "#jcms.datadownload_started_enemy", tonumber(missionData.defenseProgress) or 0)
+							end
+
 							return true, "upload"
 						end
 					end
