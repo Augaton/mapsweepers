@@ -139,7 +139,7 @@ if SERVER then
 						util.Effect("jcms_bolt", effectdata)
 
 						if velSqr > 1000^2 then
-							ent:TakeDamage(math.huge)
+							ent:TakeDamage(1000)
 						end
 					end
 				end,
@@ -450,6 +450,8 @@ if SERVER then
 	end
 
 	function ENT:OnTakeDamage(dmg)
+		if self.jcms_died or self.spawningOre then return end --Safety
+
 		local attacker = dmg:GetAttacker()
 		local inflictor = dmg:GetInflictor()
 
@@ -477,29 +479,34 @@ if SERVER then
 				self:EmitSound("ambient/levels/outland/ol01_rock_crash.wav", 120, 110)
 				self.OreDamageAccum = self.OreDamageAccum + 110
 				self:Remove()
+				self.jcms_died = true
 				didBreakSound = true
 			end
 
 			local threshold = 50
 			local pos = dmg:GetDamagePosition()
 			if self.OreDamageAccum >= threshold then
+				self.spawningOre = true --I have no idea if this will work/is needed but it seems vaguely like we're getting triggered *while* creating new entities somehow.
 				local reps = 0
 				repeat
-					local chunk = ents.Create("jcms_orechunk")
-					chunk.jcms_miner = attacker
-					chunk:SetPos(pos)
-					chunk:SetAngles(AngleRand())
+					timer.Simple(0, function()
+						local chunk = ents.Create("jcms_orechunk")
+						chunk.jcms_miner = attacker
+						chunk:SetPos(pos)
+						chunk:SetAngles(AngleRand())
 
-					chunk:SetOreType(self.OreName)
-					chunk:Spawn()
+						chunk:SetOreType(self.OreName)
+						chunk:Spawn()
 
-					local phys = chunk:GetPhysicsObject()
-					phys:Wake()
-					phys:AddVelocity(VectorRand(-32, 32))
+						local phys = chunk:GetPhysicsObject()
+						phys:Wake()
+						phys:AddVelocity(VectorRand(-32, 32))
+					end)
 
 					self.OreDamageAccum = self.OreDamageAccum - threshold
 					reps = reps + 1
 				until (self.OreDamageAccum < threshold or reps > 20) --reps >20 is for safety, Zmod got stuck in an infinite loop here and I'm not sure how.
+				self.spawningOre = false
 
 				local ed = EffectData()
 				ed:SetOrigin(pos)

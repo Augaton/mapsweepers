@@ -109,6 +109,8 @@ if SERVER then
 	end
 
 	function ENT:OnTakeDamage(dmg)
+		if self.jcms_died then return end
+		
 		if self.ChunkTakeDamage then
 			self:ChunkTakeDamage(dmg)
 		end
@@ -141,9 +143,11 @@ if SERVER then
 			util.Effect("jcms_oremine", ed)
 		end
 
-		if self:Health() <= 0 and self.ChunkDestroyed and not self.jcms_died then
+		if (self:Health() <= 0 and self.ChunkDestroyed) and not self.jcms_died then
 			self.jcms_died = true
-			self:ChunkDestroyed()
+			timer.Simple(0, function()
+				self:ChunkDestroyed()
+			end)
 		end
 	end
 
