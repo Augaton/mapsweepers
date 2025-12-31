@@ -145,9 +145,7 @@ if SERVER then
 
 		if (self:Health() <= 0 and self.ChunkDestroyed) and not self.jcms_died then
 			self.jcms_died = true
-			timer.Simple(0, function()
-				self:ChunkDestroyed()
-			end)
+			self:ChunkDestroyed()
 		end
 	end
 

@@ -489,19 +489,17 @@ if SERVER then
 				self.spawningOre = true --I have no idea if this will work/is needed but it seems vaguely like we're getting triggered *while* creating new entities somehow.
 				local reps = 0
 				repeat
-					timer.Simple(0, function()
-						local chunk = ents.Create("jcms_orechunk")
-						chunk.jcms_miner = attacker
-						chunk:SetPos(pos)
-						chunk:SetAngles(AngleRand())
+					local chunk = ents.Create("jcms_orechunk")
+					chunk.jcms_miner = attacker
+					chunk:SetPos(pos)
+					chunk:SetAngles(AngleRand())
 
-						chunk:SetOreType(self.OreName)
-						chunk:Spawn()
+					chunk:SetOreType(self.OreName)
+					chunk:Spawn()
 
-						local phys = chunk:GetPhysicsObject()
-						phys:Wake()
-						phys:AddVelocity(VectorRand(-32, 32))
-					end)
+					local phys = chunk:GetPhysicsObject()
+					phys:Wake()
+					phys:AddVelocity(VectorRand(-32, 32))
 
 					self.OreDamageAccum = self.OreDamageAccum - threshold
 					reps = reps + 1
