@@ -277,15 +277,15 @@ local nmt = FindMetaTable("NPC")
 		--TODO:
 	}
 
-	jcms.weapon_HL2Prices = {
-		weapon_pistol = 159,
-		weapon_smg1 = 219,
-		weapon_357 = 359,
-		weapon_ar2 = 429,
-		weapon_shotgun = 399,
-		weapon_rpg = 1299,
-		weapon_frag = 199,
-		weapon_crossbow = 699
+	jcms.weapon_HL2Prices = {	--Calculated by agonisingly going through and recording their stats, then putting them through the cost calc.
+		weapon_pistol = 475,
+		weapon_smg1 = 840,
+		weapon_357 = 1320,
+		weapon_ar2 = 1230,
+		weapon_shotgun = 980,
+		weapon_rpg = 2400, 		--Designer value
+		weapon_frag = 400, 		--Designer value
+		weapon_crossbow = 870	--Cost calc + (1/3) reduction
 	}
 
 
