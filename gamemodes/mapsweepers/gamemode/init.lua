@@ -414,8 +414,8 @@ end
 	end)
 
 	hook.Add( "FindUseEntity", "jcms_pickupOverride", function( ply, defaultEnt )
-		--Allow us to pick grenades up through NPCs.
-		if IsValid(defaultEnt) then return end
+		--Allow us to pick grenades up through NPCs and turrets
+		if IsValid(defaultEnt) and not defaultEnt:GetClass() == "jcms_turret" then return end
 
 		local ep = ply:EyePos()
 		local endpos = ply:EyeAngles():Forward()
