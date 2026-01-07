@@ -875,7 +875,10 @@ jcms.npc_types.antlion_ultracyberguard = {
 			if IsValid(enemy) and npc.jcms_uCyberguard_nextBeam < CurTime() and enemy:WorldSpaceCenter():DistToSqr(npc:GetPos()) >150 then 
 				local ePos = npc:Visible(enemy) and enemy:EyePos() or npc:GetEnemyLastSeenPos(enemy)
 
-				npc:SetSchedule(SCHED_RANGE_ATTACK1)
+				npc:SetSchedule(SCHED_RANGE_ATTACK2)
+				local gestureLayer = npc:AddGesture(ACT_RANGE_ATTACK1)
+				npc:SetLayerPlaybackRate(gestureLayer, 0.85)
+
 				local attackType = (math.random() < (enemy:GetVelocity():Length() / 400)) and 1 or 2 --1 = Sweep, 2 = direct
 				--Sweeps are more likely if you're moving, direct attacks more likely for stationary/slow
 				
@@ -898,12 +901,13 @@ jcms.npc_types.antlion_ultracyberguard = {
 				end
 				local beamTotal = beamPrep + beamLife
 				
-				npc:SetPlaybackRate(0.85)
+				--npc:SetPlaybackRate(0.85)
 				timer.Simple(0.9, function()
-					if not IsValid(npc) or not IsValid(enemy) or not(npc:GetCurrentSchedule() == SCHED_RANGE_ATTACK1) then
+					if not IsValid(npc) or not IsValid(enemy) or not(npc:GetCurrentSchedule() == SCHED_RANGE_ATTACK2) then
 						return 
 					end 
-					npc:SetPlaybackRate(0.15)
+					--npc:SetPlaybackRate(0.15)
+					npc:SetLayerPlaybackRate(gestureLayer, 0.15)
 
 					local boneId = 4 --Head
 					local matrix = npc:GetBoneMatrix(boneId)
@@ -936,10 +940,11 @@ jcms.npc_types.antlion_ultracyberguard = {
 
 					local timerName = "jcms_ultracyberguard_beamAim" .. tostring(npc:EntIndex())
 					timer.Create(timerName, 0.0, 0, function()
-						if not IsValid(npc) or not IsValid(beam) or not(npc:GetCurrentSchedule() == SCHED_RANGE_ATTACK1) then
+						if not IsValid(npc) or not IsValid(beam) or not(npc:GetCurrentSchedule() == SCHED_RANGE_ATTACK2) then
 							timer.Remove(timerName)
 							if IsValid(npc) then
-								npc:SetPlaybackRate(1) 
+								--npc:SetPlaybackRate(1) 
+								npc:SetLayerPlaybackRate(gestureLayer, 1)
 								npc:SetMoveYawLocked( false )
 							end 
 							if IsValid(beam) then beam:Remove() end
