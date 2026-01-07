@@ -900,7 +900,7 @@ jcms.npc_types.antlion_ultracyberguard = {
 				
 				npc:SetPlaybackRate(0.85)
 				timer.Simple(0.9, function()
-					if not IsValid(npc) or not(npc:GetCurrentSchedule() == SCHED_RANGE_ATTACK1) then
+					if not IsValid(npc) or not IsValid(enemy) or not(npc:GetCurrentSchedule() == SCHED_RANGE_ATTACK1) then
 						return 
 					end 
 					npc:SetPlaybackRate(0.15)

@@ -55,7 +55,7 @@
 		local keys = {}
 
 		for mission in pairs(jcms.missions) do
-			if mission ~= except and not pvpOnly or ( jcms.missions[ mission ].pvpAllowed ) then
+			if mission ~= except and (not pvpOnly or jcms.missions[ mission ].pvpAllowed ) then
 				table.insert(keys, mission)
 			end
 		end
