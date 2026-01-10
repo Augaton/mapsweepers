@@ -49,6 +49,7 @@ include "_main/sh_announcer.lua"
 include "_main/sh_factions.lua"
 include "_main/sh_statistics.lua"
 include "_main/server/sv_runprogress.lua"
+include "_main/server/sv_leaderboard.lua"
 
 -- // Mission Includes {{{
 	do 
@@ -549,6 +550,8 @@ end
 			ed:SetOrigin(ply:GetPos())
 			ed:SetFlags(1)
 			util.Effect("jcms_evacbeam", ed)
+			
+			jcms.leaderboard_PlayerLeft(ply)
 		end
 	end)
 

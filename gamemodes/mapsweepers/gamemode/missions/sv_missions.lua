@@ -310,6 +310,8 @@
 	end
 
 	function jcms.mission_End(victory, aliveTeams)
+		jcms.leaderboard_RoundEnd(jcms.util_IsPVP(), victory, aliveTeams)
+
 		-- Voting {{{
 			jcms.director.votes = {}
 			
@@ -444,8 +446,8 @@
 						local desiredTeam = ply:GetNWInt("jcms_desiredteam", 0)
 						local ready = ply:GetNWBool("jcms_ready", false) or game.SinglePlayer()
 
-						if desiredTeam == 1 then
-							if ready then
+						if ready then
+							if desiredTeam == 1 then
 								jcms.playerspawn_RespawnAs(ply, "sweeper")
 								jcms.statistics_AddMissionStatus(ply, jcms.director.missionType, jcms.director.faction, false)
 								if not jcms.util_IsPVP() then
@@ -459,9 +461,9 @@
 									jcms.net_SendRespawnEffect(ply)
 									jcms.announcer_Speak(jcms.ANNOUNCER_JOIN)
 								end
-							end
-						elseif desiredTeam == 2 then
-							if ready then
+
+								jcms.leaderboard_PlayerDeployed(ply)
+							elseif desiredTeam == 2 then
 								jcms.playerspawn_RespawnAs(ply, "spectator")
 								ply.jcms_isNPC = true
 
@@ -469,6 +471,8 @@
 								if jcms.director_GetMissionTime() > 8 then
 									jcms.net_SendRespawnEffect(ply)
 								end
+
+								jcms.leaderboard_PlayerDeployed(ply)
 							end
 						end
 					end

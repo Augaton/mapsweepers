@@ -1,0 +1,253 @@
+--[[
+	Map Sweepers - Co-op NPC Shooter Gamemode for Garry's Mod by "Octantis Addons" (consisting of MerekiDor & JonahSoldier)
+	Copyright (C) 2025  MerekiDor
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+	See the full GNU GPL v3 in the LICENSE file.
+	Contact E-Mail: merekidorian@gmail.com
+--]]
+
+
+-- // Main {{{
+	--[[
+		TODO:
+			Separately store the current top players and check if we've overtaken one each time we store, so that we don't
+			have to re-check every single file we have every time we need it as this could be a LOT of data).
+	--]]
+
+	jcms.leaderboard_roundPlayers = {} --[side64] = pvpTeam (-1 for pve)
+	jcms.leaderboard_roundLeaveTimes = {} --[sid64] = Curtime()
+	jcms.leaderboard_roundLeaveReasons = {} --[sid64] = reason (e.g. timed out) --NOTE: Should be treated as less reliable than roundLeaveTimes
+
+	-- // Player Tracking {{{
+		function jcms.leaderboard_PlayerDeployed(ply) --Player is now part of the match
+			if ply:IsBot() then return end
+
+			jcms.leaderboard_roundPlayers[ply:SteamID64()] = ply:GetNWInt("jcms_pvpTeam", -1)
+		end
+
+		function jcms.leaderboard_PlayerLeft(ply) --Disconnected early
+			if ply:IsBot() then return end
+			
+			local sid64 = ply:SteamID64()
+			jcms.leaderboard_roundLeaveTimes[sid64] = CurTime()
+		end
+
+		gameevent.Listen("player_disconnect")
+		hook.Add("player_disconnect", "jcms_leaderboard_playerDisconnect", function( data )
+			local ply = Player(data.userid)
+			jcms.leaderboard_roundLeaveReasons[ply:SteamID64()] = data.reason
+		end)
+	-- // }}}
+
+	-- // Disconnect forgiveness {{{
+		function jcms.leaderboard_GetForgivenessTime( sid64 )
+			local reason = jcms.leaderboard_roundLeaveReasons[sid64] or "Disconnect by user."
+
+			if not(reason == "Disconnect by user.") then
+				return 5*60 --5 Minutes of forgiveness if they timed out or got kicked for any reason (e.g. any of the weird steam stuff)
+			end
+
+			return 60 --1 minute if they left
+		end
+
+		function jcms.leaderboard_VictoryEligble( sid64 )
+			if IsValid(player.GetBySteamID64(sid64)) then return true end --Still here!
+
+			local disconnectTime = jcms.leaderboard_roundLeaveTimes[sid64] or CurTime()
+			local disconnectedFor = CurTime() - disconnectTime
+
+			return disconnectedFor - jcms.leaderboard_GetForgivenessTime(sid64) < 0
+		end
+	-- // }}}
+
+	-- // Update stats on round end {{{
+		function jcms.leaderboard_RoundEnd(isPVP, victory, aliveTeams)
+			if isPVP then
+				if #aliveTeams > 0 then -- Nothing happens in a draw.
+					jcms.leaderboard_PVPRoundEnd(aliveTeams[1])
+				end
+			else
+				jcms.leaderboard_PVERoundEnd(victory)
+			end
+
+			--Clear Data
+			jcms.leaderboard_roundPlayers = {}
+			jcms.leaderboard_roundLeaveTimes = {} 
+			jcms.leaderboard_roundLeaveReasons = {}
+		end
+
+		function jcms.leaderboard_PVERoundEnd(victory)
+			local playerStats = {}
+			for sid64, _ in pairs(jcms.leaderboard_roundPlayers) do 
+				playerStats[sid64] = jcms.leaderboard_GetStatsPVE(sid64)
+			end
+
+			for sid64, stats in pairs(playerStats) do
+				if victory then --If we won and are present or forgiven we get positive increases
+					if jcms.leaderboard_VictoryEligble(sid64) then 
+						stats.wins = stats.wins + 1
+						stats.highestWinstreak = math.max(stats.highestWinstreak, jcms.runprogress.winstreak)
+					end
+				else --If we lost and were here at all we lose
+					stats.losses = stats.losses + 1
+				end
+
+				jcms.leaderboard_SaveStats(stats, sid64, false)
+			end
+		end
+
+		function jcms.leaderboard_PVPRoundEnd(winningTeam)
+			local playerStats = {}
+			local playerTeams = {}
+			for sid64, plyTeam in pairs(jcms.leaderboard_roundPlayers) do 
+				playerStats[sid64] = jcms.leaderboard_GetStatsPVP(sid64)
+				playerTeams[sid64] = plyTeam
+			end
+
+			-- {{{ Calculate average ELO of each team.
+				--This could probably be made more sophisticated but this is good enough.
+				local winners = 0
+				local losers = 0
+
+				local winnerELOAvg = 0
+				local loserELOAvg = 0
+
+				for sid64, stats in pairs(playerStats) do
+					if playerTeams[sid64] == winningTeam then --TODO: How does forgiveness factor in? If at all. 
+						winners = winners + 1
+						winnerELOAvg = winnerELOAvg + playerStats[sid64].elo
+					else
+						winners = winners + 1
+						winnerELOAvg = winnerELOAvg + playerStats[sid64].elo
+					end
+				end
+
+				winnerELOAvg = winnerELOAvg / winners
+				loserELOAvg = loserELOAvg / losers
+
+				-- // Debug safety (can happen w/ bots)
+					if winnerELOAvg == math.huge then 
+						winnerELOAvg = 500
+					end
+					if loserELOAvg == math.huge then 
+						loserELOAvg = 500
+					end
+				-- // }}}
+			-- // }}}
+
+			for sid64, stats in pairs(playerStats) do
+				local change = 50 --Set pretty high for now. Might adapt / make more complex later?
+
+				--TODO: Randomised or anonymous teams might be needed, people *will* try to game this by only joining high skill teams if we give them the option.
+
+				--If you leave at any point during the match, you lose. No cheating the system.
+				if playerTeams[sid64] == winningTeam and jcms.leaderboard_VictoryEligble(sid64) then
+					local eloChange = jcms.leaderboard_calcELOChange( stats.elo, loserELOAvg, 1, change )
+					stats.elo = stats.elo + eloChange
+
+					stats.wins = stats.wins + 1
+				else
+					local eloChange = jcms.leaderboard_calcELOChange( stats.elo, winnerELOAvg, 0, change )
+					stats.elo = stats.elo + eloChange
+
+					stats.losses = stats.losses + 1
+				end
+
+				jcms.leaderboard_SaveStats(stats, sid64, true)
+			end
+		end
+	-- // }}}
+-- // }}}
+
+-- // PVP Ranking {{{
+		function jcms.leaderboard_calcELOChange( p1ELO, p2ELO, score, change ) --Change is for p1,
+			--https://www.omnicalculator.com/sports/elo#what-is-the-elo-rating-system
+			local expectedScore = 1 / (10^((p2ELO - p1ELO)/400) + 1)
+			return (score - expectedScore) * change
+		end
+-- // }}}
+
+
+-- // Filesystem {{{
+	file.CreateDir("mapsweepers")
+	file.CreateDir("mapsweepers/server")
+
+	local pveDir = "mapsweepers/server/leaderboard/pve"
+	local pvpDir = "mapsweepers/server/leaderboard/pvp"
+	file.CreateDir( pveDir )
+	file.CreateDir( pvpDir )
+
+
+	-- // Stats Save/Load (Player) {{{
+		local function getNameByID(sid64)
+			local name = ""
+			local ply = player.GetBySteamID64(sid64)
+			if IsValid(ply) then 
+				name = ply:GetName()
+			end
+
+			return name
+		end
+		
+		function jcms.leaderboard_GetStatsPVE(sid64)
+			local statsTbl = {
+				lastUsedName = getNameByID(sid64),	--empty str or the player's name if they're on the server
+				highestWinstreak = 0,
+				wins = 0,
+				losses = 0,
+			}
+			
+			jcms.leaderboard_TryLoadStats(statsTbl, sid64, false)
+
+			return statsTbl
+		end
+
+		function jcms.leaderboard_GetStatsPVP(sid64)
+			local statsTbl = {
+				lastUsedName = getNameByID(sid64),	--empty str or the player's name if they're on the server
+				elo = 500,							--Arbitrary leaderboard ranking value
+				wins = 0,
+				losses = 0,
+			}
+
+			jcms.leaderboard_TryLoadStats(statsTbl, sid64, true)
+
+			return statsTbl
+		end
+
+
+		function jcms.leaderboard_TryLoadStats(statsTbl, sid64, isPVP) --steamID, isPVP, and table to merge into.
+			local dir = isPVP and pvpDir or pveDir
+			local filePath = dir .. "/" .. sid64 .. ".json"
+			if file.Exists(filePath, "DATA") then
+				local fileTbl = util.JSONToTable(file.Read(filePath)) --TODO: Compress
+				table.Merge(statsTbl, fileTbl)
+			end
+			--Results affect statsTabl
+		end
+
+		function jcms.leaderboard_SaveStats(statsTbl, sid64, isPVP)
+			local dir = isPVP and pvpDir or pveDir
+			local filePath = dir .. "/" .. sid64 .. ".json"
+
+			file.Write(filePath, util.TableToJSON(statsTbl))
+		end
+	-- // }}}
+
+	-- // Stats Save/Load (Top) {{{
+
+	-- // }}}
+-- // }}}
