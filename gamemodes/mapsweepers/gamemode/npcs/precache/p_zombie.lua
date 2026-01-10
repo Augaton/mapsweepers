@@ -1,6 +1,6 @@
 --[[
 	Map Sweepers - Co-op NPC Shooter Gamemode for Garry's Mod by "Octantis Addons" (consisting of MerekiDor & JonahSoldier)
-    Copyright (C) 2025  MerekiDor
+    Copyright (C) 2025-2026 MerekiDor
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
