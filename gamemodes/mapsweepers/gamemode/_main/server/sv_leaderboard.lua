@@ -21,12 +21,6 @@
 
 
 -- // Main {{{
-	--[[
-		TODO:
-			Separately store the current top players and check if we've overtaken one each time we store, so that we don't
-			have to re-check every single file we have every time we need it as this could be a LOT of data).
-	--]]
-
 	jcms.leaderboard_roundPlayers = {} --[side64] = pvpTeam (-1 for pve)
 	jcms.leaderboard_roundLeaveTimes = {} --[sid64] = Curtime()
 	jcms.leaderboard_roundLeaveReasons = {} --[sid64] = reason (e.g. timed out) --NOTE: Should be treated as less reliable than roundLeaveTimes
@@ -107,6 +101,8 @@
 
 				jcms.leaderboard_SaveStats(stats, sid64, false)
 			end
+
+			jcms.leaderboard_RecalculateTopPlayers( playerStats, false )
 		end
 
 		function jcms.leaderboard_PVPRoundEnd(winningTeam)
@@ -155,12 +151,12 @@
 
 				--If you leave at any point during the match, you lose. No cheating the system.
 				if playerTeams[sid64] == winningTeam and jcms.leaderboard_VictoryEligble(sid64) then
-					local eloChange = jcms.leaderboard_calcELOChange( stats.elo, loserELOAvg, 1, change )
+					local eloChange = jcms.leaderboard_CalcELOChange( stats.elo, loserELOAvg, 1, change )
 					stats.elo = stats.elo + eloChange
 
 					stats.wins = stats.wins + 1
 				else
-					local eloChange = jcms.leaderboard_calcELOChange( stats.elo, winnerELOAvg, 0, change )
+					local eloChange = jcms.leaderboard_CalcELOChange( stats.elo, winnerELOAvg, 0, change )
 					stats.elo = stats.elo + eloChange
 
 					stats.losses = stats.losses + 1
@@ -168,15 +164,57 @@
 
 				jcms.leaderboard_SaveStats(stats, sid64, true)
 			end
+
+			jcms.leaderboard_RecalculateTopPlayers( playerStats, true )
 		end
 	-- // }}}
 -- // }}}
 
 -- // PVP Ranking {{{
-		function jcms.leaderboard_calcELOChange( p1ELO, p2ELO, score, change ) --Change is for p1,
+		function jcms.leaderboard_CalcELOChange( p1ELO, p2ELO, score, change ) --Change is for p1,
 			--https://www.omnicalculator.com/sports/elo#what-is-the-elo-rating-system
 			local expectedScore = 1 / (10^((p2ELO - p1ELO)/400) + 1)
 			return (score - expectedScore) * change
+		end
+-- // }}}
+
+-- // Top tracking {{{
+		function jcms.leaderboard_RecalculateTopPlayers( playerStats, isPVP ) --PlayerStats is the table of statsTbls for joined players.
+			local topPlayerIDs = jcms.leaderboard_LoadTopPlayers(isPVP)
+
+			-- Merge top players into the playerStats table
+			for i, sid64 in ipairs(topPlayerIDs) do 
+				playerStats[sid64] = isPVP and jcms.leaderboard_GetStatsPVP( sid64 ) or jcms.leaderboard_GetStatsPVE( sid64 )
+			end
+
+			--Get a table of all of our current player sid64s and the top players. 
+			topPlayerIDs = {}
+			for sid64, _ in pairs(playerStats) do 
+				table.insert(topPlayerIDs, sid64)
+			end
+
+			--Sort the list so the new top players are earliest.
+			local sortFunction
+			if isPVP then 
+				sortFunction = function(sid64A, sid64B)
+					return playerStats[sid64A].elo > playerStats[sid64B].elo
+				end
+			else
+				sortFunction = function(sid64A, sid64B)
+					return playerStats[sid64A].wins > playerStats[sid64B].wins
+				end
+			end
+			table.sort(topPlayerIDs, sortFunction)
+
+
+			--Trim to 10 to get the final list
+			local finalTopPlayerIDs = {}
+			for i=1, 10, 1 do 
+				finalTopPlayerIDs[i] = topPlayerIDs[i]
+			end
+
+			--Save the new table
+			jcms.leaderboard_SaveTopPlayers(finalTopPlayerIDs, isPVP)
 		end
 -- // }}}
 
@@ -248,6 +286,22 @@
 	-- // }}}
 
 	-- // Stats Save/Load (Top) {{{
+		function jcms.leaderboard_SaveTopPlayers(topTbl, isPVP)
+			local dir = isPVP and pvpDir or pveDir
+			local filePath = dir .. "/top_players.json"
 
+			file.Write(filePath, util.TableToJSON(topTbl))
+		end
+
+		function jcms.leaderboard_LoadTopPlayers(isPVP)
+			local dir = isPVP and pvpDir or pveDir
+			local filePath = dir .. "/top_players.json"
+
+			if file.Exists(filePath, "DATA") then
+				return util.JSONToTable(file.Read(filePath))
+			else
+				return {} --No top players yet
+			end
+		end
 	-- // }}}
 -- // }}}
