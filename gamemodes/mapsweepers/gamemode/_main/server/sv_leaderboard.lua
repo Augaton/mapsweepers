@@ -41,10 +41,9 @@
 
 		gameevent.Listen("player_disconnect")
 		hook.Add("player_disconnect", "jcms_leaderboard_playerDisconnect", function( data )
-			local ply = Player(data.userid)
-			if not IsValid(ply) then return end
-			
-			jcms.leaderboard_roundLeaveReasons[ply:SteamID64()] = data.reason
+			if data.bot == 1 then return end
+
+			jcms.leaderboard_roundLeaveReasons[ util.SteamIDTo64(data.networkid) ] = data.reason
 		end)
 	-- // }}}
 
