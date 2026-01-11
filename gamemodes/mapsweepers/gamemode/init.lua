@@ -2714,7 +2714,7 @@ end
 			approvalRatio = yesCount / (yesCount + noCount)
 		end
 
-		if approvalRatio >= 0.75 then
+		if approvalRatio >= jcms.cvar_pvpvoteratio:GetFloat() then
 			jcms.pvp_SetEnabled(true)
 			
 			if jcms.cvar_pvpautobalance:GetInt() == 2 then

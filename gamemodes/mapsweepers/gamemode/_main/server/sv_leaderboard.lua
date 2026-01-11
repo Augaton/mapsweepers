@@ -71,8 +71,11 @@
 	-- // Update stats on round end {{{
 		function jcms.leaderboard_RoundEnd(isPVP, victory, aliveTeams)
 			if isPVP then
-				if #aliveTeams > 0 then -- Nothing happens in a draw.
-					jcms.leaderboard_PVPRoundEnd(aliveTeams[1])
+				for teamID, alive in ipairs(aliveTeams) do
+					if alive then
+						jcms.leaderboard_PVPRoundEnd(teamID)
+						break
+					end
 				end
 			else
 				jcms.leaderboard_PVERoundEnd(victory)

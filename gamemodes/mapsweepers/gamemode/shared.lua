@@ -131,18 +131,24 @@ local nmt = FindMetaTable("NPC")
 	jcms.cvar_npcteam_restrict = CreateConVar("jcms_npcteam_restrict", "0", FCVAR_JCMS_SHARED_SAVED, "Restrictions on NPC Team. 0 = no restrictions, 1 = can only join as NPC post-evac, 2 = can never join as NPCs", 0, 2)
 	jcms.cvar_suddendeathtimer = CreateConVar("jcms_suddendeathtimer", "0", FCVAR_JCMS_SHARED_SAVED, "(If set above 0) This is the number of seconds that must pass since the first sweeper evacuates, until J Corp stops giving credits for kills to remaining sweepers, encouraging evacuation. If set to 0, people can take their time with EVAC as long as they want with no penalties.", 0, 600)
 
+	--Damage mul
 	jcms.cvar_damage_mul = CreateConVar("jcms_damage_mul", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Damage multiplier to Sweepers done by NPCs.", 0, 5)
 
+	--Swarm
 	jcms.cvar_swarm_frequency = CreateConVar("jcms_swarm_frequency", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Swarm frequency multiplier.", 0, 5)
 	jcms.cvar_swarm_size = CreateConVar("jcms_swarm_size", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Swarm size multiplier.", 0, 5)
 	jcms.cvar_swarm_warning = CreateConVar("jcms_swarm_warning", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Extra seconds between a portal opening and enemies coming out of it.", 0, 30)
 	
+	--PVP
 	jcms.cvar_pvpallowed = CreateConVar("jcms_pvpallowed", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Dictates how PVP mode works. 0=Disable PVP; 1=Vote-based; 2=PVP Only")
 	jcms.cvar_pvpminplayers = CreateConVar("jcms_pvpminplayers", "2", FCVAR_JCMS_NOTIFY_AND_SAVE, "Minimum players to be present on the server before PVP voting can begin")
+	jcms.cvar_pvpvoteratio = CreateConVar("jcms_pvpvoteratio", "0.65", FCVAR_JCMS_NOTIFY_AND_SAVE, "Proportion of players needed for a pvp vote to pass, 0-1 (1 = everyone must vote yes, 0.5 = 50% must vote yes)")
 	jcms.cvar_pvpautobalance = CreateConVar("jcms_pvpautobalance", game.IsDedicated() and "1" or "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "0=No autobalancing; 1=Restrict joining to the smallest team; 2=Randomize teams before the round")
 	jcms.cvar_pvpdebug = CreateConVar("jcms_pvpdebug", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "Stops PVP mode from ending when only 1 team is present")
 	jcms.cvar_pvprespawnmode = CreateConVar("jcms_pvprespawnmode", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "0=Team-wide, 1=Per-Player")
 	jcms.cvar_pvptracers = CreateConVar("jcms_pvptracers", "1", FCVAR_JCMS_NOTIFY_AND_SAVE, "Whether players get given team-coloured tracers") --TODO: Rename to jcms_pvptracers and change default after testing
+
+
 
 	jcms.cvar_performanceMode = CreateConVar("jcms_performancemode", "0", FCVAR_JCMS_NOTIFY_AND_SAVE, "Various more aggressive changes to improve performance")
 	
