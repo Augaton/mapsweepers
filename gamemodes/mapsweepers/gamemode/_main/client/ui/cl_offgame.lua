@@ -3085,7 +3085,7 @@ jcms.offgame = jcms.offgame or NULL
 						wlr:Dock(RIGHT)
 						wlr:SetWide(64)
 						wlr:SetColor(color)
-						wlr:SetText( string.format("%.2f", plydata.losses == 0 and 0 or (plydata.wins / plydata.losses)) )
+						wlr:SetText( string.format("%.2f", (plydata.losses == 0) and plydata.wins or (plydata.wins / plydata.losses)) )
 						wlr:SetFont("jcms_small")
 
 						local losses = p:Add("DLabel")
