@@ -36,6 +36,18 @@ end
 	end
 	
 	jcms.orders_lists = {}
+
+	
+	function jcms.orders_CanUse(orderId)
+		local orderData = jcms.orders[ orderId ]
+		if not orderData then return false end 
+
+		local costMult, coolDownMult = jcms.class_GetCostMultipliers(jcms.class_GetLocPlyData(), orderData)
+		local timeUntilUse = (orderData.nextUse or 0) - CurTime()
+		local affordable = math.ceil(orderData.cost*costMult) <= jcms.locPly:GetNWInt("jcms_cash", 0)
+
+		return (affordable and timeUntilUse <= 0)
+	end
 	
 	function jcms.orders_RebuildLists()
 		for i = 1, 8 do
@@ -57,6 +69,8 @@ end
 	end
 	
 	jcms.orders_RebuildLists()
+
+	
 
 -- // }}}
 

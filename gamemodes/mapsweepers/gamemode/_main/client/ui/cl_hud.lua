@@ -585,6 +585,7 @@
 		jcms.draw_HUDHealthbar_Decor()
 
 		if me:Alive() then
+			local cTime = CurTime()
 			surface.SetAlphaMultiplier(1)
 
 			local bubbleshields = me:GetNWInt("jcms_shield", 0)
@@ -646,7 +647,7 @@
 			local offsetIcon = 4
 
 			local data = jcms.class_GetLocPlyData()
-			local shieldDamageElapsed = CurTime() - jcms.hud_damageTimeLast
+			local shieldDamageElapsed = cTime - jcms.hud_damageTimeLast
 			local shieldDamageDelay = data and data.shieldDelay or 0
 
 			render.OverrideBlend( true, BLEND_SRC_ALPHA, BLEND_ONE, BLENDFUNC_ADD )
@@ -656,10 +657,18 @@
 				if deadteammates > 0 then
 					local str = language.GetPhrase("jcms.deadteammates_hud"):format(deadteammates)
 					local color = jcms.color_bright_alt
-					if CurTime() % 5 < 1 then
+
+					local xOffset = 0
+					if respawns < deadteammates and cTime % 30 < 1 and jcms.orders_CanUse("respawnbeacon") then --every 30s if there aren't any enough respawns, harass anyone who can place one.
 						color = jcms.color_alert
+						xOffset = math.sin( (cTime % 30) * math.pi * 3 ) * 25 --Wobble around to attract attention
+						
+						if cTime - (me.jcms_lastHudRespawnBeep or 0)  > 1 then --Beep
+							me.jcms_lastHudRespawnBeep = cTime
+							me:EmitSound("buttons/blip2.wav", 0, 225)
+						end
 					end
-					draw.SimpleText(str, "jcms_hud_small", 64 - 8 + offsetIcon, 34 - offsetIcon, color, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+					draw.SimpleText(str, "jcms_hud_small", 64 - 8 + offsetIcon + xOffset, 34 - offsetIcon, color, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 				end
 				if respawns > 0 then
 					local str = language.GetPhrase("jcms.respawns_hud"):format(respawns)
