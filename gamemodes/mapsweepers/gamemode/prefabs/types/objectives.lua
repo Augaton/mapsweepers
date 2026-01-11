@@ -402,17 +402,18 @@ local prefabs = jcms.prefabs
 			local beacon = ents.Create("jcms_zombiebeacon")
 			if not IsValid(beacon) then return end
 
-			local tr = util.TraceLine({
-				start = center + Vector(0,0,10),
-				endpos = center - Vector(0,0,10),
-				mask = MASK_SOLID_BRUSHONLY
-			})
-			local ang = tr.HitNormal:Angle()
+			local dir1 = area:GetCorner( 1 ) - center
+			local dir2 = area:GetCorner( 2 ) - center
+			local normal = dir1:Cross(dir2)
+			normal:Normalize()
+
+
+			local ang = normal:Angle()
 			ang.pitch = ang.pitch - 270
-			ang:RotateAroundAxis( tr.HitNormal, math.random(1, 4)*90 )
+			ang:RotateAroundAxis( normal, math.random(1, 4)*90 )
 
 			beacon:SetAngles(ang)
-			beacon:SetPos(center + tr.HitNormal * -math.random(4, 8))
+			beacon:SetPos(center + normal * -math.random(4, 8))
 
 			beacon:Spawn()
 			return beacon
