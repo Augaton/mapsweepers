@@ -44,6 +44,7 @@ local bits_ply, bits_ent, bits_wld = 2, 2, 4
 		local WLD_NUKE = 11
 		local WLD_SPAWNEFFECTS = 12
 		local WLD_PVPVOTE = 13
+		local WLD_LEADERBOARD = 14
 
 	-- // }}}
 
@@ -884,6 +885,50 @@ if SERVER then
 			net.WriteUInt(2, 2)
 		net.Broadcast()
 	end
+
+	function jcms.net_SendLeaderboard(to, isPVP)
+		local tbl = jcms.leaderboard_LoadTopPlayers(isPVP)
+		local sendingTbl = {}
+		for i, sid64 in ipairs(tbl) do
+			if isPVP then
+				sendingTbl[i] = jcms.leaderboard_GetStatsPVP(sid64)
+			else
+				sendingTbl[i] = jcms.leaderboard_GetStatsPVE(sid64)
+			end
+			sendingTbl[i].sid64 = sid64
+		end
+
+		net.Start("jcms_msg")
+			net.WriteBool(false)
+			net.WriteEntity(game.GetWorld())
+			net.WriteUInt(WLD_LEADERBOARD, bits_wld)
+
+			net.WriteBool(isPVP)
+			net.WriteUInt(#sendingTbl, 4)
+			for i, data in ipairs(sendingTbl) do
+				net.WriteUInt64(data.sid64)
+				net.WriteString(data.lastUsedName)
+				net.WriteUInt(data.wins, 24)
+				net.WriteUInt(data.losses, 24)
+				if isPVP then
+					net.WriteUInt(data.elo, 12)
+				else
+					net.WriteUInt(data.highestWinstreak, 16)
+				end
+			end
+		if to == "all" then
+			net.Broadcast()
+		else
+			net.Send(to)
+		end
+	end
+
+	function jcms.net_SendBothLeaderboardsIfNeeded(to)
+		if jcms.leaderboard_ShouldSend() then
+			jcms.net_SendLeaderboard(to, false)
+			jcms.net_SendLeaderboard(to, true)
+		end
+	end
 end
 
 if CLIENT then
@@ -1386,6 +1431,46 @@ if CLIENT then
 			elseif action == 2 then
 				-- End vote
 				vote.endsAt = CurTime() + 0.5
+			end
+		end,
+
+		[ WLD_LEADERBOARD ] = function()
+			local isPVP = net.ReadBool()
+			local count = net.ReadUInt(4)
+
+			local key = isPVP and "leaderboard_data_pvp" or "leaderboard_data_pve"
+			if not jcms[key] then
+				jcms[key] = {}
+			else
+				table.Empty(jcms[key])
+			end
+
+			local tbl = jcms[key]
+			
+			for i=1, count do
+				local tblPly = {}
+
+				tblPly.sid64 = net.ReadUInt64()
+				tblPly.name = net.ReadString()
+				tblPly.wins = net.ReadUInt(24)
+				tblPly.losses = net.ReadUInt(24)
+				if isPVP then
+					tblPly.elo = net.ReadUInt(12)
+				else
+					tblPly.highestWinstreak = net.ReadUInt(16)
+				end
+
+				tbl[i] = tblPly
+			end
+			
+			if isPVP then
+				table.sort(tbl, function(first, last)
+					return first.elo > last.elo
+				end)
+			else
+				table.sort(tbl, function(first, last)
+					return first.wins > last.wins
+				end)
 			end
 		end
 	}

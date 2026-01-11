@@ -511,6 +511,8 @@ end
 			jcms.pvp_firstVote = true 
 			jcms.pvp_StartVote(60)
 		end
+
+		jcms.net_SendBothLeaderboardsIfNeeded(ply)
 	end)
 
 	hook.Add("PlayerDisconnected", "jcms_OnDisconnect", function(ply)

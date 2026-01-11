@@ -169,6 +169,12 @@
 			jcms.leaderboard_RecalculateTopPlayers( playerStats, true )
 		end
 	-- // }}}
+
+	-- // Misc {{{
+		function jcms.leaderboard_ShouldSend()
+			return true or game.IsDedicated()
+		end
+	-- // }}}
 -- // }}}
 
 -- // PVP Ranking {{{
@@ -216,6 +222,10 @@
 
 			--Save the new table
 			jcms.leaderboard_SaveTopPlayers(finalTopPlayerIDs, isPVP)
+
+			if jcms.leaderboard_ShouldSend() then
+				jcms.net_SendLeaderboard("all", isPVP)
+			end
 		end
 -- // }}}
 
