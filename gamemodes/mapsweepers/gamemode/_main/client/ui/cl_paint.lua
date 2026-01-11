@@ -62,7 +62,8 @@
 		["0718768ecdf6b1aa28d7a41f6c0262e581fa533fd6c09128f86363d3147e3575"] = "supporter", --fl
 
 		["310d9af23cf5c7a9f88db0c190da0232e0f9a07d62c2d21acc319e78aa46b9f2"] = "supporter", --pu
-
+		["7b49561611f4c10cbcbe14e803533bc622629404d6a57dcedbbe97b00c71ed12"] = "supporter", --pe
+		["50bc3e923a5641c5c528601f2a114c1a867428dc30d2cd049c907e9ba5e3ecfa"] = "supporter", --sc
 
 	}
 
