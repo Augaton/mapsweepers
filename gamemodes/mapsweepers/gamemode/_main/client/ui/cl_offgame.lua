@@ -269,6 +269,15 @@ jcms.offgame = jcms.offgame or NULL
 				end
 				table.insert(pnl.buttonsPrimary, bOpts)
 
+				if not game.SinglePlayer() then
+					local bLeaderboard = pnl:Add("DButton")
+					bLeaderboard:SetText("#jcms.leaderboard")
+					bLeaderboard.BuildFunc = function(tab) 
+						jcms.offgame_BuildLeaderboardTab(tab)
+					end
+					table.insert(pnl.buttonsPrimary, bLeaderboard)
+				end
+
 				pnl.tabPnl = pnl:Add("DPanel")
 				pnl.tabPnl:SetPos(16, 48)
 				pnl.tabPnl:SetSize(900, pnl:GetTall() - pnl.tabPnl:GetY() - 16)
@@ -2984,6 +2993,150 @@ jcms.offgame = jcms.offgame or NULL
 					bServer:SetTall(32)
 					surface.PlaySound("buttons/combine_button1.wav")
 				end
+			end
+		end
+
+		function jcms.offgame_BuildLeaderboardTab(tab)
+			-- TODO lowres
+			local mysid64 = jcms.locPly:SteamID64()
+			local pvpAllowed = jcms.cvar_pvpallowed:GetInt()
+			local pve, pvp
+
+			local function buildLB(parent, tbl, specialFieldName)
+				if tbl then
+					if specialFieldName == "highestWinstreak" then
+						local clar = parent:Add("DLabel")
+						clar:Dock(BOTTOM)
+						clar:SetTextColor(ColorAlpha(jcms.color_bright, 100))
+						clar:SetFont("DefaultSmall")
+						clar:SetText("#jcms.leaderboard_header_highestWinstreak_clar")
+					end
+					
+					local parent_scroll = parent:Add("DScrollPanel")
+					parent_scroll:Dock(FILL)
+
+					local header = parent_scroll:Add("DPanel")
+					header:Dock(TOP)
+					header:DockMargin(4, 4, 4, 8)
+					header:SetBackgroundColor(jcms.color_dark)
+
+					do
+						local header_name = header:Add("DLabel")
+						header_name:Dock(LEFT)
+						header_name:SetWide(200)
+						header_name:DockMargin(32, 0, 0, 0)
+						header_name:SetColor(jcms.color_bright)
+						header_name:SetText("#jcms.leaderboard_header_name")
+						header_name:SetFont("jcms_small")
+
+						local header_wlr = header:Add("DLabel")
+						header_wlr:Dock(RIGHT)
+						header_wlr:SetWide(68)
+						header_wlr:SetColor(jcms.color_bright)
+						header_wlr:SetText("#jcms.leaderboard_header_wlr")
+						header_wlr:SetFont("jcms_small")
+
+						local header_losses = header:Add("DLabel")
+						header_losses:Dock(RIGHT)
+						header_losses:SetWide(128)
+						header_losses:SetColor(jcms.color_bright)
+						header_losses:SetText("#jcms.leaderboard_header_losses")
+						header_losses:SetFont("jcms_small")
+
+						local header_wins = header:Add("DLabel")
+						header_wins:Dock(RIGHT)
+						header_wins:SetWide(128)
+						header_wins:SetColor(jcms.color_bright)
+						header_wins:SetText("#jcms.leaderboard_header_wins")
+						header_wins:SetFont("jcms_small")
+
+						local header_special = header:Add("DLabel")
+						header_special:Dock(FILL)
+						header_special:SetColor(jcms.color_bright)
+						header_special:SetText("#jcms.leaderboard_header_" .. specialFieldName)
+						header_special:SetFont("jcms_small_bolder")
+					end
+
+					for i, plydata in ipairs(tbl) do
+						local color, colorDark = jcms.color_bright, jcms.color_dark
+						if plydata.sid64 == mysid64 then color, colorDark = jcms.color_bright_alt, jcms.color_dark_alt end
+
+						local p = parent_scroll:Add("DPanel")
+						p:Dock(TOP)
+						p:SetTall(24)
+						p:DockMargin(8, 4, 8, 0)
+						p:SetBackgroundColor(colorDark)
+
+						local place = p:Add("DLabel")
+						place:Dock(LEFT)
+						place:SetWide(32)
+						place:SetColor(color)
+						place:SetText(" #" .. i)
+						place:SetFont("jcms_small")
+
+						local name = p:Add("DLabel")
+						name:Dock(LEFT)
+						name:SetWide(200)
+						name:SetColor(color)
+						name:SetText(plydata.name)
+						name:SetFont("jcms_small_bolder")
+
+						local wlr = p:Add("DLabel")
+						wlr:Dock(RIGHT)
+						wlr:SetWide(64)
+						wlr:SetColor(color)
+						wlr:SetText( string.format("%.2f", plydata.losses == 0 and 0 or (plydata.wins / plydata.losses)) )
+						wlr:SetFont("jcms_small")
+
+						local losses = p:Add("DLabel")
+						losses:Dock(RIGHT)
+						losses:SetWide(128)
+						losses:SetColor(color)
+						losses:SetText( jcms.util_CashFormat(plydata.losses) )
+						losses:SetFont("jcms_small")
+
+						local wins = p:Add("DLabel")
+						wins:Dock(RIGHT)
+						wins:SetWide(128)
+						wins:SetColor(color)
+						wins:SetText( jcms.util_CashFormat(plydata.wins) )
+						wins:SetFont("jcms_small")
+
+						local special = p:Add("DLabel")
+						special:Dock(FILL)
+						special:SetColor(color)
+						special:SetText( jcms.util_CashFormat(plydata[specialFieldName]) )
+						special:SetFont("jcms_medium")
+					end
+				end
+			end
+
+			if (pvpAllowed ~= 2) then -- PvE
+				pve = tab:Add("DPanel")
+				pve:Dock(TOP)
+				pve:DockMargin(0, 8, 0, 8)
+				pve:DockPadding(4, 32, 4, 4)
+				pve.Paint = jcms.paint_Panel
+				pve.jText = "#jcms.leaderboard_pve"
+				buildLB(pve, jcms.leaderboard_data_pve, "highestWinstreak")
+			end
+
+			if (pvpAllowed ~= 0) then -- PvP
+				pvp = tab:Add("DPanel")
+				pvp:Dock(TOP)
+				pvp:DockPadding(4, 32, 4, 4)
+				pvp.Paint = jcms.paint_Panel
+				pvp.jText = "#jcms.leaderboard_pvp"
+				buildLB(pvp, jcms.leaderboard_data_pvp, "elo")
+			end
+
+			if pvp and pve then
+				local tall = (tab:GetTall() - 24)/2
+				pve:SetTall(tall)
+				pvp:SetTall(tall)
+			else
+				if pve then pve:SetTall(tab:GetTall() - 16) end
+				if pvp then pvp:SetTall(tab:GetTall() - 16) end
 			end
 		end
 
