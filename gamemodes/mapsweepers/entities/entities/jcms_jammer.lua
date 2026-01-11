@@ -36,8 +36,8 @@ if SERVER then
 		self:SetModel("models/jcms/rgg_dish.mdl")
 		self:PhysicsInitStatic(SOLID_VPHYSICS)
 
-		self:SetMaxHealth(100)
-		self:SetHealth(100)
+		self:SetMaxHealth(250)
+		self:SetHealth(250)
 
 		local filter = RecipientFilter()
 		filter:AddAllPlayers()
@@ -48,6 +48,10 @@ if SERVER then
 	function ENT:OnRemove()
 		self:StopSound( "ambient/levels/citadel/datatransmission04_loop.wav" )
 		self:StopSound( "ambient/machines/power_transformer_loop_2.wav" )
+	end
+	
+	function ENT:UpdateTransmitState()
+		return TRANSMIT_ALWAYS
 	end
 
 	function ENT:Think()
@@ -92,6 +96,13 @@ if SERVER then
 	function ENT:OnTakeDamage(dmg)
 		self:SetHealth(self:Health() - dmg:GetDamage())
 		
+		local ed = EffectData()
+		ed:SetOrigin(dmg:GetDamagePosition())
+		ed:SetNormal( (dmg:GetDamagePosition() - self:WorldSpaceCenter()):GetNormalized() )
+		util.Effect("MetalSpark", ed)
+
+		self:EmitSound("Computer.BulletImpact")
+		
 		if self:Health() <= 0 then
 			local pos = self:WorldSpaceCenter()
 			local ed = EffectData()
@@ -109,17 +120,68 @@ if SERVER then
 end
 
 if CLIENT then
+	ENT.mat_noise = Material "jcms/noise.png"
+
 	function ENT:Initialize()
-		self:SetRenderBounds(jcms.vectorOrigin, jcms.vectorOrigin, Vector(self.JammingRadius/2, self.JammingRadius/2, self.JammingRadius/2) )
+		self:SetRenderBounds(jcms.vectorOrigin, jcms.vectorOrigin, Vector(self.JammingRadius, self.JammingRadius, self.JammingRadius) )
 	end
 
-	local color = Color(162, 81, 255, 30)
 	function ENT:DrawTranslucent()
-		jcms.render_HackedByRebels(self)
+		if math.random() > math.sqrt(self:Health() / self:GetMaxHealth()) then
+			jcms.render_HackedByRebels(self)
+		end
 
-		--[[ --Might make them *too* easy to spot?
-		render.SetColorMaterial()
-		render.DrawSphere(self:WorldSpaceCenter(), self.JammingRadius, 15, 15, color)
-		render.DrawSphere(self:WorldSpaceCenter(), -self.JammingRadius, 15, 15, color)--]]
+		self:DrawStaticOverlay()
+	end
+
+	
+	function ENT:DrawStaticOverlay()
+		render.SetStencilEnable(true)
+		render.ClearStencil()
+		render.SetStencilTestMask(255)
+		render.SetStencilWriteMask(255)
+
+		render.SetStencilCompareFunction(STENCIL_ALWAYS)
+		render.SetStencilPassOperation(STENCIL_REPLACE)
+		render.SetStencilFailOperation(STENCIL_KEEP)
+		render.SetStencilZFailOperation(STENCIL_KEEP)
+		render.SetStencilReferenceValue(1)
+		
+		render.OverrideBlend(true, BLEND_ZERO, BLEND_ONE, BLENDFUNC_ADD)
+
+		local selfPos = self:GetPos()
+		local range = self.JammingRadius
+		if EyePos():DistToSqr(selfPos) > range^2 then 
+			render.SetColorMaterial()
+			render.DrawSphere(selfPos, range, 22, 22, color_white)
+			
+			render.SetStencilReferenceValue(0)
+			render.SetStencilPassOperation(STENCIL_REPLACE)
+			render.DrawSphere(selfPos, -range, 22, 22, color_white)
+		else
+			render.ClearStencilBufferRectangle( 0,0, ScrW(), ScrH(), 1 )
+
+			render.SetStencilReferenceValue(0)
+			render.SetStencilPassOperation(STENCIL_REPLACE)
+
+			render.SetColorMaterial()
+			render.DrawSphere(selfPos, -range, 22, 22, color_white)
+		end
+		
+		render.OverrideBlend(false)
+		
+		render.SetStencilCompareFunction(STENCIL_EQUAL)
+		render.SetStencilReferenceValue(1)
+
+		render.OverrideBlend(true, BLEND_ONE, BLEND_ONE, BLENDFUNC_ADD)
+			cam.Start2D()
+				surface.SetMaterial(self.mat_noise)
+				surface.SetDrawColor(220/2, 180/2, 250/2)
+				jcms.hud_DrawNoiseRect(0, 0, ScrW(), ScrH())
+			cam.End2D()
+		render.OverrideBlend(false)
+		
+		render.SetStencilEnable( false )
+		render.ClearStencil()
 	end
 end

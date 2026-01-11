@@ -69,6 +69,8 @@ function ENT:SetupDataTables()
 	self:NetworkVarNotify("HackedByRebels", function(ent, name, old, new )
 		if new then
 			self.jcms_stunEnd = CurTime() + 2.5
+		else
+			self.jcms_stunEnd = CurTime() --Unstun
 		end
 
 		self:UpdateForFaction(new and "rgg" or jcms.util_GetFactionNamePVP(ent))
@@ -94,7 +96,7 @@ if SERVER then
 		if self:Health() > 0 then
 			local selfTbl = self:GetTable()
 			local cTime = CurTime()
-			if selfTbl.nextAttack <= cTime and (selfTbl.jcms_stunEnd < CurTime() or not self:GetHackedByRebels()) then
+			if selfTbl.nextAttack <= cTime and selfTbl.jcms_stunEnd < CurTime() then
 				local selfPos = self:GetPos()
 
 				local isHacked = selfTbl:GetHackedByRebels()

@@ -70,6 +70,8 @@ function ENT:SetupDataTables()
 	self:NetworkVarNotify("HackedByRebels", function(ent, name, old, new )
 		if new then
 			self.jcms_stunEnd = CurTime() + 2.5
+		else
+			self.jcms_stunEnd = CurTime() --Unstun
 		end
 
 		self:UpdateForFaction(new and "rgg" or jcms.util_GetFactionNamePVP(ent))
@@ -80,7 +82,7 @@ if SERVER then
 	function ENT:Think()
 		local charging = false
 		if self:Health() > 0 then
-			if self.jcms_stunEnd < CurTime() or not self:GetHackedByRebels() then 
+			if self.jcms_stunEnd < CurTime() then 
 				local radius = self:GetChargeRadius()
 				for i, ply in ipairs(jcms.GetAliveSweepers()) do
 					if (ply:Armor() < ply:GetMaxArmor()) and (ply:WorldSpaceCenter():DistToSqr(self:WorldSpaceCenter()) <= radius*radius) and jcms.team_SameTeam(self, ply) then

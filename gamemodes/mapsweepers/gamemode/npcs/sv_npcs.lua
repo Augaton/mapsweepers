@@ -309,9 +309,9 @@ jcms.npcSquadSize = 4 -- Let's see if smaller squads fix their strange behavior.
 
 		if #npcs <= 3 then return end -- We only handle stragglers if there's at least a small squad of them.
 
-		if not ainReader.nodePositions then 
+		if not ainReader.nodePositions or not jcms.mapdata.nodeAreas then 
 			jcms.mapgen_TryReadNodeData()
-			if not ainReader.nodePositions then return end
+			if not ainReader.nodePositions or not jcms.mapdata.nodeAreas then return end
 		end
 
 
