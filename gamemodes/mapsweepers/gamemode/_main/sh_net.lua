@@ -924,7 +924,7 @@ if SERVER then
 	end
 
 	function jcms.net_SendBothLeaderboardsIfNeeded(to)
-		if jcms.leaderboard_ShouldSend() then
+		if jcms.leaderboard_Enabled() then
 			jcms.net_SendLeaderboard(to, false)
 			jcms.net_SendLeaderboard(to, true)
 		end

@@ -70,6 +70,8 @@
 
 	-- // Update stats on round end {{{
 		function jcms.leaderboard_RoundEnd(isPVP, victory, aliveTeams)
+			if not jcms.leaderboard_Enabled() then return end
+
 			if isPVP then
 				for teamID, alive in ipairs(aliveTeams) do
 					if alive then
@@ -174,8 +176,8 @@
 	-- // }}}
 
 	-- // Misc {{{
-		function jcms.leaderboard_ShouldSend()
-			return true or game.IsDedicated()
+		function jcms.leaderboard_Enabled()
+			return not game.SinglePlayer()
 		end
 	-- // }}}
 -- // }}}
@@ -226,9 +228,7 @@
 			--Save the new table
 			jcms.leaderboard_SaveTopPlayers(finalTopPlayerIDs, isPVP)
 
-			if jcms.leaderboard_ShouldSend() then
-				jcms.net_SendLeaderboard("all", isPVP)
-			end
+			jcms.net_SendLeaderboard("all", isPVP)
 		end
 -- // }}}
 

@@ -1058,7 +1058,7 @@ local nmt = FindMetaTable("NPC")
 		return jcms.pvp_vote and CurTime() < jcms.pvp_vote.endsAt
 	end
 
-	function jcms.pvp_vote_InsertPlayerByOption(ply, option)
+	function jcms.pvp_vote_InsertPlayerByOption(ply, option) --Merekidor Speechbubble
 		local vote = jcms.pvp_vote
 
 		local tables = {
