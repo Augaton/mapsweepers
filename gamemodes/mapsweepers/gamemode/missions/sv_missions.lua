@@ -275,16 +275,20 @@
 				mapDict[ trimmed ] = true
 			end
 		end
-		
-		table.Shuffle(jcms.validMapOptions)
+
+		local weightedMaps = {}
 		for i, map in ipairs(jcms.validMapOptions) do
-			if table.Count(maps) < numberOfOptions then
-				if isWhitelist == (not not mapDict[map]) then -- Both are true, or both are false.
-					maps[map] = false
-				end
-			else
-				break
+			if isWhitelist == (not not mapDict[map]) then -- Both are true, or both are false.
+				weightedMaps[map] = jcms.mapWeights[map] or 1
 			end
+		end
+
+		for i=1, numberOfOptions do 
+			local chosenMap = jcms.util_ChooseByWeight(weightedMaps)
+			if not chosenMap then break end
+
+			weightedMaps[chosenMap] = nil
+			maps[chosenMap] = false
 		end
 
 		if (table.Count(maps) == 0) then -- Failsafe

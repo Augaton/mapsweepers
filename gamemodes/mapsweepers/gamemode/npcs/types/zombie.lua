@@ -22,9 +22,9 @@
 -- // Zombie-Specific Functions {{{
 	function jcms.npc_SlowZombieThink(npc) --Slow zombies get "sped up" when ridiculously far and out of sight.
 		--Game was never really designed for this many players, zombie missions in particular end up feeling very empty with 16 people. This should help.
-		local swpCountReduce = math.max(#team.GetPlayers(1) - 8, 0) * 150
+		local swpCountReduce = math.max(#team.GetPlayers(1) - 6, 0) * 250
 
-		if npc:GetPathDistanceToGoal() > math.max(2250 - swpCountReduce, 250) then
+		if npc:GetPathDistanceToGoal() > math.max(2000 - swpCountReduce, 250) then
 			local npcPos = npc:WorldSpaceCenter()
 			local npcNextPos = npc:GetCurWaypointPos()
 
@@ -44,7 +44,7 @@
 				local endVisible = ply:VisibleVec( npcNextPos )
 
 				local swpEyePos = ply:EyePos()
-				local maxDist = (4000 - swpCountReduce)^2
+				local maxDist = (3500 - swpCountReduce)^2
 				local far = npcNextPos:DistToSqr(swpEyePos) > maxDist and npcPos:DistToSqr(swpEyePos) > maxDist --are we and our dest super far
 
 				local visibleForThisSwp = startVisible or endVisible --are we or our destination visible

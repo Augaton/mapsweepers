@@ -1944,6 +1944,24 @@ end
 		["gm_coast_bridge_prewar"] = true
 	}
 
+	jcms.mapWeights = { --Let people weight towards certain maps showing up in the end-of-mission vote.
+		--Defaults
+		["gm_construct"] = 1.5,
+		["jcms_jcorpdistrict"] = 3,
+		["jcms_mafiadistrict"] = 3,
+	}
+
+	function jcms.setMapWeight(map, weight) 
+		jcms.mapWeights = weight
+	end
+	
+	concommand.Add("jcms_blacklistMap", function(ply, cmd, args)
+		if not(not ply:IsPlayer() or ply:IsAdmin()) then return end
+		
+		local map = tostring(args[1]) or ""
+		jcms.setMapWeight(map, (tonumber(args[2]) or 1))
+	end, nil, "Set a weight-value to make a map show up more often in the end-of-round-vote")
+
 
 	function jcms.blacklistMap(map)
 		jcms.mapBlacklist[map] = true
@@ -3287,6 +3305,25 @@ end
 
 			local dataStr = util.TableToJSON(jcms.mapBlacklist)
 			file.Write(blacklistFile, dataStr)
+		end)
+	end
+
+	do 
+		local weightsFile = "mapsweepers/server/mapweights.json"
+		hook.Add("InitPostEntity", "jcms_RestoreMapWeights", function()
+			if file.Exists(weightsFile, "DATA") then
+				local dataTxt = file.Read(weightsFile, "DATA")
+				local dataTbl = util.JSONToTable(dataTxt)
+
+				table.Merge(jcms.mapWeights, dataTbl, true)
+			end
+		end)
+
+		hook.Add("ShutDown", "jcms_SaveMapWeights", function()
+			if not jcms.fullyLoaded then return end
+
+			local dataStr = util.TableToJSON(jcms.mapWeights)
+			file.Write(weightsFile, dataStr)
 		end)
 	end
 

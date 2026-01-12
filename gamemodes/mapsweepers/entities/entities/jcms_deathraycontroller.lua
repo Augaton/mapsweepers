@@ -103,7 +103,7 @@ if SERVER then
 			local tgpos = target:WorldSpaceCenter()
 			if jcms.team_JCorp(target) then
 				if not IsValid(self.jcms_owner) or jcms.team_pvpSameTeam(self.jcms_owner, target) then
-					priority = math.min(target:GetMaxHealth(), target:Health()) - self:DistanceSqrToTrace(tgpos, tr) - 10000000
+					priority = math.min(target:GetMaxHealth(), target:Health()) - self:DistanceSqrToTrace(tgpos, tr)^(2/3) - 10000000
 				else
 					--Basically roughly treat enemy players like a 1500hp target
 					priority = 1500^2 - self:DistanceSqrToTrace(tgpos, tr)/2
