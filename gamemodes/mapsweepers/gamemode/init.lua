@@ -509,7 +509,7 @@ end
 		local pvpAllowed = jcms.cvar_pvpallowed:GetInt()
 		if (pvpAllowed == 1) and (jcms.util_IsPVPAllowed()) and (not jcms.director) and (not jcms.pvp_firstVote) then
 			jcms.pvp_firstVote = true 
-			jcms.pvp_StartVote(60)
+			jcms.pvp_StartVote(50)
 		end
 
 		jcms.net_SendBothLeaderboardsIfNeeded(ply)
@@ -2778,7 +2778,7 @@ end
 		local shouldProcess = false
 
 		if jcms.pvp_vote_IsOngoing() then
-			local plyTotal = player.GetCount()
+			local plyTotal = player.GetCount() + player.GetCountConnecting()
 			local yesCount, noCount, anyCount = #vote.yes, #vote.no, #vote.any
 
 			if (yesCount + noCount + anyCount == plyTotal) then

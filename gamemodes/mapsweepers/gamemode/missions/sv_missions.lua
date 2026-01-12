@@ -230,7 +230,7 @@
 			jcms.pvp_SetEnabled(true)
 		elseif pvpAllowed == 1 then
 			if goodForPVP then
-				jcms.pvp_StartVote(40)
+				jcms.pvp_StartVote(30)
 			elseif jcms.util_IsPVP() then
 				jcms.pvp_SetEnabled(false)
 			end
