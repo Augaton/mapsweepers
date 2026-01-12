@@ -498,7 +498,10 @@
 	
 		function jcms.director_SpawnSwarm(d, fullQueue, isInitialSwarm)
 			local time = CurTime()
-			local aggroChance = (#d.npcs > 0 and jcms.director_GetMissionTime() >= 35) and Lerp(d.npcs_alarm or 0, 0.2, 0.7) or 0.1
+
+			--Aggro chance scales to 100% over 30 mins, w/ the baseline scaling by difficulty. (Eventually reaching 100% at 10x)
+			local aggroChance = (jcms.director_GetMissionTime() / (60*30))^(1/3) + math.log( jcms.runprogress_GetDifficulty(), 1)
+
 
 			if isInitialSwarm then
 				aggroChance = 0 -- Ambient enenies don't have aggro
@@ -1337,7 +1340,8 @@
 						combat = combat + 1
 					elseif not npcTbl.jcms_ignoreStraggling and not confirmedStraggler then
 						confirmedStraggler = true
-						local maxDist2 = 6500^2
+
+						local maxDist2 = 6000^2
 						local pvsDist2 = 1000^2
 						for j, sweeper in ipairs(sweepers) do
 							local dist2 = sweeperPositions[j]:DistToSqr(npcpos)
@@ -1562,7 +1566,7 @@
 			local softcap_slowdown = softcap * 0.8
 
 			if #d.npcs > softcap then
-				d.swarmNext = missionTime + 5
+				d.swarmNext = missionTime + 3
 				--return 
 			end
 
@@ -1576,7 +1580,8 @@
 			if missionTime >= d.swarmNext then
 				d.swarmCount = d.swarmCount + 1
 				local swarmCost = math.Round(2.5 + math.sqrt(missionTime/50), 1) - math.max(0, #d.npcs - softcap_slowdown) + d.livingPlayers
-				
+				local cooldownAdd = 0 --Lulls have extra delay
+
 				-- // Calculate "Danger Score" based on how many waves we've sent. Up the danger every 3rd/6th wave. {{{
 					local dangerScale = math.min(d.swarmCount / 20, 3) --Don't scale to the point where every wave is a boss
 					local danger2 = (1 - math.min(d.swarmCount%2, 1))/2 --Add a bit of noise/variation based on wave.
@@ -1589,6 +1594,7 @@
 						--After we hit max danger, introduce lulls every now and then so players have an opportunity to get out and do things.
 						dangerScore = 1
 						swarmCost = swarmCost - 20
+						cooldownAdd = 45
 					end
 					
 					if dangerScore >= 3.5 then
@@ -1623,7 +1629,7 @@
 					jcms.director_SayWarn(d)
 				end
 				
-				local cooldown = swarmCost*0.75 + 15 * (d.swarmDanger/3 + 1)
+				local cooldown = (swarmCost^(7/8))*0.75 + (15 * (d.swarmDanger/3 + 1)) + cooldownAdd
 				
 				if d.missionData.evacuating then
 					if swarmCost > 1 then
