@@ -1955,7 +1955,7 @@ end
 		jcms.mapWeights = weight
 	end
 	
-	concommand.Add("jcms_blacklistMap", function(ply, cmd, args)
+	concommand.Add("jcms_setMapWeight", function(ply, cmd, args)
 		if not(not ply:IsPlayer() or ply:IsAdmin()) then return end
 		
 		local map = tostring(args[1]) or ""
