@@ -132,16 +132,6 @@ if jcms.inTutorial then
 	AddCSLuaFile "_main/client/cl_tutorial.lua"
 end
 
--- // Resources {{{
-
-	resource.AddWorkshop("3564041088") --TODO: TEMPORARY. Needed for ZMod to work.
-
-	resource.AddSingleFile("resource/fonts/jcms_regular.ttf")
-	resource.AddSingleFile("resource/fonts/jcms_light.ttf")
-	resource.AddSingleFile("resource/fonts/jcms_semibold.ttf")
-
--- // }}}
-
 -- // Sounds {{{
 
 	sound.Add( {
@@ -397,11 +387,11 @@ end
 				if ent:IsPlayer() then
 					dmg:SetDamage( math.min(hp-5, dmg:GetDamage()) )
 				else
-					dmg:SetDamage(math.min(math.max(0, hp-1), 5))
+					dmg:SetDamage(math.min(math.max(0, hp-1), 15))
 				end
 			elseif isCavernGuard or isWorker then 
 				if ent:IsPlayer() then 
-					dmg:SetDamage( math.min( dmg:GetDamage(), ent:GetMaxHealth() * 0.75 ) )
+					dmg:SetDamage( math.min( dmg:GetDamage(), ent:GetMaxHealth() * 0.7 ) )
 				end
 			end
 		end
@@ -2009,7 +1999,9 @@ end
 		
 		return validMaps
 	end
-
+-- // }}}
+	
+-- // Misc {{{
 	function jcms.giveCash(ply, amount)
 		if IsValid(ply) and ply:IsPlayer() then
 			local added = math.ceil( tonumber(amount) or 0 )
@@ -2020,9 +2012,7 @@ end
 			end
 		end
 	end
--- // }}}
-	
--- // Misc {{{
+
 	function jcms.processBounty(npc, attacker, inflictor)
 		if jcms.director then
 			if jcms.director_IsSuddenDeath() then
