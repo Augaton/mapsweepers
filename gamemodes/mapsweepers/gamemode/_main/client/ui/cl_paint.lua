@@ -64,7 +64,6 @@
 		["310d9af23cf5c7a9f88db0c190da0232e0f9a07d62c2d21acc319e78aa46b9f2"] = "supporter", --pu
 		["7b49561611f4c10cbcbe14e803533bc622629404d6a57dcedbbe97b00c71ed12"] = "supporter", --pe
 		["50bc3e923a5641c5c528601f2a114c1a867428dc30d2cd049c907e9ba5e3ecfa"] = "supporter", --sc
-
 	}
 
 	function jcms.hud_GetSpecialText(ply)
@@ -504,6 +503,21 @@
 				desiredclass = "infantry"
 				genuinely = false
 			end
+
+			DisableClipping( true )
+			local icons = {}
+			if jcms.leaderboard_data_pve and jcms.leaderboard_data_pve[1] and jcms.leaderboard_data_pve[1].sid64 == ply:SteamID64() then
+				table.insert(icons, jcms.mat_leader_pve)
+			end
+			if jcms.leaderboard_data_pvp and jcms.leaderboard_data_pvp[1] and jcms.leaderboard_data_pvp[1].sid64 == ply:SteamID64() then
+				table.insert(icons, jcms.mat_leader_pvp)
+			end
+
+			for i, mat in ipairs(icons) do
+				surface.SetMaterial(mat)
+				surface.DrawTexturedRect(baseX + iconSize - 84 - i*36, baseY + 4, iconSize, iconSize)
+			end
+			DisableClipping( false )
 			
 			surface.SetAlphaMultiplier(genuinely and 1 or 0.25)
 			surface.SetDrawColor(jcms.color_bright)
@@ -1501,7 +1515,7 @@
 				local x2 = p.voteHouse:GetX()
 				draw.SimpleText("#jcms.pvpvotetitle", "jcms_medium", x2 + 200, 100, jcms.color_bright, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
 				
-				local plyCount = player.GetCount()
+				local plyCount = player.GetCount() --TODO: Needs connecting count to be networked & added
 				local buttonSpacing = 2
 				local bw = (400 - 48) / plyCount - buttonSpacing
 				
@@ -2485,7 +2499,7 @@
 							surface.DrawRect(Lerp(linesf, w, -linew), h/2+barh/2, linew, 1)
 						end
 						render.OverrideBlend( false )
-						
+
 						surface.SetDrawColor(r2,g2,b2,math.Remap(p.time, 2, 2.35, 0, 255))
 						jcms.hud_DrawNoiseRect(0, 0, w, h, 24)
 						

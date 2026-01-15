@@ -500,8 +500,7 @@
 			local time = CurTime()
 
 			--Aggro chance scales to 100% over 30 mins, w/ the baseline scaling by difficulty. (Eventually reaching 100% at 10x)
-			local aggroChance = (jcms.director_GetMissionTime() / (60*30))^(1/3) + math.log( jcms.runprogress_GetDifficulty(), 1)
-
+			local aggroChance = math.min( (jcms.director_GetMissionTime() / (60*30))^(1/3) + math.log( jcms.runprogress_GetDifficulty(), 1), d.npcs_alarm * 0.6 + 0.1)
 
 			if isInitialSwarm then
 				aggroChance = 0 -- Ambient enenies don't have aggro
