@@ -132,22 +132,22 @@
 						winners = winners + 1
 						winnerELOAvg = winnerELOAvg + playerStats[sid64].elo
 					else
-						winners = winners + 1
-						winnerELOAvg = winnerELOAvg + playerStats[sid64].elo
+						losers = losers + 1
+						loserELOAvg = loserELOAvg + playerStats[sid64].elo
 					end
 				end
 
-				winnerELOAvg = winnerELOAvg / winners
-				loserELOAvg = loserELOAvg / losers
+				if winners > 0 then 
+					winnerELOAvg = winnerELOAvg / winners
+				else
+					winnerELOAvg = 500
+				end
 
-				-- // Debug safety (can happen w/ bots)
-					if winnerELOAvg == math.huge then 
-						winnerELOAvg = 500
-					end
-					if loserELOAvg == math.huge then 
-						loserELOAvg = 500
-					end
-				-- // }}}
+				if losers > 0 then
+					loserELOAvg = loserELOAvg / losers
+				else
+					loserELOAvg = 500
+				end
 			-- // }}}
 
 			for sid64, stats in pairs(playerStats) do
