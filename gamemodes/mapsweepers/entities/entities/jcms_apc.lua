@@ -735,13 +735,14 @@ if CLIENT then
 			self:RemoveAllDecals()
 
 			self:EnableMatrix("RenderMultiply", self.scalematrix)
-			render.SetColorModulation(0, Lerp(shieldPowerExp, 0, 400), Lerp(shieldPowerExp, 10, 700))
-			render.ModelMaterialOverride(self.mat_shield)
+			render.SetColorModulation(0, Lerp(shieldPowerExp, 0, 10), Lerp(shieldPowerExp, 1, 20))
+			render.MaterialOverride(jcms.render_matShield)
 				self:SetupBones()
 				self:DrawModel()
-			render.ModelMaterialOverride()
+			render.MaterialOverride()
 			render.SetColorModulation(1, 1, 1)
 			self:DisableMatrix("RenderMultiply")
+			self:SetupBones()
 		end
 	end
 
