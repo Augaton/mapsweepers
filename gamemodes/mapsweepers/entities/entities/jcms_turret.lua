@@ -45,12 +45,6 @@ if SERVER then
 	
 	function jcms.turret_IsDifferentTeam(self, ent)
 		return not jcms.team_SameTeam(self, ent)
-		--[[
-		if self:GetHackedByRebels() then
-			return jcms.team_JCorp(ent) and not(ent.GetHackedByRebels and ent:GetHackedByRebels())
-		else
-			return jcms.team_NPC(ent)
-		end--]]
 	end
 
 	function jcms.turret_IsDifferentTeam_Optimised(isHacked, ent, pvpTeam)
@@ -81,310 +75,6 @@ if SERVER then
 		
 		return false
 	end
-	
-	jcms.turrets = {
-		smg = {
-			damage = 5,
-			firerate = 0.083,
-			damagetype = DMG_BULLET,
-			attackPattern = { 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0 },
-			muzzleflashScale = 1.85,
-			muzzleflashFlag = 3,
-			clip = 750,
-			
-			radius = 1600,
-			tracer = "StriderTracer",
-			hiteffect = "AR2Impact",
-			
-			timeAlert = 0.5,
-			timeLoseAlert = 2,
-
-			updateRate = 4, --How often do we try to acquire targets (optimisation)
-			
-			turnSpeedYaw = 180,
-			turnSpeedPitch = 45,
-			pitchLockMin = -66,
-			pitchLockMax = 66,
-			
-			spreadX = 2.05,
-			spreadY = 1.41,
-			targetingMode = "weakest",
-			
-			sound = "Weapon_AR2.NPC_Single",
-			soundEmpty = "Weapon_AR2.Empty",
-			
-			boosted = { --engineer.
-				attackPattern = { 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0 },
-				firerate = 0.068
-				--I can't think of anything other than generic stat boosts, since it's just a generalist.
-				--I picked changes that were the most visually obvious.
-				--If you can think of anything better it'd be appreciated, this is a bit underwhelming. Not the end of the world though.
-			}
-		},
-		
-		bolter = {
-			damage = 60,
-			firerate = 1.1,
-			damagetype = DMG_BULLET + DMG_ALWAYSGIB,
-			muzzleflashScale = 2,
-			pvpMuzzleflashFlags = { [2] = 2 },
-			muzzleflashFlag = 4,
-			clip = 100,
-			
-			radius = 2600,
-			tracer = "jcms_bolt",
-			tracerFlag = 0,
-			tracerUsesPVPTeam = true,
-			hiteffect = "AR2Impact",
-			
-			timeAlert = 1,
-			timeLoseAlert = 2,
-
-			updateRate = 3, --How often do we try to acquire targets (optimisation)
-			
-			turnSpeedYaw = 80,
-			turnSpeedPitch = 40,
-			pitchLockMin = -66,
-			pitchLockMax = 66,
-			
-			spreadX = 0.4,
-			spreadY = 0.3,
-			targetingMode = "closestangle",
-			
-			sound = "Airboat.FireGunHeavy",
-			soundEmpty = "Weapon_AR2.Empty",
-			
-			postSpawn = function(turret)
-				if jcms.util_IsPVP() then
-					turret:SetSniperGlare(true)
-				end
-			end,
-
-			boosted = { --engineer.
-				postSpawn = function(turret)
-					jcms.npc_SetupSweeperShields(turret, 35, 10, 5, Color(255, 0, 0))
-					if jcms.util_IsPVP() then
-						turret:SetSniperGlare(true)
-					end
-				end
-			}
-		},
-		
-		shotgun = {
-			damage = 9,
-			firerate = 0.8,
-			damagetype = DMG_BUCKSHOT,
-			attackPattern = { 19, 18, 16, 17 },
-			muzzleflashScale = 1.4,
-			muzzleflashFlag = 2,
-			clip = 100,
-			
-			radius = 750,
-			tracer = "jcms_laser",
-
-			updateRate = 5, --How often do we try to acquire targets (optimisation)
-			
-			timeAlert = 0.5,
-			timeLoseAlert = 2,
-			
-			turnSpeedYaw = 190,
-			turnSpeedPitch = 66,
-			pitchLockMin = -66,
-			pitchLockMax = 66,
-			
-			spreadX = 10.5,
-			spreadY = 5,
-			targetingMode = "closest",
-			
-			sound = "Weapon_Shotgun.NPC_Single",
-			soundEmpty = "Weapon_AR2.Empty",
-			
-			boosted = { --engineer.
-				tracerFlag = 1,
-				spreadX = 9,
-
-				OnHit = function(turret, target, dmgInfo, tr)
-					if not jcms.team_JCorp(target) then 
-						target:Ignite(2.5)
-					end
-				end
-			}
-		},
-		
-		gatling = {
-			damage = 8,
-			firerate = function(self) 
-				return Lerp(self:GetTurretSpinup(), 0.5, 0.02)
-			end,
-			spinupTime = 4,
-			damagetype = DMG_BULLET,
-			muzzleflashScale = 1.25,
-			muzzleflashFlag = 1,
-			clip = 1250,
-			
-			radius = 1400,
-			tracer = "jcms_bolt",
-			tracerFlag = 1,
-			
-			timeAlert = 0.5,
-			timeLoseAlert = 2,
-
-			updateRate = 3, --How often do we try to acquire targets (optimisation)
-			
-			turnSpeedYaw = 48,
-			turnSpeedPitch = 16,
-			pitchLockMin = -66,
-			pitchLockMax = 66,
-			
-			spreadX = 2.4,
-			spreadY = 2.0,
-			targetingMode = "closestangle",
-			
-			sound = "Weapon_SMG1.NPC_Single",
-			soundEmpty = "Weapon_SMG1.Empty",
-			
-			boosted = { --engineer
-				damage = 5, --Offset the massive increase in damage from the blast a little.
-				tracerFlag = 2,
-				bulletEffect = function(turret, tr)
-					util.BlastDamage(turret, (IsValid(turret.jcms_owner) and turret.jcms_owner) or turret, tr.HitPos, 75, 8)
-				end
-			}
-		}
-	}
-
-	jcms.turrets_boosted = {}
-	--Create tables for the boosted variants.
-	for k, v in pairs(jcms.turrets) do 
-		local boostedTbl = table.Copy(v)
-		if v.boosted then --Override our values with the boosted versions
-			table.Merge(boostedTbl, v.boosted)
-			v.boosted = nil 
-			boostedTbl.boosted = nil
-		end
-
-		jcms.turrets_boosted[k] = boostedTbl
-	end
-
-	jcms.turret_targetingModes = {
-		closest = function(self, targets, origin, radius)
-			local best, npcPos
-			local mindist2
-
-			for i, target in ipairs(targets) do
-				if not IsValid(target) then continue end
-				local targetPos = jcms.turret_GetTargetPos(self, target, origin)
-				local dist2 = origin:DistToSqr(targetPos)
-				if not mindist2 or dist2 < mindist2 then
-					mindist2, best, npcPos = dist2, target, targetPos
-				end
-			end
-			
-			return best, npcPos
-		end,
-
-		closestangle = function(self, targets, origin, radius)
-			local best, npcPos
-			local leastDelta
-
-			local curAngle = self:GetAngles() + self:TurretAngle()
-			curAngle:Normalize()
-
-			for i, target in ipairs(targets) do
-				if not IsValid(target) then continue end
-				local targetPos = jcms.turret_GetTargetPos(self, target, origin)
-
-				local targetAngle = (targetPos - origin):Angle()
-				local delta = math.AngleDifference(targetAngle.p, curAngle.p)^2 + math.AngleDifference(targetAngle.y, curAngle.y)^2
-
-				if not leastDelta or delta < leastDelta then
-					leastDelta, best, npcPos = delta, target, targetPos
-				end
-			end
-
-			return best, npcPos
-		end,
-
-		weakest = function(self, targets, origin, radius)
-			local best, npcPos
-			local minhealth
-
-			for i, target in ipairs(targets) do
-				if not IsValid(target) then continue end				local health = target:Health()
-				if not minhealth or health < minhealth then
-					local targetPos = jcms.turret_GetTargetPos(self, target, origin)
-					minhealth, best, npcPos = health, target, targetPos
-				end
-			end
-
-			return best, npcPos
-		end,
-
-		strongest = function(self, targets, origin, radius)
-			local best, npcPos
-			local maxhealth
-
-			for i, target in ipairs(targets) do
-				if not IsValid(target) then continue end
-				local health = target:Health()
-				if not maxhealth or health > maxhealth then
-					local targetPos = jcms.turret_GetTargetPos(self, target, origin)
-					maxhealth, best, npcPos = health, target, targetPos
-				end
-			end
-
-			return best, npcPos
-		end,
-		
-		smrls = function(self, targets, origin, radius)
-			local best, npcPos
-			local bestScore
-
-			for i, target in ipairs(targets) do
-				if not IsValid(target) then continue end
-				local score = target:Health()^1.1 + (target.jcms_danger or 0) * 250
-				
-				if not self:TurretVisibleTrace(target) then
-					score = score - 1000
-				end
-				
-				if jcms.team_flyingEntityClasses[ target:GetClass() ] then
-					score = score + 250
-				end
-				
-				if target.jcms_lastTargetedBySMRLS and (CurTime() - target.jcms_lastTargetedBySMRLS < 6) then
-					score = score - 1000
-				end
-				
-				if not bestScore or score > bestScore then
-					local targetPos = jcms.turret_GetTargetPos(self, target, origin)
-					bestScore, best, npcPos = score, target, targetPos
-				end
-			end
-			
-			return best, npcPos
-		end,
-	}
-	
-	jcms.turret_bodygroups = {
-		smg = 1, 
-		bolter = 2,
-		gatling = 3,
-		shotgun = 4
-	}
-end
-
-if CLIENT then
-	jcms.turret_offsets = {
-		smg = 12,
-		bolter = 9,
-		gatling = 34,
-		shotgun = 10
-	}
-	
-	jcms.turret_offsets_up = {
-		shotgun = 4
-	}
 end
 
 function ENT:Initialize()
@@ -593,7 +283,7 @@ if SERVER then
 		return ((math.random() + math.random()) - 1) * x, ((math.random() + math.random()) - 1) * y
 	end
 	
-	function ENT:GetTargetsAround(origin,  radius)
+	function ENT:GetTargetsAround(origin, radius)
 		local selfTbl = self:GetTable()
 		if not selfTbl.targetsCache then
 			selfTbl.targetsCache = {}
@@ -622,76 +312,153 @@ if SERVER then
 		return selfTbl.targetsCache
 	end
 
-	ENT.NextSlowThink = 0
+	ENT.NextTargetingThink = 0
 	ENT.CurrentTarget = NULL
 
-	function ENT:TurretSlowThink()
-		local selfTbl = self:GetTable()
-		if selfTbl.NextSlowThink > CurTime() then return end 
+	function ENT:IsAboutToDie()
+		return self:Health() <= 0 or self:GetTable().GetTurretClip(self) <= 0
+	end
 
-		local origin, radius = selfTbl.GetTurretShootPos(self), selfTbl.TurretRadius(self)
-		
-		local selfDestruct = self:Health() <= 0 or selfTbl.GetTurretClip(self) <= 0
-		if selfDestruct then
-			radius = 480
-			
-			if not selfTbl.kamikazeSound then
-				self:EmitSound("npc/roller/mine/rmine_predetonate.wav")
-				selfTbl.kamikazeSound = true
-				self:Ignite(25)
+	function ENT:ThinkTurnAndShoot_AngleUpdate(dt)
+		local selfTbl = self:GetTable()
+		local target = selfTbl.CurrentTarget
+
+		if IsValid(target) then
+			local origin = selfTbl.GetTurretShootPos(self)
+			local targetPos = jcms.turret_GetTargetPos(self, target, origin)
+			local realAngle = self:GetAngles()
+			local targetAngle = (targetPos - origin):Angle()
+			targetAngle:Sub(realAngle)
+
+			if not selfTbl.GetTurretDesiredAngle(self):IsEqualTol(targetAngle, selfTbl.TurretFirerate(self) >= 0.6 and 0.01 or 1) then
+				self:SetTurretDesiredAngle(targetAngle)
 			end
+		end
+		
+		self:TurretAngleUpdate(dt)
+	end
+
+	function ENT:ThinkTurnAndShoot(dt) -- Self-explanatory
+		local selfTbl = self:GetTable()
+		local data = selfTbl.GetTurretData(self)
+		local alert = selfTbl.GetTurretAlert(self)
+		
+		if selfTbl.GetHackedByRebels(self) and self.kamikazeJumped then
+			return
+		end
+
+		if data.spinupTime then -- Spinning up or down
+			if alert > 0 then
+				selfTbl.SetTurretSpinup(self, math.min(selfTbl.GetTurretSpinup(self) + dt/data.spinupTime, 1) )
+			else
+				selfTbl.SetTurretSpinup(self, math.max(selfTbl.GetTurretSpinup(self) - dt/data.spinupTime, 0) )
+			end
+		end
+		
+		if alert >= 0.5 then -- Turning towards target
+			self:ThinkTurnAndShoot_AngleUpdate(dt)
+		end
+
+		if (alert >= 1) then -- Shooting
+			if (not selfTbl.nextAttack or selfTbl.nextAttack <= CurTime()) and selfTbl.TurretAngleIsSafe(self) then
+				selfTbl.Shoot(self)
+				selfTbl.nextAttack = CurTime() + selfTbl.TurretFirerate(self)
+			end
+		else
+			selfTbl.attackPatternIndex = 1
+		end
+	end
+
+	function ENT:ThinkAlert(dt) -- Updating Turret Alert (up or down)
+		local selfTbl = self:GetTable()
+		local alert = selfTbl.GetTurretAlert(self)
+
+		--Slower reaction speed if we're hacked, or if the target is slow to pick up (alyx)
+		local target = selfTbl.CurrentTarget
+		if not IsValid(target) then target = nil end
+
+		local alertMul = ((selfTbl.GetHackedByRebels(self) or (target and target.jcms_slowTurretReact)) and 3) or 1
+		if target and alert < 1 then
+			selfTbl.SetTurretAlert(self, math.min(alert + dt/(selfTbl.TurretGetAlertTime(self) * alertMul), 1) )
+		elseif not target and alert > 0 then
+			selfTbl.SetTurretAlert(self, math.max(alert - dt/(selfTbl.TurretLoseAlertTime(self) / alertMul), 0) )
+		end
+	end
+
+	function ENT:ThinkTargeting() -- For updating self.CurrentTarget
+		local selfTbl = self:GetTable()
+		if CurTime() < (selfTbl.NextTargetingThink or 0) then return end
+		
+		local origin, radius = selfTbl.GetTurretShootPos(self), selfTbl.TurretRadius(self)
+
+		if self:IsAboutToDie() then -- For picking nearby targets to kamikaze at
+			radius = 500
 		end
 
 		local targets = selfTbl.GetTargetsAround(self, origin, radius)
 		local targetingFunction = jcms.turret_targetingModes[ selfTbl.targetingMode ] or jcms.turret_targetingModes.closest
-		local best, npcPos = targetingFunction(self, targets, origin, radius)
+		local best = targetingFunction(self, targets, origin, radius)
 
+		local alert = selfTbl.GetTurretAlert(self)
+		if (alert > 0.5) and IsValid(best) and (selfTbl.lastSFXTarget ~= best) then -- Performing "target acquired" sound
+			local hacked = selfTbl.GetHackedByRebels(self)
+			local level = (hacked and 90) or 75
+			local pitch = (hacked and 130) or 125 
+			self:EmitSound("npc/scanner/scanner_siren1.wav", level, pitch)
+			selfTbl.lastSFXTarget = best
+		elseif (alert == 0) then
+			selfTbl.lastSFXTarget = nil
+		end
+		
 		selfTbl.CurrentTarget = best
 
 		--Turrets determine their think-speed. Turrets that need faster/more reliable target acquisition think more (smgs, shotgun)
 		--Turrets where that doesn't matter as much (e.g. due to slow turn speed) think less (bolter, gatling)
-		local hackedReduce = (self:GetHackedByRebels() and 2) or 1 --Hacked turrets don't need to think as much
-		selfTbl.NextSlowThink = CurTime() + (1 / selfTbl.GetTurretField(self, "updateRate")) * hackedReduce
+		local hackedReduce = self:GetHackedByRebels() and 2 or 1 -- Hacked turrets don't need to think as much
+		selfTbl.NextTargetingThink = CurTime() + (1 / selfTbl.GetTurretField(self, "updateRate")) * hackedReduce
 	end
 
-	function ENT:TurretThink(delta) 
+	function ENT:ThinkKamikaze()
 		local selfTbl = self:GetTable()
-		if selfTbl.jcms_stunEnd > CurTime() then
-			--TODO: Aim down & Make a looping idle noise
-			return 
-		end
+		if selfTbl.IsAboutToDie(self) then
+			self:Ignite(5)
 
-		selfTbl.TurretSlowThink(self)
-		local best = selfTbl.CurrentTarget 
-		
-		if IsValid(best) then
-			local origin = selfTbl.GetTurretShootPos(self)
-			local selfDestruct = self:Health() <= 0 or selfTbl.GetTurretClip(self) <= 0
-			local npcPos = jcms.turret_GetTargetPos(self, best, origin)
+			if not selfTbl.kamikazeSound then
+				self:EmitSound("npc/roller/mine/rmine_predetonate.wav")
+				selfTbl.kamikazeSound = true
+			end
 
-			if selfDestruct and (selfTbl.kamikazeTime < CurTime()) then
-				if not selfTbl.kamikazeJumped then
-					self:Kamikaze(best)
-				end
-				
-				return nil, false
-			elseif not(selfDestruct and selfTbl.GetHackedByRebels(self)) then --Rebel AI turns off instantly when dead, jcorp keeps shooting.
-				if selfTbl.GetTurretAlert(self) >= 0.5 then --Reaction-speed delay.
-					local realAngle = self:GetAngles()
-					--local targetAngle = (npcPos - origin):Angle() - realAngle
-					local targetAngle = (npcPos - origin):Angle()
-					targetAngle:Sub(realAngle)
-
-					if not selfTbl.GetTurretDesiredAngle(self):IsEqualTol(targetAngle, selfTbl.TurretFirerate(self) >= 0.6 and 0.01 or 1) then
-						self:SetTurretDesiredAngle(targetAngle)
-					end
-					
-					self:TurretAngleUpdate(delta)
-				end
-
-				return best, selfTbl.TurretAngleIsSafe(self)
+			if IsValid(self.CurrentTarget) and not selfTbl.kamikazeJumped and selfTbl.kamikazeTime < CurTime() then
+				selfTbl.Kamikaze(self, self.CurrentTarget)
 			end
 		end
+	end
+
+	function ENT:Think()
+		local selfTbl = self:GetTable()
+		local data = selfTbl.GetTurretData(self)
+		
+		local slowdown = selfTbl.GetTurretAlert() <= 0
+		local dt = 0.05
+		if slowdown then 
+			self.NextTargetingThink = 0
+		else
+			local firerate = selfTbl.TurretFirerate(self)
+			dt = math.min(dt, firerate)
+		end
+
+		self:ThinkTargeting()
+
+		if slowdown then 
+			dt = math.max(1, self.NextTargetingThink - CurTime()) 
+		end
+
+		self:ThinkKamikaze()
+		self:ThinkAlert(dt)
+		self:ThinkTurnAndShoot(dt)
+		
+		self:NextThink(CurTime() + dt)
+		return true
 	end
 
 	function ENT:HandleAttackTrace(tr, mypos, data) --Used in shoot & for bolter's penetration
@@ -830,80 +597,30 @@ if SERVER then
 		end
 	end
 
-	function ENT:Think()
-		local selfTbl = self:GetTable()
+	function ENT:BlowUp(atPos)
+		atPos = atPos or self:GetPos()
 
-		local dt = 0.05
-		local target, canShoot = selfTbl.TurretThink(self, dt) --self:TurretThink(dt)
-		local alert = selfTbl.GetTurretAlert(self)
-		local data = selfTbl.GetTurretData(self)
-
-		if data.Think then 
-			data.Think(self)
-		end
+		util.BlastDamage(self, IsValid(self.jcms_owner) and self.jcms_owner or self, atPos, 200, self:GetHackedByRebels() and 20 or 66)
+		local ed = EffectData()
+		ed:SetOrigin(atPos)
+		ed:SetNormal(vector_up)
+		util.Effect("Explosion", ed)
 		
-		if alert == 0 then 
-			selfTbl.currentTarget = nil
-		end
-
-		if alert > 0.5 and selfTbl.currentTarget ~= target and IsValid(target) then
-			local hacked = selfTbl.GetHackedByRebels(self)
-			local level = (hacked and 90) or 75
-			local pitch = (hacked and 130) or 125 
-			self:EmitSound("npc/scanner/scanner_siren1.wav", level, pitch)
-			selfTbl.currentTarget = target
-		end
+		local ed = EffectData()
+		ed:SetOrigin(self:WorldSpaceCenter())
+		ed:SetRadius(200)
+		ed:SetNormal(vector_up)
+		ed:SetMagnitude(1.13)
+		ed:SetFlags(1)
+		util.Effect("jcms_blast", ed)
 		
-		--Slower reaction speed if we're hacked, or if the target is slow to pick up (alyx)
-		local alertMul = ((selfTbl.GetHackedByRebels(self) or (target and target.jcms_slowTurretReact)) and 3) or 1
-		if target and alert < 1 then
-			selfTbl.SetTurretAlert(self, math.min(alert + dt/(selfTbl.TurretGetAlertTime(self) * alertMul), 1) )
-		elseif not target and alert > 0 then
-			selfTbl.SetTurretAlert(self, math.max(alert - dt/(selfTbl.TurretLoseAlertTime(self) / alertMul), 0) )
-		end
-		
-		alert = selfTbl.GetTurretAlert(self)
-		
-		if data.spinupTime then
-			if alert > 0 then
-				selfTbl.SetTurretSpinup(self, math.min(selfTbl.GetTurretSpinup(self) + dt/data.spinupTime, 1) )
-			else
-				selfTbl.SetTurretSpinup(self, math.max(selfTbl.GetTurretSpinup(self) - dt/data.spinupTime, 0) )
-			end
-		end
-		
-		if alert >= 1 and canShoot then
-			if (not selfTbl.nextAttack or selfTbl.nextAttack <= CurTime()) then
-				selfTbl.Shoot(self)
-				selfTbl.nextAttack = CurTime() + selfTbl.TurretFirerate(self)
-			end
-		else
-			selfTbl.attackPatternIndex = 1
-		end
-		
-		self:NextThink(CurTime() + dt)
-		return true
+		self:Remove()
 	end
 	
 	function ENT:PhysicsCollide(data, collider)
 		if self.kamikazeJumped then
 			if not self.kamikazeExploded then
-				util.BlastDamage(self, IsValid(self.jcms_owner) and self.jcms_owner or self, data.HitPos, 200, self:GetHackedByRebels() and 20 or 66)
-				local ed = EffectData()
-				ed:SetOrigin(data.HitPos)
-				ed:SetNormal(vector_up)
-				util.Effect("Explosion", ed)
-				
-				local ed = EffectData()
-				ed:SetOrigin(self:WorldSpaceCenter())
-				ed:SetRadius(200)
-				ed:SetNormal(vector_up)
-				ed:SetMagnitude(1.13)
-				ed:SetFlags(1)
-				util.Effect("jcms_blast", ed)
-				
-				self:Remove()
-				
+				self:BlowUp(data.HitPos)
 				self.kamikazeExploded = true
 			end
 		end
@@ -1007,10 +724,14 @@ if SERVER then
 	
 	function ENT:Use(ply)
 		if self:GetVelocity():LengthSqr() < 64*64 then
-			local dif = self:WorldSpaceCenter() - ply:GetPos()
-			dif:Normalize()
+			local dif = self:WorldSpaceCenter() - ply:EyePos()
+			local len = dif:Length()
+			if len > 256 or len == 0 then return end
+
+			dif:Div(len)
 			dif:Mul(53)
 			dif.z = 54
+
 			self:GetPhysicsObject():AddVelocity(dif)
 			self:EmitSound("physics/body/body_medium_impact_soft"..math.random(1,7)..".wav")
 			ply:ViewPunch(Angle(math.Rand(-1, 0), math.Rand(-1, 1), 0))

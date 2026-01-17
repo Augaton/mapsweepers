@@ -1565,6 +1565,23 @@ end)
 	end
 -- // }}}
 
+-- // Turrets {{{
+
+	jcms.turret_offsets = {
+		smg = 12,
+		bolter = 9,
+		gatling = 34,
+		shotgun = 10,
+		smrls = 4
+	}
+	
+	jcms.turret_offsets_up = {
+		shotgun = 4,
+		smrls = -4
+	}
+
+-- // }}}
+
 -- // Post {{{
 
 	hook.Run("MapSweepersReady") -- If you want to make an addon that adds new content into Map Sweepers, use this hook.

@@ -271,6 +271,11 @@
 		local lastPhraseTime = npc.lastPhraseTime or 0
 		local elapsed = CurTime() - lastPhraseTime
 
+		local inflictor = dmg:GetInflictor()
+		if IsValid(inflictor) and inflictor:GetClass() == "jcms_micromissile" and not inflictor.AntiAir then
+			dmg:ScaleDamage(3) -- Maybe?? I always hated how pitifully little damage SMRLS deals to the helicopters. To the point shooting it with M9K AK47 is 10 times faster than letting missiles get it.
+		end
+
 		local damage = dmg:GetDamage()
 		npc.jcms_heli_dmgProgress = npc.jcms_heli_dmgProgress + damage
 
@@ -279,7 +284,7 @@
 			npc.lastPhraseTime = CurTime()
 			npc.jcms_heli_dmgProgress = 0
 		end
-		
+
 		if damage > npc:Health() and not npc.jcms_heliDead then --Force us to die properly/pay bounty
 			npc.jcms_heliDead = true --We seem to sometimes get called a fuckload of times at once, giving way too much bounty.
 			npc:EmitSound("jcms_rebelheli_die", 140, 100, 1, CHAN_VOICE, 0, 38) --Death line
