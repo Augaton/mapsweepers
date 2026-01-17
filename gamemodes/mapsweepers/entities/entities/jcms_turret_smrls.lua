@@ -53,8 +53,6 @@ function ENT:Initialize()
 					endpos = node.pos
 				}
 
-				PrintTable(res)
-
 				if not res.Hit then
 					self.startNode = node
 					break
