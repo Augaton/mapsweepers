@@ -111,7 +111,7 @@
 			local missionData = director.missionData
 
 			local missionTime = jcms.director_GetMissionTime()
-			if missionTime >= 60 then
+			if missionTime >= 60 and not director.debug then
 				director.swarmNext = math.min( director.swarmNext, missionTime + #director.npcs*3 )
 			end
 		end
