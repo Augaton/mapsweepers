@@ -105,6 +105,15 @@
 				
 				return jcms.mission_GenerateEvacObjective()
 			end
+		end,
+
+		think = function(director)
+			local missionData = director.missionData
+
+			local missionTime = jcms.director_GetMissionTime()
+			if missionTime >= 60 then
+				director.swarmNext = math.min( director.swarmNext, missionTime + #director.npcs*3 )
+			end
 		end
 	}
 
