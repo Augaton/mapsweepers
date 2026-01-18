@@ -766,9 +766,9 @@ if CLIENT then
 				selfTbl.soundSpinup:Play()
 			end
 			
-			selfTbl.soundSpinup:ChangePitch(Lerp(math.sqrt(spinning), 20, 130), frameTime)
-			selfTbl.soundSpinup:ChangeVolume(math.min(1, spinning*10), frameTime)
-		elseif selfTbl.soundSpinup and selfTbl.soundSpinup:GetVolume() <= 0.02 then
+			selfTbl.soundSpinup:ChangePitch(Lerp(math.sqrt(spinning), 20, 130), 0.2)
+			selfTbl.soundSpinup:ChangeVolume(math.min(1, spinning*10), 0.1)
+		elseif selfTbl.soundSpinup then
 			selfTbl.soundSpinup:Stop()
 			selfTbl.soundSpinup = nil
 		end
