@@ -207,7 +207,7 @@ jcms.turrets = {
 		turnSpeedYaw = 80,
 		turnSpeedPitch = 80,
 		pitchLockMin = -24,
-		pitchLockMax = 89,
+		pitchLockMax = 40,
 		
 		spreadX = 0.2,
 		spreadY = 0.2,

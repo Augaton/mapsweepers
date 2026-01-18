@@ -107,9 +107,17 @@ if SERVER then
 			if selfPos:DistToSqr(targetVector) < selfTbl.Proximity^2 then
 				table.remove(selfTbl.Path)
 
+				if selfTbl.LoweredDampingPath then
+					selfTbl.LoweredDampingPath = selfTbl.LoweredDampingPath - 1
+					if selfTbl.LoweredDampingPath <= 0 then
+						selfTbl.LoweredDampingPath = nil
+					end
+				end
+
 				if #selfTbl.Path == 0 then
 					selfTbl.Path = nil
 					pathCond = false
+					selfTbl.LoweredDampingPath = nil
 				end
 			end
 		end
@@ -168,13 +176,15 @@ if SERVER then
 				local arc = Lerp(frac, 0, selfTbl.Arc )
 				norm:Add(jcms.vectorUp * arc)
 				norm:Normalize()
+
+				local realDamping = (pathCond and selfTbl.LoweredDampingPath) and math.max(selfTbl.Damping*1.33, 2) or selfTbl.Damping
 				
 				if not selfTbl.AntiAir then
-					phys:AddVelocity(-self:GetVelocity() * selfTbl.Damping * FrameTime())
+					phys:AddVelocity(-self:GetVelocity() * realDamping * FrameTime())
 				end
 
 				local idealVelocity = norm * selfTbl.Speed
-				local addedVelocity = idealVelocity - self:GetVelocity() * selfTbl.Damping
+				local addedVelocity = idealVelocity - self:GetVelocity() * realDamping
 				
 				phys:AddVelocity(addedVelocity * FrameTime())
 			end

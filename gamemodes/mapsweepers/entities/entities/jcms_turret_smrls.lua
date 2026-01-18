@@ -42,22 +42,92 @@ function ENT:Initialize()
 		if jcms.npc_airCheck() then
 			local shootPos = self:GetTurretShootPos()
 			
-			local nodesToCheck = { jcms.pathfinder.getNearestNodePVS(shootPos), jcms.pathfinder.getNearestNode(shootPos) }
-			for i, node in ipairs(nodesToCheck) do
-				local res = util.TraceHull {
-					mins = Vector(-8, -8, -8),
-					maxs = Vector(8, 8, 8),
+			-- Scanning nearby area {{{
+				local startingPositions = { shootPos }
+				local pitchMin, pitchMax = jcms.turrets.smrls.pitchLockMin, jcms.turrets.smrls.pitchLockMax
+				local baseAngle = self:GetAngles()
+				local up, right = baseAngle:Up(), baseAngle:Right()
+
+				local traceRes = {}
+				local traceInfo = {
+					mins = Vector(-12, -12, -12),
+					maxs = Vector(12, 12, 12),
 					mask = MASK_NPCSOLID_BRUSHONLY,
 					filter = self,
-					start = shootPos,
-					endpos = node.pos
+					output = traceRes,
+					start = shootPos
 				}
 
-				if not res.Hit then
-					self.startNode = node
-					break
+				for lat=1,12 do -- yaw
+					local lat_a = math.Remap(lat, 0, 12, 0, 360)
+					for long=1,6 do -- pitch
+						local long_a = math.Remap(long, 1, 6, pitchMin, pitchMax)
+
+						local ang = Angle(baseAngle)
+						ang:RotateAroundAxis(right, long_a)
+						ang:RotateAroundAxis(up, lat_a)
+
+						local vec = ang:Forward()
+						vec:Mul(1024)
+						vec:Add(shootPos)
+
+						traceInfo.endpos = vec
+						util.TraceHull(traceInfo)
+
+						if not traceRes.Hit then
+							table.insert(startingPositions, traceRes.HitPos)
+						else
+							for i=1, 4 do
+								vec:Sub(shootPos)
+								vec:Mul(0.666)
+								vec:Add(shootPos)
+
+								util.TraceHull(traceInfo)
+								if not traceRes.Hit then
+									table.insert(startingPositions, traceRes.HitPos)
+									break
+								end
+							end
+						end
+					end
 				end
-			end
+			-- }}}
+
+			-- Trying to reach nodes {{{
+				for i, sp in ipairs(startingPositions) do
+					local nodesToCheck = jcms.pathfinder.getNodesInPVS(sp)
+					local nodesDists2 = {}
+					for i, node in ipairs(nodesToCheck) do
+						nodesDists2[node] = node.pos:DistToSqr(shootPos)
+					end
+
+					table.sort(nodesToCheck, function(first, last)
+						return nodesDists2[first] < nodesDists2[last]
+					end)
+
+					traceInfo.start = sp
+					for i, node in ipairs(nodesToCheck) do
+						traceInfo.endpos = node.pos
+						util.TraceHull(traceInfo)
+
+						if not traceRes.Hit then
+							self.startNode = node
+							
+							if i > 1 then
+								self.extraStartPos = sp
+							end
+
+							debugoverlay.Line(sp, node.pos, 3, Color(255, 255, 0))
+							debugoverlay.Line(shootPos, sp, 3, Color(255, 128, 0))
+							break
+						end
+					end
+
+					if self.startNode then
+						break
+					end
+				end
+			-- }}}
 		end
 
 		self.jcms_stunEnd = CurTime()
@@ -70,7 +140,7 @@ end
 function ENT:TurretAngleIsSafe()
 	local target = self:GetTurretDesiredAngle()
 	local angle = self.turretAngle
-	return math.abs(math.AngleDifference(angle.p, target.p)) <= 12 and math.abs(math.AngleDifference(angle.y, target.y)) <= 6
+	return math.abs(math.AngleDifference(angle.p, target.p)) <= 12 and math.abs(math.AngleDifference(angle.y, target.y)) <= 12
 end
 
 function ENT:SetupBoosted() -- For engineer
@@ -216,6 +286,8 @@ if SERVER then
 			local targetPos
 			if selfTbl.CurrentTargetDirectlyVisible then
 				targetPos = jcms.turret_GetTargetPos(self, target, origin)
+			elseif self.extraStartPos then
+				targetPos = self.extraStartPos
 			elseif self.startNode then
 				targetPos = self.startNode.pos
 			end
@@ -288,11 +360,14 @@ if SERVER then
 
 			if IsValid(self.CurrentTarget) then
 				if not self:TurretVisibleTrace(self.CurrentTarget) then
-					--Start node is precalculated / stored because missile turrets don't move. Saves some performance.
 					if self.startNode then --Lua error prevention. Some maps don't have an airgraph at all.
 						missile.Path = jcms.pathfinder.navigate(self.startNode, self.CurrentTarget:WorldSpaceCenter())
 					end
+					if self.extraStartPos then
+						table.insert(missile.Path, { pos = self.extraStartPos })
+					end
 					missile.Damping = 0.89
+					missile.LoweredDampingPath = 2
 				end
 			end
 			

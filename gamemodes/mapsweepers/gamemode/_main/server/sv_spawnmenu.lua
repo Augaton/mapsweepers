@@ -328,8 +328,8 @@
 			func = function(ply, pos, angle) 
 				local turret = ents.Create("jcms_turret_smrls")
 				turret:SetPos(pos)
-				turret:Spawn()
 				turret:SetAngles(angle)
+				turret:Spawn()
 
 				if IsValid(ply) and jcms.isPlayerEngineer(ply) then
 					turret:SetupBoosted()
