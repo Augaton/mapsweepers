@@ -140,7 +140,7 @@ end
 function ENT:TurretAngleIsSafe()
 	local target = self:GetTurretDesiredAngle()
 	local angle = self.turretAngle
-	return math.abs(math.AngleDifference(angle.p, target.p)) <= 12 and math.abs(math.AngleDifference(angle.y, target.y)) <= 12
+	return math.abs(math.AngleDifference(angle.p, target.p)) <= 48 and math.abs(math.AngleDifference(angle.y, target.y)) <= 12
 end
 
 function ENT:SetupBoosted() -- For engineer
