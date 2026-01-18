@@ -363,7 +363,7 @@ if SERVER then
 					if self.startNode then --Lua error prevention. Some maps don't have an airgraph at all.
 						missile.Path = jcms.pathfinder.navigate(self.startNode, self.CurrentTarget:WorldSpaceCenter())
 					end
-					if self.extraStartPos then
+					if missile.Path and self.extraStartPos then
 						table.insert(missile.Path, { pos = self.extraStartPos })
 					end
 					missile.Damping = 0.89
