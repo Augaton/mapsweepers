@@ -195,6 +195,8 @@ if SERVER then
 			-- // Chunk {{{
 				chunkSetup = function(ent) --Zero G
 					timer.Simple(0, function()
+						if not IsValid(ent) then return end
+						
 						local phys = ent:GetPhysicsObject()
 						phys:EnableGravity(false)
 						phys:SetDragCoefficient( 0.75 )

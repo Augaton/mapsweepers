@@ -330,12 +330,12 @@ if SERVER then
 			local targetAngle = (targetPos - origin):Angle()
 			targetAngle:Sub(realAngle)
 
-			if not selfTbl.GetTurretDesiredAngle(self):IsEqualTol(targetAngle, selfTbl.TurretFirerate(self) >= 0.6 and 0.01 or 1) then
-				self:SetTurretDesiredAngle(targetAngle)
+			if not selfTbl:GetTurretDesiredAngle():IsEqualTol(targetAngle, selfTbl.TurretFirerate(self) >= 0.6 and 0.01 or 1) then
+				selfTbl:SetTurretDesiredAngle(targetAngle)
 			end
 		end
 		
-		self:TurretAngleUpdate(dt)
+		selfTbl.TurretAngleUpdate(self, dt)
 	end
 
 	function ENT:ThinkTurnAndShoot(dt) -- Self-explanatory
@@ -343,20 +343,20 @@ if SERVER then
 		local data = selfTbl.GetTurretData(self)
 		local alert = selfTbl.GetTurretAlert(self)
 		
-		if selfTbl.GetHackedByRebels(self) and self.kamikazeJumped then
+		if selfTbl.GetHackedByRebels(self) and selfTbl.kamikazeJumped then
 			return
 		end
 
 		if data.spinupTime then -- Spinning up or down
 			if alert > 0 then
-				selfTbl.SetTurretSpinup(self, math.min(selfTbl.GetTurretSpinup(self) + dt/data.spinupTime, 1) )
+				selfTbl:SetTurretSpinup(math.min(selfTbl:GetTurretSpinup() + dt/data.spinupTime, 1) )
 			else
-				selfTbl.SetTurretSpinup(self, math.max(selfTbl.GetTurretSpinup(self) - dt/data.spinupTime, 0) )
+				selfTbl:SetTurretSpinup(math.max(selfTbl:GetTurretSpinup() - dt/data.spinupTime, 0) )
 			end
 		end
 		
 		if alert >= 0.5 then -- Turning towards target
-			self:ThinkTurnAndShoot_AngleUpdate(dt)
+			selfTbl.ThinkTurnAndShoot_AngleUpdate(self, dt)
 		end
 
 		if (alert >= 1) then -- Shooting
@@ -379,19 +379,20 @@ if SERVER then
 
 		local alertMul = ((selfTbl.GetHackedByRebels(self) or (target and target.jcms_slowTurretReact)) and 3) or 1
 		if target and alert < 1 then
-			selfTbl.SetTurretAlert(self, math.min(alert + dt/(selfTbl.TurretGetAlertTime(self) * alertMul), 1) )
+			selfTbl:SetTurretAlert(math.min(alert + dt/(selfTbl.TurretGetAlertTime(self) * alertMul), 1) )
 		elseif not target and alert > 0 then
-			selfTbl.SetTurretAlert(self, math.max(alert - dt/(selfTbl.TurretLoseAlertTime(self) / alertMul), 0) )
+			selfTbl:SetTurretAlert(math.max(alert - dt/(selfTbl.TurretLoseAlertTime(self) / alertMul), 0) )
 		end
 	end
 
 	function ENT:ThinkTargeting() -- For updating self.CurrentTarget
 		local selfTbl = self:GetTable()
-		if CurTime() < (selfTbl.NextTargetingThink or 0) then return end
+		local cTime = CurTime()
+		if cTime < (selfTbl.NextTargetingThink or 0) then return end
 		
 		local origin, radius = selfTbl.GetTurretShootPos(self), selfTbl.TurretRadius(self)
 
-		if self:IsAboutToDie() then -- For picking nearby targets to kamikaze at
+		if selfTbl.IsAboutToDie(self) then -- For picking nearby targets to kamikaze at
 			radius = 500
 		end
 
@@ -415,7 +416,7 @@ if SERVER then
 		--Turrets determine their think-speed. Turrets that need faster/more reliable target acquisition think more (smgs, shotgun)
 		--Turrets where that doesn't matter as much (e.g. due to slow turn speed) think less (bolter, gatling)
 		local hackedReduce = self:GetHackedByRebels() and 2 or 1 -- Hacked turrets don't need to think as much
-		selfTbl.NextTargetingThink = CurTime() + (1 / selfTbl.GetTurretField(self, "updateRate")) * hackedReduce
+		selfTbl.NextTargetingThink = cTime + (1 / selfTbl.GetTurretField(self, "updateRate")) * hackedReduce
 	end
 
 	function ENT:ThinkKamikaze()
@@ -428,36 +429,37 @@ if SERVER then
 				selfTbl.kamikazeSound = true
 			end
 
-			if IsValid(self.CurrentTarget) and not selfTbl.kamikazeJumped and selfTbl.kamikazeTime < CurTime() then
-				selfTbl.Kamikaze(self, self.CurrentTarget)
+			if IsValid(selfTbl.CurrentTarget) and not selfTbl.kamikazeJumped and selfTbl.kamikazeTime < CurTime() then
+				selfTbl.Kamikaze(self, selfTbl.CurrentTarget)
 			end
 		end
 	end
 
 	function ENT:Think()
 		local selfTbl = self:GetTable()
+		local cTime = CurTime()
 		local data = selfTbl.GetTurretData(self)
 		
 		local slowdown = selfTbl.GetTurretAlert() <= 0
 		local dt = 0.05
 		if slowdown then 
-			self.NextTargetingThink = 0
+			selfTbl.NextTargetingThink = 0
 		else
 			local firerate = selfTbl.TurretFirerate(self)
 			dt = math.min(dt, firerate)
 		end
 
-		self:ThinkTargeting()
+		selfTbl.ThinkTargeting(self) --Resets self.NextTargetingThink
 
 		if slowdown then 
-			dt = math.max(1, self.NextTargetingThink - CurTime()) 
+			dt = selfTbl.NextTargetingThink - cTime
 		end
 
-		self:ThinkKamikaze()
-		self:ThinkAlert(dt)
-		self:ThinkTurnAndShoot(dt)
+		selfTbl.ThinkKamikaze(self)
+		selfTbl.ThinkAlert(self, dt)
+		selfTbl.ThinkTurnAndShoot(self, dt)
 		
-		self:NextThink(CurTime() + dt)
+		self:NextThink(cTime + dt)
 		return true
 	end
 
