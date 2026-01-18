@@ -452,7 +452,7 @@ if SERVER then
 		selfTbl.ThinkTargeting(self) --Resets self.NextTargetingThink
 
 		if slowdown then 
-			dt = selfTbl.NextTargetingThink - cTime
+			dt = math.max(dt, selfTbl.NextTargetingThink - cTime)
 		end
 
 		selfTbl.ThinkKamikaze(self)
