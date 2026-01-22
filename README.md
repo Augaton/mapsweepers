@@ -108,6 +108,21 @@ Legal / Лицензия / Mentions Légales
 	- The following link: https://fonts.google.com/specimen/IBM+Plex+Sans/license
 	- The following link: https://openfontlicense.org/open-font-license-official-text/
 
+### 🇫🇷 Français
+- Le **code source** de cet addon est sous licence GNU GPL v3.
+    - Le texte complet de la licence se trouve dans le fichier `LICENSE`.
+    - Le fichier `gamemodes/mapsweepers/gamemode/sh_bspreader.lua` est **EXEMPTÉ** de ceci. Il s'agit d'un module tiers appelé 'BspReader' par *JonahSoldier*, sous des conditions de licence différentes. Il est utilisé avec la permission de *JonahSoldier* et **ne fait pas** partie du code source de *Map Sweepers*.
+- Les **Assets** (textures, modèles 3D et fichiers audio) présents dans la version originale (non modifiée) de l'addon, listés ci-dessous, sont soumis au droit d'auteur de MerekiDor. Tous les droits sur lesdits assets sont réservés par MerekiDor (contact : merekidorian@gmail.com).
+    - Les textures du dossier `materials/jcms` et tous ses sous-dossiers ;
+    - Les textures du dossier `materials/models` dont le nom commence par `jcorp_` ou `rgg_`, à l'exception des fichiers `rgg_male` et `rgg_female` ;
+    - Les textures du dossier `materials/models/zombiespawner` ;
+    - Tous les modèles 3D du dossier `models/jcms` ;
+    - Tous les fichiers audio (voix) du dossier `sound/vo/jcms`.
+- **La police** utilisée dans l'addon est *IBM Plex Sans* et est sous licence *SIL Open Font License Version 1.1* par *IBM Corp.*. Octantis Addons ne revendique aucun droit d'auteur sur cette police. Le texte intégral de ladite licence peut être consulté via les liens suivants :
+    - Le fichier `LICENSE_FONT` ;
+    - Le lien suivant : https://fonts.google.com/specimen/IBM+Plex+Sans/license
+    - Le lien suivant : https://openfontlicense.org/open-font-license-official-text/
+
 ### 🇷🇺 Русский
 - **Исходный код** аддона лицензирован под GNU GPL v3.
 	- Полный текст лицензии может быть найден в файле `LICENSE`.
@@ -123,17 +138,3 @@ Legal / Лицензия / Mentions Légales
 	- Интернет-ресурс https://fonts.google.com/specimen/IBM+Plex+Sans/license
 	- Интернет-ресурс https://openfontlicense.org/open-font-license-official-text/
 
-### 🇫🇷 Français
-- Le **code source** de cet addon est sous licence GNU GPL v3.
-    - Le texte complet de la licence se trouve dans le fichier `LICENSE`.
-    - Le fichier `gamemodes/mapsweepers/gamemode/sh_bspreader.lua` est **EXEMPTÉ** de ceci. Il s'agit d'un module tiers appelé 'BspReader' par *JonahSoldier*, sous des conditions de licence différentes. Il est utilisé avec la permission de *JonahSoldier* et **ne fait pas** partie du code source de *Map Sweepers*.
-- Les **Assets** (textures, modèles 3D et fichiers audio) présents dans la version originale (non modifiée) de l'addon, listés ci-dessous, sont soumis au droit d'auteur de MerekiDor. Tous les droits sur lesdits assets sont réservés par MerekiDor (contact : merekidorian@gmail.com).
-    - Les textures du dossier `materials/jcms` et tous ses sous-dossiers ;
-    - Les textures du dossier `materials/models` dont le nom commence par `jcorp_` ou `rgg_`, à l'exception des fichiers `rgg_male` et `rgg_female` ;
-    - Les textures du dossier `materials/models/zombiespawner` ;
-    - Tous les modèles 3D du dossier `models/jcms` ;
-    - Tous les fichiers audio (voix) du dossier `sound/vo/jcms`.
-- **La police** utilisée dans l'addon est *IBM Plex Sans* et est sous licence *SIL Open Font License Version 1.1* par *IBM Corp.*. Octantis Addons ne revendique aucun droit d'auteur sur cette police. Le texte intégral de ladite licence peut être consulté via les liens suivants :
-    - Le fichier `LICENSE_FONT` ;
-    - Le lien suivant : https://fonts.google.com/specimen/IBM+Plex+Sans/license
-    - Le lien suivant : https://openfontlicense.org/open-font-license-official-text/
