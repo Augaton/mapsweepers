@@ -50,6 +50,7 @@ Features List
 - **Playing as NPCs after you die or evacuate**  [🛈](## "This feature optionally allows you to respawn as an NPC to harass survivors if you're bored, making this gamemode technically PvP.")
 - **Codex** and **Bestiary** with lore about the world
 - 🇷🇺 **Russian localization / Перевод на русский язык**
+- 🇫🇷 **French localization / Traduction en français**
 
 
 Contributing
